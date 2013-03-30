@@ -9,7 +9,7 @@
 @(define (DEFSYSTEM) @cl{DEFSYSTEM})
 @(define (defsystem) @cl{defsystem})
 @(define (mk-defsystem) @cl{mk-defsystem})
-@(define (XXX) ())
+@(define (XXX) '())
 
 @title{Making sense of ASDF}
 
@@ -74,16 +74,78 @@ with an eye on a future replacement.
 @XXX{}
 
 
-@Section{Live Programming vs Dead Programs}
+@section{Live Programming vs Dead Programs}
 
-Since most hackers these days are somewhat familiar with Unix and its tradition,
-but mostly ignorant of Lisp and its tradition,
+Since most hackers these days are somewhat familiar with the Unix tradition,
+but mostly ignorant of Lisp Lore,
 I will start with a small digression
-on the general differences of spirit between Lisp and Unix,
-which account for the difference in resulting software:
+on the general difference in spirit between Lisp and Unix,
+from which springs the difference in resulting software:
 @emph{live programming} vs
 @hyperlink["http://wiki.squeak.org/squeak/2950"]{Cult-of-Dead} programming,
 as Lisp and Smalltalk programmers often describe the difference.
+
+A live programming system is designed with
+the user as an active part of the software development feedback loop.
+Programs are live activities, undergoing change
+as the user not only @emph{can} modify the code of these programs as they run,
+but @emph{is supposed to} do so, as
+this is the normal way, indeed the one and only way,
+of interacting with the system:
+shaping it to serve the user's purposes,
+themselves refined from the interaction.
+@emph{The difference between a programmer and a user, is that the programmer
+knows there is no difference between using and programming.}
+Fixing, improving, extending or configuring the system
+are all but incremental forms of software development,
+indistinguishable and unsegregated from other programming activities.
+
+To make the user experience easier,
+the software for the system is made interactively available
+in a dynamic language that can express high-level abstractions,
+such that the user can manipulate and refine
+the concepts that matter to him
+without having to either delve into lower-level details than needed,
+or restart from scratch and lose his data as his needs evolve.
+Indeed, the user's data 
+
+To support this change, the current programming session
+is capable of surviving forever,
+carrying its state as long as the programmer cares for it;
+should some downtime be scheduled,
+the machine can save its complete state to an image file,
+from which it can restart in the state it was left.
+Because programs and libraries are written in a high-level language,
+stability is a given, errors are usually recoverable,
+and complete crashes seldom happen.
+Applications are designed to be run with programmer interaction;
+it is possible to explicitly restrict interaction
+for delivery in hostile environment, but that's not the default.
+Users are friends, and need to be educated at worst;
+interactive tools are available for that,
+the interface is learnable;
+it is discoverable for its elements include self-description.
+Every modification, configuration or interaction is preserved by default,
+without any programmer having to do anything special;
+where transactionality matters,
+activities can transparently access records of a persistent object database.
+Most activities can directly exchange and access objects in a common image;
+where such activities they really need to run on separate machines
+or to be isolated in separate images,
+general-purpose communication protocols are available,
+developers can compose co-developed implementations
+of both encoding and decoding of each layer of their protocol,
+written in the same high-level language, testable in the same image,
+often extracted together from the same specification.
+
+
+A cult of dead software system, by contrast,
+maintains a strict separation between developing and using software.
+By the time they are used, programs are dead things,
+the code of which is impossible to modify, cast in stone, sealed in a coffin.
+Users modify data, and 
+
+
 
 In mainstream operating systems,
 whether Unix, Windows, MacOS, or Android or iOS,
@@ -108,38 +170,6 @@ It is extremely painful to share state between activities,
 as data must be marshalled and unmarshalled and its communication must follow
 special purpose protocols with a matching pair of implementations
 for both side of each communication.
-
-By contrast, in Lisp and Smalltalk operating systems,
-programs are live activities:
-the code that runs is what the programmer is interacting with;
-it is meant to be fixed, improved, extended and configured as it runs.
-The current programming session is capable of surviving forever,
-carrying its state as long as the programmer cares for it;
-should some downtime be scheduled,
-the machine can save its complete state to an image file,
-from which it can restart as in the state it was left.
-Because programs and libraries are written in a high-level language,
-stability is a given, errors are usually recoverable,
-and complete crashes seldom happen.
-Applications are designed to be run with programmer interaction;
-it is possible to explicitly restrict interaction
-for delivery in hostile environment, but that's not the default.
-Users are friends, and need to be educated at worst;
-interactive tools are available for that,
-the interface is learnable;
-it is discoverable for its elements include self-description.
-Every modification, configuration or interaction is preserved by default,
-without any programmer having to do anything special;
-where transactionality matters,
-activities can transparently access records of a persistent object database.
-Most activities can directly exchange and access objects in a common image;
-where such activities they really need to run on separate machines
-or to be isolated in separate images,
-general-purpose communication protocols are available,
-developers can compose co-developed implementations
-of both encoding and decoding of each layer of their protocol,
-written in the same high-level language, testable in the same image,
-often extracted together from the same specification.
 
 Of course, these are all a matter
 of a starting points and an attitude,
@@ -200,6 +230,7 @@ to which they contrast with pride their
 
 http://martinfowler.com/bliki/InternalReprogrammability.html
 
+Recreating features by piling on layers of complexity.
 
 
 
@@ -357,7 +388,7 @@ and how they are related to each other,
 one that is more suited to human modification,
 without requiring extraneous redundancy.
 From this description, it will:
-@itemize[
+@itemlist[
 @item{
   locate matching source code, interface definitions
   and/or pre-compiled object code
@@ -525,7 +556,7 @@ were inferred from that the specified model.
 with inferred actions based on declared dependencies,
 rather than a fixed-depth list of components made of files,
 with explicit operations on components triggered by events on other components.
-Kent Pitman's @ref[:url "http://www.nhplace.com/kent/Papers/Large-Systems.html"]
+Kent Pitman's @hyperlink["http://www.nhplace.com/kent/Papers/Large-Systems.html"]
 {The Description of Large Systems} was proposing to structure
 such software in an object-oriented way.
 Dan then had two main innovations.
@@ -614,7 +645,7 @@ and this making the barrier to adoption of Common Lisp accordingly higher.
 For instance, although ASDF made it much easier than before
 for developers to install and use other developers' libraries,
 it provided no good story for deploying software to end-users
-who wouldn't know how to edit a @code{~/.sbclrc}.
+who wouldn't know how to edit a @tt{~/.sbclrc}.
 Because of the lack of Common Lisp standardization,
 specifying component pathnames
 for anything more complex than a flat directory of files
@@ -880,9 +911,9 @@ the (operation,component) pairs that
 
 
 
-@title{Some ASDF History}
+@section{Some ASDF History}
 
-@section{Background}
+@subsection{Background}
 
 It otherwise provided the user with a semantics and surface syntax
 similar to those of mk-defsystem,
@@ -898,12 +929,5 @@ In asdf 2.26.9, after I
 
 In ASDF 2.26.14, I introduced a new operation to force load-op to explicitly depend on loading the parent's dependencies through an explicit node in the dependency graph rather than on implicit reliance upon the traversal algorithm. The need for it was originally made obvious to me while rewriting POIU, that builds a complete
 
- misnamed parent-load-op, because it was being propagated from child to parent and was loading the parent's dependencies. What it actually is is an operation that doesn't apply just to parents but to each and every load or compile operation, and means: " prepare yourself to load or compile the component by first loading all its dependencies."
+misnamed parent-load-op, because it was being propagated from child to parent and was loading the parent's dependencies. What it actually is is an operation that doesn't apply just to parents but to each and every load or compile operation, and means: " prepare yourself to load or compile the component by first loading all its dependencies."
 
-
-
-
-DOMAINES WEB
-
-/ zCD|E*c//bCD*bgBC|D*G//xfe*c//xD|E*c//bCD*bgBC|D*G//xfe*//xG|
-A*e//caF*c//af|e*G+E*dc*a//EG|A*e//caF*c//af|eEdzcba*//

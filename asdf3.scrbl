@@ -85,6 +85,8 @@ from which springs the difference in resulting software:
 @hyperlink["http://wiki.squeak.org/squeak/2950"]{Cult-of-Dead} programming,
 as Lisp and Smalltalk programmers often describe the difference.
 
+@subsection{Live Programming}
+
 A live programming system is designed with
 the user as an active part of the software development feedback loop.
 Programs are live activities, undergoing change
@@ -100,44 +102,69 @@ Fixing, improving, extending or configuring the system
 are all but incremental forms of software development,
 indistinguishable and unsegregated from other programming activities.
 
-To make the user experience easier,
-the software for the system is made interactively available
-in a dynamic language that can express high-level abstractions,
-such that the user can manipulate and refine
-the concepts that matter to him
-without having to either delve into lower-level details than needed,
-or restart from scratch and lose his data as his needs evolve.
-Indeed, the user's data 
+For an effective user experience,
+the programming system is made interactively available
+in a dynamic homoiconic high-level language in which code and data persist.
+@itemlist[
+  @item{
+    High-level means that inasmuch as technology allows,
+    the user can manipulate and refine the concepts that matter to him
+    without having to delve into irrelevant details
+    at a lower level of details than he cares for,
+    such as allocating and staying within address ranges,
+    marshalling and unmarshalling data,
+    compilation representation strategies,
+    filling and flushing a hierarchy of caches,
+    ensuring multiple changes are done coherently, etc.
+  }
+  @item{
+    Persistence means that the data he manipulates remains valid
+    from session to session and system modification to system modification,
+    without having to care about saving and restoring, exporting and importing,
+    transactional failures and accidental corruptions,
+    scheduled and unscheduled down times,
+    dead batteries and hard disk failures,
+    incompetent or bankrupt service providers,
+    computer theft and gestapo crackdowns, etc.,
+    or simply crashing the system and losing data the slightest of mistakes.
+  }
+  @item{
+    Dynamicity means that programming doesn't require from the user
+    to either know in advance the structure of the data for aeons to come
+    or have to explicitly write and use converters for entire systems
+    every time that any structure changes the slightest bit,
+    under pains of either being unable to use the data,
+    or having the system crash, or worse, having subtly wrong answers,
+    or worst of all, experiencing data corruption.
+  }
+  @item{
+    Homoiconicity means that code itself is represented as data
+    that can be easily expressed and manipulated by the programming language,
+    such that the user can use the programming power of the system
+    to extend and further shape the system,
+    as opposed to having to either do things painfully by hand
+    or having to reimplement large swaths of the system from scratch.
+  }
+]
+These concepts can be viewed as aspect of a same principle:
+best adapt to the evolving purposes of the user-programmer,
+while shielding him from issues he isn't interested in addressing.
 
-To support this change, the current programming session
-is capable of surviving forever,
-carrying its state as long as the programmer cares for it;
-should some downtime be scheduled,
-the machine can save its complete state to an image file,
-from which it can restart in the state it was left.
-Because programs and libraries are written in a high-level language,
-stability is a given, errors are usually recoverable,
-and complete crashes seldom happen.
-Applications are designed to be run with programmer interaction;
+Software is designed to be run with programmer interaction;
 it is possible to explicitly restrict interaction
-for delivery in hostile environment, but that's not the default.
-Users are friends, and need to be educated at worst;
-interactive tools are available for that,
-the interface is learnable;
-it is discoverable for its elements include self-description.
-Every modification, configuration or interaction is preserved by default,
-without any programmer having to do anything special;
-where transactionality matters,
-activities can transparently access records of a persistent object database.
-Most activities can directly exchange and access objects in a common image;
-where such activities they really need to run on separate machines
-or to be isolated in separate images,
-general-purpose communication protocols are available,
-developers can compose co-developed implementations
-of both encoding and decoding of each layer of their protocol,
-written in the same high-level language, testable in the same image,
-often extracted together from the same specification.
+for delivery in hostile environment,
+or to otherwise extract an "application" from the development system,
+but that's not the default.
+Users are friends, who need to be educated and guided at worst;
+the interface is learnable,
+it is discoverable for its elements include self-description;
+the scope of the interaction may be narrowed or widened
+to fit the user's current focus.
 
+In other words, live programming systems is designed with the user at the center.
+
+
+@subsection{Dead Programs}
 
 A cult of dead software system, by contrast,
 maintains a strict separation between developing and using software.

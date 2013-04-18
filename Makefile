@@ -1,6 +1,6 @@
 ae := asdf3
 
-src = asdf3.scrbl utils.rkt
+src = asdf3.scrbl live-programming.scrbl old-bug.scrbl history.scrbl utils.rkt tutorial.scrbl
 
 export PLTCOLLECTS:=$(shell pwd):${PLTCOLLECTS}
 

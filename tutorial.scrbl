@@ -1,4 +1,16 @@
-<Bike> like in general, or a "this is what's different from asdf2" thing?
+#lang scribble/sigplan @nocopyright
+
+@(require scribble/base
+          "utils.rkt")
+
+@;TODO: Parameterize whether or not to include notes about ASDF1 and ASDF2
+@;TODO: Have CSS output hide it or not, a la Google 
+
+@title{@(ASDF) Tutorial}
+
+So, how do we use @(ASDF) in practice?
+
+Let's start with the easiest examples...
 
 <Xach> I would like more scenario-driven examples,
 e.g. "If you have a piece that has to be compiled via a separate process,

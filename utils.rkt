@@ -2,22 +2,24 @@
 ;;-*- Scheme -*-
 
 (require
-  scribble/base)
-#|
-(require
   scribble/core
   scribble/decode
+  scribble/base
   scriblib/autobib
   scribble/manual
   scribble/bnf
   (for-syntax syntax/parse))
+
+#|
+(require
 |#
 
 (provide
+  code
   backend html-only pdf-only
-  multiple-sections
-  include-asdf1-diffs include-asdf2-diffs
-  XXX cl latin de_facto
+  multiple-sections include-asdf1-diffs include-asdf2-diffs
+  cl clcode
+  XXX latin de_facto CL
   ASDF ASDF1 ASDF2 ASDF3 ASDF-Install POIU XCVB DEFSYSTEM defsystem mk-defsystem Make)
 
 (define backend (make-parameter '#:html))
@@ -28,15 +30,34 @@
 (define include-asdf1-diffs (make-parameter #t))
 (define include-asdf2-diffs (make-parameter #t))
 
+(define-syntax (clblock stx)
+  (syntax-parse stx
+    [(_ #:line-numbers ln str ...)
+     #'@nested[#:style "smaller"]{
+        @codeblock[;;#:keep-lang-line? #f
+                   #:line-numbers ln
+                   #:line-number-sep 3
+                   str ...]}]
+    [(_ str ...)
+     #'(clblock #:line-numbers 0 str ...)]))
+
+(define-syntax (clcode stx)
+  (syntax-parse stx
+    [(_ str ...) #'(clblock #:line-numbers #f str ...)]))
+
+(define-syntax-rule (cl str ...)
+  @code[#|#:lang "cl"|# str ...])
+
+(define (CL) "Common Lisp")
+
 (define (XXX) '())
-(define (cl x) (tt x))
 (define (latin x) (emph x))
 (define (de_facto) @latin{de facto})
 
-(define (ASDF) @cl{ASDF})
-(define (ASDF1) (list @cl{ASDF} " 1"))
-(define (ASDF2) (list @cl{ASDF} " 2"))
-(define (ASDF3) (list @cl{ASDF} " 3"))
+(define (ASDF . x) @cl[(apply string-append "ASDF" (if (null? x) '() (cons " " x)))])
+(define (ASDF1) (ASDF "1"))
+(define (ASDF2) (ASDF "2"))
+(define (ASDF3) (ASDF "3"))
 (define (ASDF-Install) @cl{ASDF-Install})
 (define (POIU) @cl{POIU})
 (define (XCVB) @cl{XCVB})

@@ -132,7 +132,7 @@ that were compiling source files to FASL (FASt Loading files),
 then loading the FASL into the current image.
 This required none of the zillions of configuration options
 that are inflicted upon C programmers,
-though for portability you might have to use the @cl{#+feature} syntax
+though for portability you might have to use the @cl{\#+feature} syntax
 for conditional compilation inside their files —
 and since @cl{DEFSYSTEM} itself wasn't standardized,
 they might need a slightly different one on each supported implementation.

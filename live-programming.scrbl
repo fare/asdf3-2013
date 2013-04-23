@@ -1,31 +1,33 @@
 #lang scribble/sigplan @nocopyright
 
-@(require scribble/base
-          "utils.rkt")
+@(require scribble/base "utils.rkt")
 
 @title{Live Programming vs Dead Programs}
 
 Most hackers these days are somewhat familiar with the Unix tradition,
 but mostly ignorant of Lisp Lore.
-@(if (multiple-sections)
+p@(if (multiple-sections)
 @list{This section of the document, as a short digression,}
 @list{This short essay})
 tries to describe the general difference in spirit
 between Lisp and Unix,
 from which springs the difference in resulting software:
-@emph{live programming} vs
-@hyperlink["http://wiki.squeak.org/squeak/2950"]{Cult-of-Dead} programming,
+@emph{live computing} systems vs
+@hyperlink["http://wiki.squeak.org/squeak/2950"]{Cult-of-Dead} computer systems,
 as Lisp and Smalltalk programmers often describe the difference.
 
 I will be deliberately exaggerating the picture and painting with a big brush,
 to make the big picture more obvious.
 
-@(when (multiple-sections)
-@list{You may skip this section if you are already familiar with the concept.})
+@(if (multiple-sections)
+@list{You may skip this section if you are already familiar with the concept.}
+@list{This essay was originally started as part of a tentative to explain
+@(ASDF) by contrasting it with @(Make), but took a life of its own.})
+
 
 @section{Live Programming}
 
-A live programming system is designed with
+A live computing system is designed with
 the user as an active part of the software development feedback loop.
 Programs are live activities, undergoing change
 as the user not only @emph{can} modify the code of these programs as they run,
@@ -87,7 +89,8 @@ in which code and data persist transparently.
   @item{
     @emph{Transparence} means the entire system is designed
     to be run in interaction with the user and is
-    @hyperlink["http://martinfowler.com/bliki/InternalReprogrammability.html"]{Internally Reprogrammable}.
+    @hyperlink["http://martinfowler.com/bliki/InternalReprogrammability.html"]
+        {Internally Reprogrammable}.
     though the user doesn't have to deal
     with any particular details he doesn't care for,
     whatever aspect of the system the user does decide to care for
@@ -104,7 +107,7 @@ in which code and data persist transparently.
 These concepts can be viewed as aspects of a same principle:
 to best adapt to the evolving purposes of the user-programmer,
 while shielding him from issues he isn't interested in addressing.
-In other words, a live programming system is designed
+In other words, a live computing system is designed
 with the user at the center,
 as a way to extend the reach of the user,
 and from which new functionality grows bottom up.
@@ -112,7 +115,7 @@ and from which new functionality grows bottom up.
 
 @section{Dead Programs}
 
-A cult of dead computer system is organized all along
+A cult-of-dead computer system is organized all along
 according to opposite principles.
 The machine, not the human,
 is the central concern from which radiates the architecture of the system.
@@ -132,7 +135,7 @@ A forest of bureaucratic forms are the normal way of interacting with the system
 except that when consumers have to be seduced out of their money,
 some dumbing down and gamification is added on top to make it all more attractive.
 
-To preserve it against its user, the cult of dead computer system
+To preserve it against its user, the cult-of-dead computer system
 is programmed in a dualist paradigm using static low-level language,
 where code and data are both ephemeral and opaque.
 
@@ -204,7 +207,7 @@ where code and data are both ephemeral and opaque.
   }
   @item{
     @emph{Low-level} languages are the nail on the coffin
-    of cult of dead computer systems:
+    of cult-of-dead computer systems:
     the system is organized in successive layers atop the hardware;
     each layer only provides higher-level functionality
     by exposing details and limitations
@@ -231,83 +234,158 @@ Of course, this unflattering view of mainstream computer systems
 is purposefully one-sided and exaggerated.
 That's the whole point:
 to make it painfully obvious
-what the proponents of live programming systems want,
+what the proponents of live computing systems want,
 and what they reject about mainstream computer systems.
 But the point won't be complete
 unless and until we find the non-evil justifications
 behind the current state of affairs:
 we need to acknowledge the strength and the achievements of mainstream computer systems
-despite their total or partial embrace of the dead programs paradigm,
-and we need to account for the weaknesses and failures of live programming systems.
+despite their total or partial embrace of the cult-of-dead computer paradigm,
+and we need to account for the weaknesses and failures of live computing systems.
 Then we may see how both approaches do or may cope with their respective limitations,
 and what they can learn from the other approach.
 
-An excuse that many proponents of Live Programming will use to explain
+An excuse that many proponents of Live Computing will use to explain
 their relative failure on the market is that
-the historic success of dead systems is largely due to extrinsic factors
+the historic success of cult-of-dead computer systems is largely due to extrinsic factors
 such as massive support from government and big corporations,
 that propagate their bureaucratic structure of top-down control to the software they fund.
 Now, these factors will persist as long as the cause persists,
 which means the foreseeable future.
-Yet, if as we allege Live Systems provide an edge in productivity,
+Yet, if as we allege live computing systems provide an edge in productivity,
 a strong secondary market in such systems may thrive,
-generating technological progress that gets incorporated into mainline dead systems.
-Live Programmers will argue that this has already been happening,
-and that mainstream Dead Program systems have thusly adopted many of
-the formerly distinctive features of Live Systems,
+generating technological progress that gets incorporated into mainline cult-of-dead computer systems.
+Live programmers will argue that this has already been happening,
+and that mainstream cult-of-dead computer systems have thusly adopted many of
+the formerly distinctive features of live computing systems,
 even though they won't and indeed can't adopt it fundamental paradigm:
 object orientation and integrated development environments in the 1980s,
 type safety and garbage collection in the 1990s,
 and since then the slow percolation of higher-order functions,
 metaprogramming techniques, reflection, and dynamic features.
 
-But that excuse is also a bit of a cop out, unless we examine the reasons
-why these external factors play in favor of dead programs rather than live programming.
-Indeed, if Live Programming makes for vastly increased productivity,
-wouldn't it be advantageous to corporations and governments that adopt it?
-One reason that the dead program approach has been winning so far is that
-by focusing on optimizing for the easy common case,
-dead computer systems have been pick the low-hanging fruits,
-and generating more economic value now than more elaborate systems;
-too bad if this relatively starves more ambitious endeavours to reach higher.
-Even assuming alternatives could provide a solution that is more efficient in the long-term
-for the low-hanging fruits as well as the higher-reaching ones,
-there is no long-term available to who dies in the short run,
-and a paradigm cannot be considered superior if it is incapable of surviving and taking off;
-at best it is a paradigm whose time hasn't come yet,
-that will take off later and survive in the mean time.
-To compete, Live Programming Systems must therefore adapt to also grab those low-hanging fruits
-by mastering the low-level optimizations that make dead computer systems popular.
+But that excuse is also a cop out, unless we examine the reasons
+why these external factors play
+in favor of cult-of-dead computer systems rather than live computing systems.
+Indeed, if live programming makes for vastly increased productivity,
+wouldn't it be advantageous to corporations and governments that adopt it
+and reap the productivity benefits?
+One immediate advantage that the dead program approach has been having so far is that
+by focusing on optimizing for the easy case,
+cult-of-dead computer systems have been pick the low-hanging fruits,
+and generating more economic value now than more elaborate systems
+that better solve the general case.
+In other word, cult-of-dead computer systems are indeed directed at harvesting the resources
+that matter to the society at large,
+when live computing systems optimize the use of the programmer at hand;
+and too bad if this relatively starves out more ambitious endeavours to reach higher.
+But we can backtrack further: why can't or won't the programmer, once in charge,
+make the economically efficient or socially empowering choices?
+Because the skills and interests it takes to be a successful businessman or powermonger
+are not those it takes to be a good programmer;
+whatever comparative advantage you have in one direction,
+by definition you don't have in the other;
+and so the experts, once in charge, do what suits them,
+and fail to efficiently address other people's first concerns,
+whereas managers, once in charge, do more of what suits these immediate concerns
+even at the cost of technically inferior solutions
+warped to suit their ways of thinking.
+At root therefore is a psychological tension co-substantial with division of labor itself.
 
-In addition to intrinsic factors such as this better ability to reap low-hanging fruits,
-
-Also, whatever their shortcomings, and the historical factors that went into making them dominant,
-it is a fact that dead program computer systems have captured
+Now, whatever their technical shortcomings and the non-technical factors
+that went into making them dominant on the technical scene,
+it is a fact that cult-of-dead computer systems have captured
 the larger part of the programmer mindshare.
 With this mindshare comes a the large value associated to positive network effects.
-This alone constitutes a huge barrier to entry for any rival system and any rival paradigm.
-Actually, some have argued that the vastly increased productivity from Live Programming Systems is a
-@hyperlink["http://www.winestockwebdesign.com/Essays/Lisp_Curse.html"]{Curse},
+This alone constitutes a huge barrier to entry for any rival system or technical paradigm.
+Actually, some have argued that the vastly increased productivity from live computing systems
+is a @hyperlink["http://www.winestockwebdesign.com/Essays/Lisp_Curse.html"]{Curse},
 in that it attracts the kind of people who can and will do everything they need by themselves,
 and therefore not participate strongly in a community that builds larger software;
-Live Programming Systems thus lead to plenty of quickly risen software that is only used and usable
-by one person or one small team of people, and dies off when that person dies, retires, or changes
-interest, or when that group is dissolved for whatever combination of corporate or personal reasons.
-Meanwhile, developers of dead computer systems by necessity have had to invest early on
+live computing systems thus lead to plenty of quickly risen software that is only used and usable
+by one person or one small team of people, and dies off
+(its very source code often being destroyed or made unavailable)
+when that person dies, retires, or changes interest, or
+when that group is dissolved for whatever combination of corporate or personal reasons.
+Meanwhile, developers of cult-of-dead computer systems by necessity have had to invest early on
 in social infrastructure to work together, because their systems are so bad
 that they couldn't build anything of interest alone, anyway.
+So we see again a psychological tension,
+not just between programmers and managers, but among programmers between each other programmer.
+
+Finally, another, related, technical edge
+that cult-of-dead computer systems have gained and preserved
+is in most topics related to auditability of the code:
+dead programs, precisely because they don't change
+and can have their meaning not depend on changing context,
+can more easily be isolated, duplicated, tested, analyzed, quality-controlled,
+sandboxed, reasoned about, proven to satisfy some safety property,
+their bugs reproduced, etc.
+A live computing system, by contrast, can easily become "autistic",
+the meaning of the evolving body code crucially depending on changes to the environment,
+or worse, tangled with implicit behavior that has been accumulated
+in the "bootstrapped" image of the live computing system across its development history;
+such "autistic" systems can be very hard for anyone but the historical authors to understand,
+and very hard even for the historical authors to untangle.
+This class of problems certainly do arise even with cult-of-dead computer systems;
+but the cult-of-dead program tradition has developed a lot of tools to deal with these problems,
+with which live programmers are playing catchup, when they are not in neglect or denial:
+formal specifications, automated test suites, version control, static types,
+proof systems, virtualization, bug tracking, etc.
+The one edge that live computing systems hereby possess over cult-of-dead computer systems
+in this respect is the ready availability of source code,
+and the ease of writing code-manipulation tools;
+but open-source solves the former issue for those who adopt it,
+and standardization combined with massive resources from the large mindshare
+address the latter issue.
+
+In conclusion, even assuming the live computing paradigm provides
+an intrinsic advantage in terms of both productivity and how complex problems it can help solve,
+both at the scale of the immediate needs of a programmer and in the long-term for everyone,
+it cannot succeed unless it can cross the chasm by competing
+on the economic needs of users at large:
+pick the low-hanging fruits as well as the higher-reaching ones,
+care for low-level optimizations and the common use-case,
+speak the language of the other programmers, the end-users and the managers,
+address the issues of auditability of code.
+A paradigm cannot be considered superior if it is incapable of surviving and taking off;
+at best it is a paradigm whose time hasn't come yet,
+that will take off later and survive in the mean time.
 As the problems that people try to solve with software get more elaborate,
-programmers of live systems may start investing more energy in collaboration skills, too,
-and might eventually reach a critical mass that makes it relatively benefit from network effects;
-but we're far from it so far.
+programmers of live computing systems will hopefully start
+investing more energy in collaboration skills,
+whereas programmers of cult-of-dead computer systems will hopefully
+adopt more of the productive paradigm of live programming.
+But there's a lot of room for progress either way so far.
+
+
+@section{Meet me in the middle}
+
+Live programming and dead programs are paradigms, points of view.
+Actual software fits somewhere in between,
+and many systems the design and history of which are rooted in live programming
+have adopted innovations from cult-of-dead computer systems, and the other way around.
+Let's reexamine the opposition between those two paradigms in this light.
 
 @bold{XXX XXX TO BE CONTINUED XXX XXX}
 
-Regarding Opacity, it is a fact most people, most of the time, have no desire to tune their engine;
-indeed, not only are they not proficient to do it,
-they are only likely to break things if they modified anything.
-What that justifies is not keeping the engine inaccessible,
-but just having the hood closed by default, and having an easy way to open it.
+@XXX{
+Regarding Transparence and Opacity,
+it is a fact most people, most of the time, have no desire to tune their engine;
+indeed, not only are they not proficient enough to do it,
+they are only likely to break things and harm themselves if they modify anything.
+However, what that justifies is not keeping the engine inaccessible,
+it's just having the hood closed by default, yet having an easy way to open it.
+Indeed, the engine may have to be serviced eventually;
+wholly disabling access makes an otherwise fixable system an expensive piece of junk,
+whereas restricting access only to technicians member of a monopoly
+will mean much more expensive and bad quality service than users would otherwise get;
+and anything that reduces the value to consumers eventually reduces
+what they are ready to pay to producers.
+
+
+and least you lose your mindshare
+
 And indeed, since the 1990s, even the most reluctant vendors of computer systems
 have learned that for their system to remain relevant,
 they needed to acquire and keep the mindshare of programmers,
@@ -317,7 +395,7 @@ Even programmers only care about a narrow aspect of the system at any given time
 and may only be proficient to modify but a small subset of it.
 
 That's a good reason to keep the engine under a closed hood that is locked by default.
-A readily available 
+A readily available
 
 free software: source, but not at runtime
 
@@ -329,9 +407,7 @@ developing their taste for the art to make good technicians
 and invent the engines of the future.
 
 
-@section{Meet me in the middle}
-
-Live programming... with how little you need initially,
+Live computing... with how little you need initially,
 that you can grow from.
 
 Dead programs... with how much preset features are provided in advance,
@@ -349,7 +425,7 @@ rather than limitations on the process or the final product.
 We know that in a possibly roundabout way,
 all these systems are ultimately equivalent and can express each other.
 Unix operating systems have implementations of Lisp and Smalltalk
-in which you can run a live environment,
+in which you can run a live computing environment,
 whereas Lisp machines used to run activities originally written in C for Unix
 (notably the X server)
 isolated from each other by their own thread-local special-variable bindings.
@@ -379,7 +455,7 @@ and do not carry any state beyond what is persisted in files.
 
 
 Unix, having started as a virtualization
-of the bad old days of batch processingn
+of the bad old days of batch processing
 on huge expensive yet slow systems with little memory,
 had an initial emphasis on small special-purpose utilities
 that are combined together in various ways,
@@ -399,8 +475,5 @@ the
 a paradigm where programs are dead things,
 to which they contrast with pride their
 
-
-http://martinfowler.com/bliki/InternalReprogrammability.html
-
 Recreating features by piling on layers of complexity.
-
+}

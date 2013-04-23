@@ -50,7 +50,7 @@
 
 (define (CL) "Common Lisp")
 
-(define (XXX) '())
+(define (XXX . rest) '())
 (define (latin x) (emph x))
 (define (de_facto) @latin{de facto})
 

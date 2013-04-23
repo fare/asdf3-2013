@@ -86,12 +86,12 @@ in which code and data persist transparently.
   }
   @item{
     @emph{Transparence} means the entire system is designed
-    to be run in interaction with the user:
+    to be run in interaction with the user and is
+    @hyperlink["http://martinfowler.com/bliki/InternalReprogrammability.html"]{Internally Reprogrammable}.
     though the user doesn't have to deal
     with any particular details he doesn't care for,
     whatever aspect of the system the user does decide to care for
-    is @hyperlink["http://martinfowler.com/bliki/InternalReprogrammability.html"]
-    {readily accessible} for him to inspect or modify.
+    is readily accessible for him to inspect or modify.
     Nothing is hidden, everything is done in the open;
     the user can adjust the scope of the interaction,
     by narrowing or widening it to fit his current focus.
@@ -224,9 +224,8 @@ The underlying principle is that of authority from above,
 from which flows all meaning and all value,
 to be enforced against stray subordinates.
 
-@bold{XXX XXX TO BE CONTINUED XXX XXX}
 
-@section{The Opposite View}
+@section{IF U SO GOOD, Y U NO WIN?}
 
 Of course, this unflattering view of mainstream computer systems
 is purposefully one-sided and exaggerated.
@@ -237,20 +236,97 @@ and what they reject about mainstream computer systems.
 But the point won't be complete
 unless and until we find the non-evil justifications
 behind the current state of affairs:
-we need to acknowledge the strength and the achievements of the dead programs approach,
-and the weaknesses and failures of live programming systems.
+we need to acknowledge the strength and the achievements of mainstream computer systems
+despite their total or partial embrace of the dead programs paradigm,
+and we need to account for the weaknesses and failures of live programming systems.
 Then we may see how both approaches do or may cope with their respective limitations,
 and what they can learn from the other approach.
 
-Most people, most of the time, have no desire to tune their engine;
-indeed, are not proficient to do it and only likely to break things if they touch it.
+An excuse that many proponents of Live Programming will use to explain
+their relative failure on the market is that
+the historic success of dead systems is largely due to extrinsic factors
+such as massive support from government and big corporations,
+that propagate their bureaucratic structure of top-down control to the software they fund.
+Now, these factors will persist as long as the cause persists,
+which means the foreseeable future.
+Yet, if as we allege Live Systems provide an edge in productivity,
+a strong secondary market in such systems may thrive,
+generating technological progress that gets incorporated into mainline dead systems.
+Live Programmers will argue that this has already been happening,
+and that mainstream Dead Program systems have thusly adopted many of
+the formerly distinctive features of Live Systems,
+even though they won't and indeed can't adopt it fundamental paradigm:
+object orientation and integrated development environments in the 1980s,
+type safety and garbage collection in the 1990s,
+and since then the slow percolation of higher-order functions,
+metaprogramming techniques, reflection, and dynamic features.
+
+But that excuse is also a bit of a cop out, unless we examine the reasons
+why these external factors play in favor of dead programs rather than live programming.
+Indeed, if Live Programming makes for vastly increased productivity,
+wouldn't it be advantageous to corporations and governments that adopt it?
+One reason that the dead program approach has been winning so far is that
+by focusing on optimizing for the easy common case,
+dead computer systems have been pick the low-hanging fruits,
+and generating more economic value now than more elaborate systems;
+too bad if this relatively starves more ambitious endeavours to reach higher.
+Even assuming alternatives could provide a solution that is more efficient in the long-term
+for the low-hanging fruits as well as the higher-reaching ones,
+there is no long-term available to who dies in the short run,
+and a paradigm cannot be considered superior if it is incapable of surviving and taking off;
+at best it is a paradigm whose time hasn't come yet,
+that will take off later and survive in the mean time.
+To compete, Live Programming Systems must therefore adapt to also grab those low-hanging fruits
+by mastering the low-level optimizations that make dead computer systems popular.
+
+In addition to intrinsic factors such as this better ability to reap low-hanging fruits,
+
+Also, whatever their shortcomings, and the historical factors that went into making them dominant,
+it is a fact that dead program computer systems have captured
+the larger part of the programmer mindshare.
+With this mindshare comes a the large value associated to positive network effects.
+This alone constitutes a huge barrier to entry for any rival system and any rival paradigm.
+Actually, some have argued that the vastly increased productivity from Live Programming Systems is a
+@hyperlink["http://www.winestockwebdesign.com/Essays/Lisp_Curse.html"]{Curse},
+in that it attracts the kind of people who can and will do everything they need by themselves,
+and therefore not participate strongly in a community that builds larger software;
+Live Programming Systems thus lead to plenty of quickly risen software that is only used and usable
+by one person or one small team of people, and dies off when that person dies, retires, or changes
+interest, or when that group is dissolved for whatever combination of corporate or personal reasons.
+Meanwhile, developers of dead computer systems by necessity have had to invest early on
+in social infrastructure to work together, because their systems are so bad
+that they couldn't build anything of interest alone, anyway.
+As the problems that people try to solve with software get more elaborate,
+programmers of live systems may start investing more energy in collaboration skills, too,
+and might eventually reach a critical mass that makes it relatively benefit from network effects;
+but we're far from it so far.
+
+@bold{XXX XXX TO BE CONTINUED XXX XXX}
+
+Regarding Opacity, it is a fact most people, most of the time, have no desire to tune their engine;
+indeed, not only are they not proficient to do it,
+they are only likely to break things if they modified anything.
+What that justifies is not keeping the engine inaccessible,
+but just having the hood closed by default, and having an easy way to open it.
+And indeed, since the 1990s, even the most reluctant vendors of computer systems
+have learned that for their system to remain relevant,
+they needed to acquire and keep the mindshare of programmers,
+and had to provide free development tools and cultivate a healthy community.
+
+Even programmers only care about a narrow aspect of the system at any given time,
+and may only be proficient to modify but a small subset of it.
+
+That's a good reason to keep the engine under a closed hood that is locked by default.
+A readily available 
+
+free software: source, but not at runtime
+
 That might not be reason to make the tuning wholly forbidden;
 and indeed, if no one but patented technicians could open the hood,
 then not only would repairs be much more expensive than they are now for the average user,
 but there wouldn't be new generations of passionate people
 developing their taste for the art to make good technicians
 and invent the engines of the future.
-but it's a good reason to make a closed 
 
 
 @section{Meet me in the middle}

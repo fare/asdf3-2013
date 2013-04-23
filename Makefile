@@ -22,6 +22,7 @@ PDF: pdf ${ae}.PDF
 	scribble --dest-name $@ --pdf $<
 
 ${ae}.html: ${ae}.scrbl ${src}
+%.html: %.scrbl utils.rkt
 	scribble --dest-name $@ --html $<
 
 %.latex: %.scrbl ${src}

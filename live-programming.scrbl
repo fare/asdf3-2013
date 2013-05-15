@@ -2,22 +2,25 @@
 
 @(require scribble/base "utils.rkt")
 
-@title{Live Programming vs Dead Programs}
+@title{Live Computing vs Dead Software}
 
 Most hackers these days are somewhat familiar with the Unix tradition,
 but mostly ignorant of Lisp Lore.
-p@(if (multiple-sections)
+@(if (multiple-sections)
 @list{This section of the document, as a short digression,}
 @list{This short essay})
 tries to describe the general difference in spirit
 between Lisp and Unix,
-from which springs the difference in resulting software:
+from which springs the difference not just in resulting software
+but in pervasive culture:
 @emph{live computing} systems vs
 @hyperlink["http://wiki.squeak.org/squeak/2950"]{Cult-of-Dead} computer systems,
 as Lisp and Smalltalk programmers often describe the difference.
 
 I will be deliberately exaggerating the picture and painting with a big brush,
 to make the big picture more obvious.
+The gentle reader will easily figure the shades of grey
+to those black and white outlines.
 
 @(if (multiple-sections)
 @list{You may skip this section if you are already familiar with the concept.}
@@ -25,7 +28,13 @@ to make the big picture more obvious.
 @(ASDF) by contrasting it with @(Make), but took a life of its own.})
 
 
-@section{Live Programming}
+@section{Computing vs Computers}
+
+@emph{Computer Science is no more about computers than astronomy is about telescopes.}
+— E. W. Dijkstra.
+
+
+@subsection{Live Computing}
 
 A live computing system is designed with
 the user as an active part of the software development feedback loop.
@@ -40,10 +49,10 @@ themselves refined from the interaction.
 knows there is no difference between using and programming.}
 Fixing, improving, extending or configuring the system
 are all but incremental forms of software development,
-indistinguishable and unsegregated from other programming activities.
+indistinguishable and unsegregated from other computing activities.
 
 For an effective user experience,
-the programming system is made interactively available
+the computing system is made interactively available
 in a dynamic homoiconic high-level language,
 in which code and data persist transparently.
 @itemlist[
@@ -81,7 +90,7 @@ in which code and data persist transparently.
   @item{
     @emph{Homoiconicity} means that code itself is represented as data
     that can be easily expressed and manipulated by the programming language,
-    such that the user can use the programming power of the system
+    such that the user can use the computing power of the system
     to extend and further shape the system,
     as opposed to having to either do things painfully by hand
     or having to reimplement large swaths of the system from scratch.
@@ -113,7 +122,7 @@ as a way to extend the reach of the user,
 and from which new functionality grows bottom up.
 
 
-@section{Dead Programs}
+@subsection{Dead Programs}
 
 A cult-of-dead computer system is organized all along
 according to opposite principles.
@@ -228,7 +237,7 @@ from which flows all meaning and all value,
 to be enforced against stray subordinates.
 
 
-@section{IF U SO GOOD, Y U NO WIN?}
+@subsection{IF U SO GOOD, Y U NO WIN?}
 
 Of course, this unflattering view of mainstream computer systems
 is purposefully one-sided and exaggerated.
@@ -236,7 +245,7 @@ That's the whole point:
 to make it painfully obvious
 what the proponents of live computing systems want,
 and what they reject about mainstream computer systems.
-But the point won't be complete
+On the other hand, the point won't be complete
 unless and until we find the non-evil justifications
 behind the current state of affairs:
 we need to acknowledge the strength and the achievements of mainstream computer systems
@@ -245,7 +254,7 @@ and we need to account for the weaknesses and failures of live computing systems
 Then we may see how both approaches do or may cope with their respective limitations,
 and what they can learn from the other approach.
 
-An excuse that many proponents of Live Computing will use to explain
+An excuse that many proponents of live computing will use to explain
 their relative failure on the market is that
 the historic success of cult-of-dead computer systems is largely due to extrinsic factors
 such as massive support from government and big corporations,
@@ -267,7 +276,7 @@ metaprogramming techniques, reflection, and dynamic features.
 But that excuse is also a cop out, unless we examine the reasons
 why these external factors play
 in favor of cult-of-dead computer systems rather than live computing systems.
-Indeed, if live programming makes for vastly increased productivity,
+Indeed, if live computing makes for vastly increased productivity,
 wouldn't it be advantageous to corporations and governments that adopt it
 and reap the productivity benefits?
 One immediate advantage that the dead program approach has been having so far is that
@@ -292,7 +301,26 @@ even at the cost of technically inferior solutions
 warped to suit their ways of thinking.
 At root therefore is a psychological tension co-substantial with division of labor itself.
 
-Now, whatever their technical shortcomings and the non-technical factors
+Now, dead programs also have an important property,
+that makes them significantly more amenable to some kinds of analyses than live programs:
+they are dead.
+That is, their behavior is cast in stone in ways that it isn't by definition in a live program.
+Therefore, whichever user or meta-program analyses a dead program
+can reach answers that are not going to be randomly invalidated
+by some future action by the user.
+This is quite practical especially in cases
+where the program is supposed to run without supervision,
+whether on the computer of an "end-user" unable or unwilling to program,
+or without human interaction at all.
+Oh, certainly, a "super-user" might modify the software anyway;
+or the hardware itself may experience failure, may be tampered with,
+or be otherwise decommissioned and replaced.
+So any prediction made based on analyzing the dead program
+is conditional on the program being maintained running in a suitable environment.
+Still, predictions under reasonable assumptions
+can be are much better than "anything goes".
+
+Whatever their technical shortcomings and the non-technical factors
 that went into making them dominant on the technical scene,
 it is a fact that cult-of-dead computer systems have captured
 the larger part of the programmer mindshare.
@@ -355,57 +383,95 @@ As the problems that people try to solve with software get more elaborate,
 programmers of live computing systems will hopefully start
 investing more energy in collaboration skills,
 whereas programmers of cult-of-dead computer systems will hopefully
-adopt more of the productive paradigm of live programming.
+adopt more of the productive paradigm of live computing.
 But there's a lot of room for progress either way so far.
-
 
 @section{Meet me in the middle}
 
-Live programming and dead programs are paradigms, points of view.
+Live computing and dead programs are paradigms, points of view.
 Actual software fits somewhere in between,
-and many systems the design and history of which are rooted in live programming
+and many systems the design and history of which are rooted in live computing
 have adopted innovations from cult-of-dead computer systems, and the other way around.
 Let's reexamine the opposition between those two paradigms in this light.
 
-@bold{XXX XXX TO BE CONTINUED XXX XXX}
+@subsection{Transparence and Opacity}
 
-@XXX{
-Regarding Transparence and Opacity,
-it is a fact most people, most of the time, have no desire to tune their engine;
-indeed, not only are they not proficient enough to do it,
-they are only likely to break things and harm themselves if they modify anything.
-However, what that justifies is not keeping the engine inaccessible,
-it's just having the hood closed by default, yet having an easy way to open it.
-Indeed, the engine may have to be serviced eventually;
+No system can be afford to be completely opaque.
+Indeed, every engine has to have been designed to begin with,
+and may have to be serviced eventually;
 wholly disabling access makes an otherwise fixable system an expensive piece of junk,
-whereas restricting access only to technicians member of a monopoly
+whereas restricting access only to patented technicians, members of a monopoly,
 will mean much more expensive and bad quality service than users would otherwise get;
 and anything that reduces the value to consumers eventually reduces
 what they are ready to pay to producers.
+Moreover, preventing the technically proficient from poking at the insides of the system
+means you lose mindshare amongst the proficient,
+who won't be available to service your customers,
+who'll get familiar with other systems instead,
+will invent enhancements to these other systems, and
+when they get management positions will adopt these other systems with which they are familiar.
 
-
-and least you lose your mindshare
-
-And indeed, since the 1990s, even the most reluctant vendors of computer systems
+Since the 1990s, even the most reluctant vendors of computer systems
 have learned that for their system to remain relevant,
 they needed to acquire and keep the mindshare of programmers,
 and had to provide free development tools and cultivate a healthy community.
+Power users have largely adopted Open Source Software for most of their infrastructure,
+whereby the source code is available and can be copied, modified and redistributed.
+This legal right to redistribute is more than many live computing systems of yore
+used to provide, and without strings attached,
+which lowers the economic cost of contributing modifications,
+and leads to more third-party modifications
+despite the increased difficulty of modifying dead computer systems.
+At the same time, the modifications made possible by Open Source
+do not generally apply to the running live system, and therefore
+do nothing to improve the immediate development feedback loop of programmers
+or empower the marginally proficient user.
 
+Conversely, it is a fact most people, most of the time,
+have no desire to tune their engine;
+indeed, not only are they not proficient enough to do it,
+they are only likely to break things and harm themselves if they modify anything.
+Having innards of the system easily visible, accessible and modifiable
+while not caring about them is not just an ugly aesthetic distraction:
+it's an attractive nuisance.
+It's inviting trouble without bringing any actual value.
+Alan Perlis said that "A programming language is low level
+when its programs require attention to the irrelevant".
+If the programming system constantly (or randomly) requires
+attention to things the user doesn't care about,
+rather than abstract them away, then it is actually low-level,
+and not high-level.
+"Any time you're asking the user to make a choice they don't care about,
+you have failed the user" — Jeff Atwood
+
+The solution is thus to keep the hood closed
+and let users both abstract over details (which should be the default)
+while having an easy way to open up the innards of the engine when needed.
+And of course, since many people are each interested in small, different, parts
+of a big complex system, there should be 
+
+It remains that even in a live computing system that vows to be transparent,
+the details that the user 
+
+@bold{XXX XXX TO BE CONTINUED XXX XXX}
+
+@subsection{Homoiconicity and Dualism}
+
+@subsection{Dynamic and Static Approaches}
+
+@subsection{Persistence and Impermanence}
+
+@subsection{High-Level and Low-Level}
+
+@section{Reconciling the Live and the Dead}
+
+Human interaction doesn't scale. Ergo, we must accommodate dead programs.
+
+Human interaction is scarce. Ergo, we must accommodate live programming.
+
+@XXX{
 Even programmers only care about a narrow aspect of the system at any given time,
 and may only be proficient to modify but a small subset of it.
-
-That's a good reason to keep the engine under a closed hood that is locked by default.
-A readily available
-
-free software: source, but not at runtime
-
-That might not be reason to make the tuning wholly forbidden;
-and indeed, if no one but patented technicians could open the hood,
-then not only would repairs be much more expensive than they are now for the average user,
-but there wouldn't be new generations of passionate people
-developing their taste for the art to make good technicians
-and invent the engines of the future.
-
 
 Live computing... with how little you need initially,
 that you can grow from.
@@ -417,7 +483,6 @@ it is possible to explicitly restrict interaction
 for delivery in hostile environment,
 or to otherwise extract an "application" from the development system,
 but that's not the default.
-
 
 Of course, these are all a matter
 of a starting points and an attitude,
@@ -443,7 +508,6 @@ Greenspunning
 Lisp by and large still sucks at whole-process virtualization;
 but it's getting there, with such things as Places in Racket.
 
-
 the only long-lived artefacts are the files on the filesystem.
 The intent is for most programs
 to be simple short-lived computations,
@@ -451,8 +515,6 @@ with some input and some output.
 There may be a few limited-purpose "daemons" running in the background
 to run various system services, but they too are prepared to die at any moment,
 and do not carry any state beyond what is persisted in files.
-
-
 
 Unix, having started as a virtualization
 of the bad old days of batch processing
@@ -476,4 +538,6 @@ a paradigm where programs are dead things,
 to which they contrast with pride their
 
 Recreating features by piling on layers of complexity.
+
+
 }

@@ -45,10 +45,6 @@ Thus, for most Lispers in most cases, the bug might never manifested
 except in transient occurrences that naturally disappear
 as part of their normal programming workflow.
 
-
-use of CALL-WITH- style reduces the friction.
-
-
 Kalman Reti informed me that the Symbolics @cl{SCT} (System Construction Tool),
 a successor to said original, had this bug fixed decades ago,
 and indeed it provides a @cl{:definitions} dependency that does the right thing,
@@ -104,7 +100,6 @@ and software in general.
 You may freely skip the historical and/or technical sections
 that do not interest you, and jump straight to the conclusion.
 Or you may stay for a ride along the history and guts of @(ASDF).
-
 
 MENTION the recompile and retry restart
 

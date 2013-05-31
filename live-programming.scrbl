@@ -433,8 +433,8 @@ indeed, not only are they not proficient enough to do it,
 they are only likely to break things and harm themselves if they modify anything.
 Having innards of the system easily visible, accessible and modifiable
 while not caring about them is not just an ugly aesthetic distraction:
-it's an attractive nuisance.
-It's inviting trouble without bringing any actual value.
+it's an attractive nuisance;
+it's inviting trouble without bringing any actual value.
 Alan Perlis said that "A programming language is low level
 when its programs require attention to the irrelevant".
 If the programming system constantly (or randomly) requires
@@ -444,20 +444,64 @@ and not high-level.
 "Any time you're asking the user to make a choice they don't care about,
 you have failed the user" — Jeff Atwood
 
-The solution is thus to keep the hood closed
-and let users both abstract over details (which should be the default)
-while having an easy way to open up the innards of the engine when needed.
-And of course, since many people are each interested in small, different, parts
-of a big complex system, there should be 
-
-It remains that even in a live computing system that vows to be transparent,
-the details that the user 
-
-@bold{XXX XXX TO BE CONTINUED XXX XXX}
+The solution is thus to keep the hood closed by default,
+and provide users with easy ways both
+to abstract over details they don't care about,
+and to open up the innards of the engine when needed.
+Of course, since many people are each interested in small, different, parts
+of a big complex system, this mechanism should allow not for a fixed option
+but for arbitrary points of view, themselves programmable by the user.
+The challenge, as compared to existing systems live or dead,
+is thus to provide a such "reflective" mechanism
+for the user to interactively explore and shape the semantics of the system.
 
 @subsection{Homoiconicity and Dualism}
 
+Regarding homoiconicity or dualism,
+we find that there too, actual live computing systems
+to achieve decent performance always rely on "optimizations"
+that enforce and take advantage of segregation of code and data,
+whereas for debugging, system administration and software upgrade,
+even the deadest of computer systems feature some way to pun between code and data.
+
+@bold{XXX XXX TO BE CONTINUED XXX XXX}
+
+Indeed, even in the system that most strictly enforces dualism,
+some homoiconicity is inevitable at some point in building the system.
+The system requires a meta-system to build it, install it, configure it, etc.,
+in which the systems' code is data manipulated by development tools;
+this meta-system itself must be programmable, and so needs a meta-meta-system, and so on.
+Because the regression cannot be infinite, for bootstrap purposes,
+one of these meta-systems needs allow the mixing code and data.
+The code has to read as data from storage files before its pages can be marked as "code"
+and loaded into a separate code cache;
+and the files had to be written as data by a compiler at some point.
+So these systems have a loop that allows to see code as data and data as code.
+
+Nevertheless, dead computer systems can make the development loop extremely long
+some bits being manipulated as data and the same bits being executed as code;
+at such times, it becomes generally too inefficient to use that loop directly
+for interactive development and instead any dynamic interaction will be based
+on implementing a virtual machine on top of the static code substrate,
+and only providing homoiconic interaction on top of that virtual machine.
+Besides, this very phenomenon is why we to program microprocessors to begin with,
+rather than configure FPGAs or wait for ASICs to be produced:
+we are indeed ready to sacrifice a lot of performance
+to achieve acceptable latency in the code mutation loop;
+for only through code mutation may we find the path that interests us
+through the space of possible computer behaviors,
+a space too large, indeed beyond astronomically large,
+for more than a tiny fraction of it to be statically encoded in any dead computer system.
+
+Thus even the deadest of systems possesses ways to work around its lack of homoiconicity.
+Conversely, even the livest of systems possesses ways to neatly separate 
+
+
+
+
 @subsection{Dynamic and Static Approaches}
+
+Thus can developers automate the drudgery of writing, building, testing and debugging the code,
 
 @subsection{Persistence and Impermanence}
 
@@ -465,9 +509,25 @@ the details that the user
 
 @section{Reconciling the Live and the Dead}
 
-Human interaction doesn't scale. Ergo, we must accommodate dead programs.
+The same general argument applies to all attributes
+that characterize live and dead computing systems,
+which can be reduced to Alan Perlis's famous epigram,
+"One man's constant is another man's variable".
+Live and dead are two opposite points of view
+that each are useful in their respective context:
+where the code is variable versus where it is constant.
 
-Human interaction is scarce. Ergo, we must accommodate live programming.
+The underlying reality behind both points of view is that
+the interaction with humans proficient enough to create useful software
+is itself the ultimate scarce resource in software engineering.
+At one extreme, this means we need to support Live Computing
+as a way to leverage this scarcest of resources at development time.
+At the other extreme, this means that human interaction doesn't scale
+and we need to support Dead Computers as the common case at runtime.
+
+A better system would allow to smoothly adjust from one to the other,
+so a programmer can have a live interaction with the parts he's interested in
+while the rest of the system can run predictably as a dead system.
 
 @XXX{
 Even programmers only care about a narrow aspect of the system at any given time,

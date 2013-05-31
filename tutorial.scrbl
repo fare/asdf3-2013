@@ -16,6 +16,18 @@
 
 @title{@(ASDF) Tutorial}
 
+ASDF (Another System Definition Facility) has been the de facto standard
+Common Lisp build system for over ten years.
+I recently rewrote it completely, several times,
+all along mostly preserving backwards compatibility.
+The latest incarnation, ASDF 3, in addition
+to fixing deep design bugs older than ASDF itself,
+also includes extensive portability library, UIOP,
+not to be confused with an existing parallelizing extension, POIU.
+I will show how to use ASDF, explain the recent improvements, and
+discuss the challenges of writing portable Common Lisp programs
+and what that means for the past and future of Lisp.
+
 <Xach> I would like more scenario-driven examples,
 e.g. "If you have a piece that has to be compiled via a separate process,
 here's how the system file can help you do it."
@@ -46,6 +58,8 @@ call the following with @code{sh avg.lisp 1 2 3 4}:
 @L{(defun average (list) (/ (reduce '+ list :initial-value 0) (length list)))}
 @L{(format t "~G~%" (average (mapcar 'parse-integer (cddr sb-ext:*posix-argv*))))}]
 
+Load scripts. Initialization and setup.
+
 This is all good and well, but comes with limitations:
 without using @(ASDF),
 you can't use the many free software libraries that rely on it;
@@ -71,6 +85,16 @@ are provided by your particular implementation.
 
 @subsection{Output Translations}
 
+@subsection{Using Quicklisp and clbuild}
+
+@subsection{Finding Libraries}
+
+How do I find a library that does what I want?
+
+Where do I download it?
+
+@subsection{Downloading Libraries}
+
 @section{Creating Basic ASDF Systems}
 
 @subsection{Simple ASDF File}
@@ -79,9 +103,102 @@ are provided by your particular implementation.
 
 @subsection{Serial Dependencies}
 
+Scope of :serial t is the current module or system,
+not its submodules or systems.
+
+Serial parallel by nesting modules.
+:pathname ""
+
 @subsection{Explicit Dependencies}
+
+foo/bar
+
+../sibling/baz
 
 @subsection{Modules}
 
+@subsection{Other files}
+
+README
+
+LICENSE
+
+TODO
+
+.git
+
+@subsection{Packages}
+
+traditional one-per-system (or per subsystem, however defined)
+
+interface package versus implementation package (possibly two systems, too)
+
+one-package-per-file quickbuild style
+
+uiop:define-package vs defpackage
+
+@subsection{Using Quickprojects}
+
 @section{Advanced ASDF Systems}
+
+@subsection{Character Encodings}
+
+@subsection{Finalizers}
+
+@subsection{Using Extensions: CFFI Grovel}
+
+@subsection{Load-only class}
+
+Beware: defeats executable creation!
+
+Maybe instead you want run-time evaluation
+(foo '(some data))
+or even
+(eval '(some expression))
+
+@section{The ASDF object model}
+
+@subsection{Components, Operations, Actions}
+
+Components describe how your source code is organized.
+
+Operations describe processes or stages of processing of a component.
+
+Actions are pairs of an operation and a component on which to effect the operation.
+
+@emph{The dependency graph is a graph of actions, not of components.}
+
+@subsection{Lisp Components}
+
+system, module
+
+cl-source-file
+(also cl-source-file.lsp, cl-source-file.cl)
+
+@subsection{Lisp Operations}
+
+load-op, compile-op. Propagate downward.
+
+prepare-op. Propagate upward; Also sideway load-op of dependencies.
+
+@subsection{Static Plan then Act}
+
+Traverse.
+
+sequential-plan.
+
+POIU.
+
+@section{Troubleshooting}
+
+@subsection{Backtrace}
+
+Size: what is the biggest solution? the smallest?
+
+@subsection{Trace}
+
+What should I trace?
+input
+
+@subsection{Error}
 

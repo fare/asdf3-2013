@@ -15,7 +15,7 @@
 |#
 
 (provide
-  code
+  ;;code
   backend html-only pdf-only
   multiple-sections include-asdf1-diffs include-asdf2-diffs
   cl clcode

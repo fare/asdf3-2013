@@ -84,16 +84,16 @@
 *** 198x: kmp's MIT AI Memo 801, rer's MIT AI TR 874.
 *** 198x: Symbolics =SCT=
 **** very elaborate, proprietary
-*** 1991: =MK-DEFSYSTEM=
+*** 1991: =MK-DEFSYSTEM=. 3.6i: 218kB.
 **** free, portable, but complex, feature poor, not extensible
 *** 199x: also =defsystem= of Allegro, LispWorks
 ***** proprietary, quality between =MK-DEFSYSTEM= and =SCT=.
-*** 2002: ASDF, by Dan Barlow et al.
-**** configurable, extensible, semi-portable
-*** 2010: ASDF2, by Faré et al.
+*** 2002: ASDF, by Dan Barlow et al. 1.85: 38kB. 1.369: 77kB.
+**** configurable, extensible, semi-portable.
+*** 2010: ASDF2, by Faré et al. 2.000: 138kB. 2.26: 198kB.
 **** robust, portable, usable, upgradable
 **** See "Evolving ASDF: More Cooperation, Less Coordination"
-*** 2013: ASDF 3, by Faré
+*** 2013: ASDF 3, by Faré. 2.27: 409kB. 3.0.1: 459kB.
 **** Fix 30-year old bug by making design coherent, new features
 *** Future: ASDF 4? =quick-build=? =XCVB=? Racket?
 
@@ -601,9 +601,11 @@ export CL_SOURCE_REGISTRY=/myapp/src/:/home/tunes/cl//:
 *** =TRAVERSE= walks the dependency graph and returns a plan
 **** Traditionally, a LIST of actions to perform in order
 **** Can be overridden. POIU returns a representation of the complete graph.
-*** =PERFORM-PLAN= walks the plan and =PERFORM='s each =ACTION=
+*** =PERFORM-PLAN= walks the plan calling =PERFORM-WITH-RESTARTS= on each =ACTION=
+**** =PERFORM-WITH-RESTARTS= sets up proper restarts and calls =PERFORM=
 
 ** The graph is computed by =COMPONENT-DEPENDS-ON=
+*** Misnamed: actions, not components, have dependencies.
 *** Arguments: an operation designator, component designator
 **** e.g. =(COMPONENT-DEPENDS-ON 'LOAD-OP '("this-software" "file2"))=
 *** CLOS: OO multi-dispatch on two arguments!
@@ -615,7 +617,7 @@ export CL_SOURCE_REGISTRY=/myapp/src/:/home/tunes/cl//:
 *** CLOS: inherit from mixins to achieve desired effects
 *** CLOS makes things very modular. Big win!
 
-** component classes
+** Component classes
 *** Usual classes
 #+BEAMER: \small
 #+BEGIN_SRC common-lisp
@@ -644,7 +646,7 @@ system
   cl-source-file-5
 #+END_SRC
 
-** operation classes
+** Operation classes
 *** =compile-op=, =load-op=
 *** =load-source-op=
 *** new in ASDF 3: =prepare-op=, =prepare-source-op= 
@@ -741,7 +743,7 @@ system
 **** Live style to metaprogram dead style programs.
 **** Zombie programs that resurrect on-demand.
 
-* ASDF 3 unleashed
+* ASDF 3: traversing dependencies correctly
 
 ** Solution: road to ASDF3
 *** Propagate timestamps
@@ -769,14 +771,17 @@ system
 *** =TRAVERSE= special cases such dependencies no more
 
 ** =TRAVERSE= was gutted out
-*** Refactored into reusable higher-order functions and objects
 *** Not only bug fixes, but much simpler, sensible semantics
-*** Now propagating timestamps
+**** Now propagating timestamps along a graph and that only
+**** Refactored into reusable higher-order functions and objects
 *** The object model now actually makes sense, and can be extended
-*** Was necessary to get =BUNDLE-OP= right portably
+**** No more implicit descending into children components
+**** Inherit from =downward-operation= for such propagation
+
+*** methods take a =plan= object, NIL for actual action
+**** Informed by interface-passing-style and experience with =POIU=
+**** Was necessary to get =BUNDLE-OP= right portably
 *** Many many thanks to antifuch's =POIU=
-*** No more implicit descending into children components
-*** Inherit from =downward-operation= for such propagation
 
 ** =COMPONENT-DEPENDS-ON= is now more powerful
 *** can express dependencies on arbitrary operation objects
@@ -804,6 +809,21 @@ system
 **** Dropped that attribute and the accompanying =:feature= feature
 **** /Limited/ backward compatibility just for =SB-GROVEL= and co.
 
+* ASDF 3's new DEFSYSTEM features
+
+** Performance
+*** ASDF3 ~70% slower than ASDF2
+**** Slightly faster when =*RESOLVE-SYMLINKS*= is false (default true)
+**** ASDF2 much faster than ASDF1: don't (ab)use LIST data structures
+*** Underneath, ASDF3 does much more work, correctly
+*** Cache expensive computations in hash-table in dynamic variable
+
+** One package per file
+*** ASDF 3 was rewritten in the style of =faslpath= and =quick-build=
+*** Each file has its own =DEFPACKAGE=
+*** Actually uses =UIOP/PACKAGE:DEFINE-PACKAGE= for hot-upgrade and reexport
+*** Future: actually support =faslpath= or =quick-build= dependencies?
+
 ** =CONCATENATE-SOURCE-OP=
 *** build a single Lisp file from all the source in a system
 *** Variant =MONOLITHIC-CONCATENATE-SOURCE-OP= to transclude dependencies
@@ -821,28 +841,16 @@ system
 *** Support for pre-compiled systems.
 *** SBCL patch to use that for contribs.
 
-** One package per file
-*** ASDF 3 was rewritten in the style of =faslpath= and =quick-build=
-*** Each file has its own =DEFPACKAGE=
-*** Actually uses =UIOP/PACKAGE:DEFINE-PACKAGE= for hot-upgrade and reexport
-*** Future: actually support =faslpath= or =quick-build= dependencies?
+** =PROGRAM-OP=
+*** create standalone executables on supported implementations
+*** Supported: =clisp ccl cmucl ecl lispworks sbcl scl=
+*** See example in =test/hello-world-example.asd=
+*** Uses image hooks above.
 
-* Also new in ASDF 3
-
-** Portability
-*** Updates on each and every implementation
-*** 9 active: =abcl allegro ccl clisp cmucl ecl lispworks sbcl scl=
-*** 6 mostly dead: =gcl2.6 genera xcl cormancl rmcl mkcl=
-*** Variants: =allegromodern lispworks-personal-edition ecl_bytecodes=
-*** Festering horror: pathnames.
-*** Worst: "logical" pathnames.
-
-** Performance
-*** ASDF3 ~70% slower than ASDF2 when =*RESOLVE-SYMLINKS*= is true
-*** Slightly faster when it is false
-*** Underneath, ASDF3 does much more work, correctly
-*** Cache expensive computations in hash-table in dynamic variable
-*** ASDF2 much faster than ASDF1: don't (ab)use LIST data structures
+** =BUILD-OP=
+*** A generic operation that will do the "right thing" for each system
+*** Not super supported yet, but the future(?)
+*** TODO: =generic-load-op=, =build-op=, etc.
 
 ** =FORCE= and =FORCE-NOT=
 *** Fixed =:force= to actually work as advertised by ASDF 1.
@@ -859,30 +867,6 @@ system
 *** Allows sensible way to define multiple systems in an =.asd= file.
 *** See =iolib.asd=
 *** Internals: grep for function =primary-system-name=
-
-** =PROGRAM-OP=
-*** create standalone executables on supported implementations
-*** Supported: =clisp ccl cmucl ecl lispworks sbcl scl=
-*** See example in =test/hello-world-example.asd=
-*** Uses image hooks above.
-
-** =BUILD-OP=
-*** A generic operation that will do the "right thing" for each system
-*** Not super supported yet, but the future(?)
-*** TODO: =generic-load-op=, =build-op=, etc.
-
-** Convenience methods
-*** Added to many exported generic functions:
-*** =input-files output-files component-depends-on operate= ...
-*** You can e.g.: =(input-files 'compile-op '(system1 "file1"))=
-*** Instead of =(input-files (make-instance 'compile-op) (find-component 'system1 "file1"))=
-*** Makes it much easier to interact with ASDF at the REPL
-*** Debugging ASDF extensions and modifications easier
-
-** inline-methods can now be unqualified
-*** Fixes lp#485393
-*** =(defsystem foo/test ... :perform (test-op (o s) (symbol-call :foo-test :run-tests)))=
-*** Also see: =(defsystem foo ... :in-order-to ((test-op (test-op foo/test))))=
 
 ** Deferred warnings
 *** Don't drop info on yet undefined functions
@@ -918,6 +902,14 @@ system
 *** Easier to manage versioning from master location
 *** See =poiu.asd=, =poiu.lisp=
 
+** Self-Upgrade
+*** ASDF 3 will always start by automatically upgrade itself
+*** Proviso against downgrade, with warning
+*** Just have the =asdf/= tree somewhere in your =source-registry=
+*** Only sane way to deal with potential upgrade
+*** Otherwise, if any recursive dependency loads ASDF, /kaboom/
+*** not algorithmically detectable: =.asd= files not declarative
+
 ** Deprecated =COMPONENT-PROPERTY=
 *** also the =:PROPERTIES= initarg of =DEFSYSTEM=
 **** Still works for now
@@ -929,26 +921,31 @@ system
 *** We added =:homepage :bug-tracker :mailto :long-name= to =defsystem=
 **** The only common metadata used, though never in the same way
 
-** Self-Upgrade
-*** ASDF 3 will always start by automatically upgrade itself
-*** Proviso against downgrade, with warning
-*** Just have the =asdf/= tree somewhere in your =source-registry=
-*** Only sane way to deal with potential upgrade
-*** Otherwise, if any recursive dependency loads ASDF, /kaboom/
-*** not algorithmically detectable: =.asd= files not declarative
-
-** =:ASDF3= in =*features*=
-*** =#+asdf3= present since pre-release ASDF 2.27
-*** Typically used in =:depends-on (#-asdf3 :asdf-driver)=
-*** Can protect code not supported in all of ASDF 1, ASDF 2
-*** No support for ASDF < 2.014.6 (original Quicklisp ASDF)
-
 ** =DEFSYSTEM= Internals
 *** Completely refactored. Many renamings after checking Quicklisp.
 *** Some sorry features were excised
 *** =OPERATION-DONE-P= is simplified and now well-specified
 *** =FIND-COMPONENT= will pass component objects through
 *** a corresponding =FIND-OPERATION= replaces =MAKE-SUB-OPERATION=
+
+** Convenience methods
+*** Added to many exported generic functions:
+*** =input-files output-files component-depends-on operate= ...
+*** You can e.g.: =(input-files 'compile-op '(system1 "file1"))=
+*** Instead of =(input-files (make-instance 'compile-op) (find-component 'system1 "file1"))=
+*** Makes it much easier to interact with ASDF at the REPL
+*** Debugging ASDF extensions and modifications easier
+
+** inline-methods can now be unqualified
+*** Fixes lp#485393
+*** =(defsystem foo/test ... :perform (test-op (o s) (symbol-call :foo-test :run-tests)))=
+*** Also see: =(defsystem foo ... :in-order-to ((test-op (test-op foo/test))))=
+
+** =:ASDF3= in =*features*=
+*** =#+asdf3= present since pre-release ASDF 2.27
+*** Typically used in =:depends-on (#-asdf3 :asdf-driver)=
+*** Can protect code not supported in all of ASDF 1, ASDF 2
+*** No support for ASDF < 2.014.6 (original Quicklisp ASDF)
 
 ** SLIME support
 *** Significantly enhanced (Use 2013-02 or later)
@@ -972,7 +969,7 @@ system
 *** Manual tests: =gcl2.6 genera lispworks-personal-edition=
 *** Untested on =cormancl mkcl rmcl=
 
-* ASDF 3 new portability layer
+* ASDF 3's new portability layer
 
 ** =UIOP=
 *** "Utilities for Implementation- and OS- Portability"
@@ -983,6 +980,14 @@ system
 *** Transcluded in =asdf.lisp= thanks to =MONOLITHIC-CONCATENATE-SOURCE-OP=
 *** Also more portable alias =:asdf-driver= for versions before 2.32
 *** Use it: =:depends-on (#-asdf3 :asdf-driver)= or if you insist =:depends-on (:uiop)=
+
+** Portability
+*** Updates on each and every implementation
+*** 9 active: =abcl allegro ccl clisp cmucl ecl lispworks sbcl scl=
+*** 6 mostly dead: =gcl2.6 genera xcl cormancl rmcl mkcl=
+*** Variants: =allegromodern lispworks-personal-edition ecl_bytecodes=
+*** Festering horror: pathnames.
+*** Worst: "logical" pathnames.
 
 ** CL Pathnames: THE HORROR!
 *** CLHS horribly misdesigned. Countless bugs in ASDF and CL implementations.
@@ -1032,7 +1037,7 @@ system
 *** Will initialize =*COMMAND-LINE-ARGUMENTS*= and more
 *** =REGISTER-IMAGE-RESTORE-HOOK=, =REGISTER-IMAGE-DUMP-HOOK=
 
-** =UIOP:RUN-PROGRAM=
+** =RUN-PROGRAM=
 *** replaces the broken old misdesigned =RUN-SHELL-COMMAND=
 **** Do NOT use =RUN-SHELL-COMMAND=
 **** Misdesign copied from =MK-DEFSYSTEM=
@@ -1064,21 +1069,25 @@ system
 *** =(DBG :tag expr1 expr2 ... last-expr)
 
 ** Also in =UIOP=
-*** filesystem: =chdir=, =with-temporary-file=, =directory-files=, etc.
-*** os: =getenv=, etc.
 *** common-lisp: compatibility with obsolete CL implementations
-
-** =INFERIOR-SHELL=
-*** Richer interface to =UIOP:RUN-PROGRAM=
-*** Distributed separately
-*** =(in-package :inferior-shell)=
-*** =(run `(pipe (echo ,(* 90 137)) (tr "1032" "HOLE")))=
-*** =(run `(grep "Mem" "/proc/meminfo") :output :lines)=
+*** utilities: plenty of general-purpose utilities
+*** filesystem: =chdir=, =directory-files=, etc.
+*** stream: =with-safe-io-syntax=, =format!=, =with-temporary-file=
+*** os: =getenv=, etc.
+*** configuration: help with configuration
 
 ** Documentation
 *** =UIOP= is only documented in docstrings
 
 * How to extend ASDF
+
+** How to implement an extension
+*** define new =component= and/or =operation= subclasses
+*** define appropriate methods:
+**** at least =component-depends-on=, =input-files=, =output-files=, =perform=
+**** also =operation-description= for debugging.
+*** see =cffi/grovel/asdf.lisp=
+*** see =cl-protobufs/asdf-support.lisp=
 
 ** Troubleshooting ASDF
 *** Look at error messages
@@ -1092,10 +1101,6 @@ system
 *** Beware: defeats executable creation!
 *** Maybe instead you want run-time evaluation in your Lisp file:
 *** =(foo '(some data))= or even =(eval '(some expression))=
-
-** How to implement an extension
-*** see =cffi/grovel/asdf.lisp=
-*** see =cl-protobufs/asdf-support.lisp=
 
 ** Support other languages?
 *** Can they be loaded in-image?

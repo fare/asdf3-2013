@@ -16,7 +16,7 @@ PDF: pdf ${ae}.PDF
 	donuts.pl unhtml < $< | wc
 
 %.PDF: %.pdf
-	xpdf -z width -aa yes $<
+	evince $<
 
 %.pdf: %.scrbl ${src}
 	scribble --dest-name $@ --pdf $<
@@ -44,3 +44,5 @@ slides: asdf-slides.rkt utils.rkt
 long-slides: lil-slides-long.rkt utils.rkt
 	racket $<
 
+els-slides.pdf: els-slides.org
+	emacs -batch --visit=$< --funcall org-export-as-pdf

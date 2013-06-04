@@ -33,11 +33,10 @@
 (define-syntax (clblock stx)
   (syntax-parse stx
     [(_ #:line-numbers ln str ...)
-     #'@nested[#:style "smaller"]{
-        @codeblock[;;#:keep-lang-line? #f
+     #'@codeblock[;;#:keep-lang-line? #f
                    #:line-numbers ln
                    #:line-number-sep 3
-                   str ...]}]
+                   str ...]]
     [(_ str ...)
      #'(clblock #:line-numbers 0 str ...)]))
 
@@ -46,7 +45,7 @@
     [(_ str ...) #'(clblock #:line-numbers #f str ...)]))
 
 (define-syntax-rule (cl str ...)
-  @code[#|#:lang "cl"|# str ...])
+  @codeblock[#|#:lang "cl"|# str ...])
 
 (define (CL) "Common Lisp")
 

@@ -7,7 +7,7 @@
 @;TODO: Parameterize whether or not to include notes about ASDF1 and ASDF2
 @;TODO: Have CSS output hide it or not, a la Google 
 
-@(define-syntax L (syntax-rules () ((_ x ...) (smaller (code x ...)))))
+@(define-syntax L (syntax-rules () ((_ x ...) (smaller (codeblock x ...)))))
 @(define (P . x)
   (cond
     ((null? x) '())
@@ -52,7 +52,7 @@ or otherwise @L{C-c C-k} compile and load using
 @L{(defun average (list) (/ (reduce '+ list :initial-value 0) (length list)))}
 
 You could also make you code callable from the shell command-line;
-call the following with @code{sh avg.lisp 1 2 3 4}:
+call the following with @codeblock{sh avg.lisp 1 2 3 4}:
 
 @P[@L{":" ; exec sbcl --noinform --load "$0" --eval '(quit)' -- "$@"@"" # avg.lisp}
 @L{(defun average (list) (/ (reduce '+ list :initial-value 0) (length list)))}
@@ -201,4 +201,22 @@ What should I trace?
 input
 
 @subsection{Error}
+
+Suck less.
+suck less than loading files one by one.
+Sucks less than editing the load file of each of ten different libraries,
+each in different ways, to specify where to load the rest of the library,
+then editing a master load file to load each of these libraries.
+
+late 1970s, defsystem. Rule based.
+
+1980s. more declarative
+
+mkdefsystem. free version
+
+asdf: solves the loading issue. but sbcl only. not very usable
+
+asdf2: make it portable, robust
+
+asdf3: rewrite it to be conceptually coherent
 

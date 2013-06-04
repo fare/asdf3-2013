@@ -15,7 +15,7 @@ from which springs the difference not just in resulting software
 but in pervasive culture:
 @emph{live computing} systems vs
 @hyperlink["http://wiki.squeak.org/squeak/2950"]{Cult-of-Dead} computer systems,
-as Lisp and Smalltalk programmers often describe the difference.
+as Lisp and Smalltalk programmers often proudly describe the difference.
 
 I will be deliberately exaggerating the picture and painting with a big brush,
 to make the big picture more obvious.
@@ -154,13 +154,13 @@ where code and data are both ephemeral and opaque.
     what happens in the system;
     any details about the system are the domain
     of a separate caste of humans, the programmers;
-    even programmers are controlled by system administrators
+    even programmers are controlled by a caste of system administrators
     who configure and manage the system,
     ultimately enforcing the will of corporate and bureaucratic policy makers.
     Thanks to this opacity, computer systems can be neatly packaged
     into "devices", "applications" and "content" that can be sold
     to ignorant masses for passive consumption.
-    Technical opacity and legal protection by "IP" monopolies
+    Technical opacity as well as legal protection by "IP" monopolies
     make it hard to copy, modify and redistribute code,
     and thus keep the masses in check to extract resources from them
     while excluding small innovators and new competitors.
@@ -170,14 +170,14 @@ where code and data are both ephemeral and opaque.
     "code" is whatever programmers manipulate, to be delivered into applications;
     "data" is whatever applications manipulate, with or without user interaction;
     never the twain shall meet.
-    In particular, never shall the user interact with the code;
+    In particular, never shall the user interact with the code
     (even their own data they can only access
-    but through the mediation of the application
+    but through the mediation of controled applications
     (assuming their license is up to date)).
     Programming happens using special tools unavailable to normal users.
     By the time they are actually used, programs are dead things,
     the code of which is cast in stone, sealed in a coffin,
-    and impossible to see much less modify, fix or extend.
+    and impossible to see, much less modify, fix or extend.
     This hierarchy may happen on several levels;
     programmers themselves are to use the languages provided by their own masters,
     and any automatic program-manipulation is to done by a different caste of programmers.
@@ -194,7 +194,7 @@ where code and data are both ephemeral and opaque.
     It is extremely painful to share state between activities,
     as data must be marshalled and unmarshalled and its communication must follow
     special purpose protocols with a matching pair of implementations
-    for both side of each communication.
+    for both sides of each communication.
   }
   @item{
     @emph{Impermanence} is the norm:
@@ -209,10 +209,10 @@ where code and data are both ephemeral and opaque.
     and reading them back in each process at startup.
     Saving data is essentially unreliable,
     even more so when data is to be shared between applications on the same machine,
-    even more so between multiple machines.
+    yet more so between multiple machines.
     Code also is ephemeral, and it is usually impossible
     to run the same program after a few years,
-    often making old data useless even if preserved.
+    often making old data useless even if painfully preserved.
   }
   @item{
     @emph{Low-level} languages are the nail on the coffin
@@ -249,7 +249,7 @@ On the other hand, the point won't be complete
 unless and until we find the non-evil justifications
 behind the current state of affairs:
 we need to acknowledge the strength and the achievements of mainstream computer systems
-despite their total or partial embrace of the cult-of-dead computer paradigm,
+despite their total or partial embrace of the cult-of-dead computer paradigm;
 and we need to account for the weaknesses and failures of live computing systems.
 Then we may see how both approaches do or may cope with their respective limitations,
 and what they can learn from the other approach.
@@ -270,7 +270,7 @@ the formerly distinctive features of live computing systems,
 even though they won't and indeed can't adopt it fundamental paradigm:
 object orientation and integrated development environments in the 1980s,
 type safety and garbage collection in the 1990s,
-and since then the slow percolation of higher-order functions,
+and the slow percolation of higher-order functions,
 metaprogramming techniques, reflection, and dynamic features.
 
 But that excuse is also a cop out, unless we examine the reasons
@@ -318,7 +318,7 @@ or be otherwise decommissioned and replaced.
 So any prediction made based on analyzing the dead program
 is conditional on the program being maintained running in a suitable environment.
 Still, predictions under reasonable assumptions
-can be are much better than "anything goes".
+can be much better than "anything goes at the slightest change".
 
 Whatever their technical shortcomings and the non-technical factors
 that went into making them dominant on the technical scene,
@@ -339,7 +339,7 @@ Meanwhile, developers of cult-of-dead computer systems by necessity have had to 
 in social infrastructure to work together, because their systems are so bad
 that they couldn't build anything of interest alone, anyway.
 So we see again a psychological tension,
-not just between programmers and managers, but among programmers between each other programmer.
+not just between programmers and managers, but between programmers and other programmers.
 
 Finally, another, related, technical edge
 that cult-of-dead computer systems have gained and preserved
@@ -347,10 +347,11 @@ is in most topics related to auditability of the code:
 dead programs, precisely because they don't change
 and can have their meaning not depend on changing context,
 can more easily be isolated, duplicated, tested, analyzed, quality-controlled,
-sandboxed, reasoned about, proven to satisfy some safety property,
-their bugs reproduced, etc.
+sandboxed, virtualized, compiled, reasoned about,
+proven to satisfy some safety property, their bugs reproduced, etc.
 A live computing system, by contrast, can easily become "autistic",
-the meaning of the evolving body code crucially depending on changes to the environment,
+the meaning of the evolving body code crucially relying
+on unspecified assumptions about the environment
 or worse, tangled with implicit behavior that has been accumulated
 in the "bootstrapped" image of the live computing system across its development history;
 such "autistic" systems can be very hard for anyone but the historical authors to understand,
@@ -458,19 +459,23 @@ for the user to interactively explore and shape the semantics of the system.
 @subsection{Homoiconicity and Dualism}
 
 Regarding homoiconicity or dualism,
-we find that there too, actual live computing systems
-to achieve decent performance always rely on "optimizations"
-that enforce and take advantage of segregation of code and data,
-whereas for debugging, system administration and software upgrade,
-even the deadest of computer systems feature some way to pun between code and data.
+we find that actual live computing systems,
+to achieve decent performance, always rely on "optimizations" such as dynamic compilation
+that take advantage of an enforced segregation of code and data,
+within contexts that are invalidated when the code is modified.
+Much of the advantages of dead systems can similarly be achieved
+by creating such contexts inside which relevant fragments of code are dead, immutable,
+or rather immuted, with any attempt to mutate the code,
+if found to be itself valid, invalidating the relevant context before to create a new one,
+at the relatively small cost of possibly frequent but simple validity checks
+and possibly expensive but rare context switch.
 
-@bold{XXX XXX TO BE CONTINUED XXX XXX}
-
-Indeed, even in the system that most strictly enforces dualism,
+Conversely, even in a computer system that most strictly enforces dualism,
 some homoiconicity is inevitable at some point in building the system.
-The system requires a meta-system to build it, install it, configure it, etc.,
-in which the systems' code is data manipulated by development tools;
-this meta-system itself must be programmable, and so needs a meta-meta-system, and so on.
+Indeed, the system requires a meta-system
+to build it, debug it, install it, configure it, upgrade it, etc.
+In this meta-system, the system's code is data manipulated by development tools.
+This meta-system itself must be programmable, and so needs a meta-meta-system, and so on.
 Because the regression cannot be infinite, for bootstrap purposes,
 one of these meta-systems needs allow the mixing code and data.
 The code has to read as data from storage files before its pages can be marked as "code"
@@ -484,24 +489,39 @@ at such times, it becomes generally too inefficient to use that loop directly
 for interactive development and instead any dynamic interaction will be based
 on implementing a virtual machine on top of the static code substrate,
 and only providing homoiconic interaction on top of that virtual machine.
-Besides, this very phenomenon is why we to program microprocessors to begin with,
+Besides, this very phenomenon is why we program microprocessors to begin with,
 rather than configure FPGAs or wait for ASICs to be produced:
 we are indeed ready to sacrifice a lot of performance
 to achieve acceptable latency in the code mutation loop;
-for only through code mutation may we find the path that interests us
+for only through code mutation may we navigate as we desire
 through the space of possible computer behaviors,
 a space too large, indeed beyond astronomically large,
 for more than a tiny fraction of it to be statically encoded in any dead computer system.
 
-Thus even the deadest of systems possesses ways to work around its lack of homoiconicity.
-Conversely, even the livest of systems possesses ways to neatly separate 
-
-
-
+Therefore even the deadest of systems possesses ways to work around its lack of homoiconicity.
+And these workarounds soon enough become favorite techniques for all decent programmers.
+Thus the success of "scripting" languages that can bring life to otherwise dead systems:
+even in the clumsiest of static programming systems that doesn't make it easy
+to interactively manipulate high-level data structures,
+one can write an interpreter for such a scripting language,
+using strings of characters as a data representation for code,
+and from there on your system has life.
+Indeed, much of the success of Unix,
+besides the legal and technical ease of porting it,
+can be attributed to the interactive expressive power of its shell,
+as compared to the batch command processors of rival systems;
+the unix shell was the first massively successful scripting language,
+despite it being a haphazard pile of ill-conceived features
+that brings horror to the heart of any programming language designer.
 
 @subsection{Dynamic and Static Approaches}
 
-Thus can developers automate the drudgery of writing, building, testing and debugging the code,
+@bold{XXX XXX TO BE CONTINUED XXX XXX}
+
+Dead programming systems may have a static language at their heart (such as C for Unix),
+programmers have learned to program them mostly with dynamic "scripting" language,
+for only with such dynamic tools can developers automate the drudgery
+of writing, building, testing and debugging the code.
 
 @subsection{Persistence and Impermanence}
 
@@ -592,12 +612,7 @@ Instead, you have huge behemoths of fancy graphical applications,
 each its own mostly isolated process,
 that cannot interact well if at all with other applications.
 
-Lisp and Smalltalk programmers often deride this computing paradigm as
-the
-a paradigm where programs are dead things,
-to which they contrast with pride their
 
 Recreating features by piling on layers of complexity.
-
 
 }

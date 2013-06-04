@@ -63,24 +63,30 @@
   ~
   @t{Why this design})
 
+
 (tslide "What"
-  @t{@[CL] build system}
+  @para{@[CL] build system}
   ~
-  @t{@emph{de facto} standard}
+  @para{@it{de facto} standard}
   ~
   @t{Recent successor to ASDF})
+
+;;; XXX OK
 
 (tslide "What"
   @t{In a file foo.asd:}
   ~
-  @clcode{
+  @codeblock{
    (defsystem foo
      :depends-on (bar baz)
      :components
      ((:file "file1")
       (:file "file2" :depends-on ("file1"))
       (:file "file3" :depends-on ("file1"))
-      (:file "file4" :depends-on ("file2" "file3"))))})
+      (:file "file4" :depends-on ("file2" "file3"))))}
+  )
+
+#|
 
 (tslide "When"
   @t{2002-2004 Dan Barlow et al. ASDF 1.85}
@@ -198,6 +204,8 @@
   @t{require asdf, load an upgrade}
   @t{configure asdf, twice!})
 
+;;; XXX BAD
+
 (tslide "Using CL-Launch"
   #|
   @verbatim{
@@ -205,7 +213,6 @@
 ":" ; DIR="$(cd $(basename "$0");pwd)" ; exec cl-launch -l ccl -S "$DIR//:" -i "$0" -- "$@"
 (some lisp code)
 }|#)
-
 
 (tslide "Before ASDF"
   @t{Figure paths for each and every library}
@@ -510,3 +517,48 @@
   @t{gbbopen.asd is still pretty complex}
   ~
   @t{Really, any .asd file with non-defsystem forms.})
+|#
+
+#|
+component
+  module
+    system
+  source-file
+    cl-source-file
+
+parent-component, child-component
+
+system
+  cl-source-file-1
+  cl-source-file-2
+  module1
+    cl-source-file-3
+    cl-source-file-4
+  cl-source-file-5
+
+input-files
+output-files
+
+output-translations: output-files :around method
+
+input-files: component-self-dependencies
+
+operation
+  selfward-operation
+  sideway-operation
+  downward-operation
+  upward-operation
+
+component-depends-on
+
+Frowned upon: directly depending on something in a different system.
+Not enforced. Some use cases may break (bundle).
+
+bundle-op
+  fasl-op
+
+TODO
+  generic-load-op
+  build-op
+
+|#

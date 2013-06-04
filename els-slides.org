@@ -938,8 +938,10 @@ system
 
 ** inline-methods can now be unqualified
 *** Fixes lp#485393
-*** =(defsystem foo/test ... :perform (test-op (o s) (symbol-call :foo-test :run-tests)))=
-*** Also see: =(defsystem foo ... :in-order-to ((test-op (test-op foo/test))))=
+*** Great for defining test-op methods:
+**** =(defsystem foo/test ... :perform (test-op (o s) (symbol-call :foo-test :run-tests)))=
+*** NB: Unhappily, this is works in ASDF 3 but is circular in ASDF2:
+**** =(defsystem foo ... :in-order-to ((test-op (test-op foo/test))))=
 
 ** =:ASDF3= in =*features*=
 *** =#+asdf3= present since pre-release ASDF 2.27
@@ -997,7 +999,7 @@ system
 **** Pray your filesystem doesn't contain files with =*= in name
 *** *FAIL:* even =MAKE-PATHNAME= isn't portable
 **** Host, device, =:unspecific=, wildcard escaping, etc.
-*** *FAIL:* even =MERGE-PATHNAME= isn't portable
+*** *FAIL:* even =MERGE-PATHNAMES= isn't portable
 **** Host and device defaulting *will* bite you eventually
 *** *FAIL:* No portability across implementations on a same OS
 *** *FAIL:* logical pathnames are unusable in practice. Avoid.
@@ -1066,7 +1068,7 @@ system
 *** load favorite debugging primitives in current package
 *** Put path to yours in =uiop/utility:*uiop-debug-utility*=
 *** See mine in =uoip/contrib/debug.lisp=
-*** =(DBG :tag expr1 expr2 ... last-expr)
+*** =(DBG :tag expr1 expr2 ... last-expr)=
 
 ** Also in =UIOP=
 *** common-lisp: compatibility with obsolete CL implementations

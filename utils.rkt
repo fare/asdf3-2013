@@ -2,20 +2,15 @@
 ;;-*- Scheme -*-
 
 (require
+  scribble/manual
   scribble/core
   scribble/decode
   scribble/base
   scriblib/autobib
-  scribble/manual
   scribble/bnf
   (for-syntax syntax/parse))
 
-#|
-(require
-|#
-
 (provide
-  ;;code
   backend html-only pdf-only
   multiple-sections include-asdf1-diffs include-asdf2-diffs
   cl clcode
@@ -44,8 +39,8 @@
   (syntax-parse stx
     [(_ str ...) #'(clblock #:line-numbers #f str ...)]))
 
-(define-syntax-rule (cl str ...)
-  @codeblock[#|#:lang "cl"|# str ...])
+(define (cl . str)
+  (apply tt str))
 
 (define (CL) "Common Lisp")
 

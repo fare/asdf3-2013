@@ -21,6 +21,8 @@ I will be deliberately exaggerating the picture and painting with a big brush,
 to make the big picture more obvious.
 The gentle reader will easily figure the shades of grey
 to those black and white outlines.
+Hopefully, she can then proceed to make her own black on white drawings,
+white on black chalkings, and paintings using a full color palette.
 
 @(if (multiple-sections)
 @list{You may skip this section if you are already familiar with the concept.}
@@ -187,9 +189,9 @@ where code and data are both ephemeral and opaque.
     since the goal is a dead program that must not evolve,
     programming languages use static types to structure their data,
     whereby the structure is assumed to never change.
-    This approach makes it easy to gain extra performance in the simple cases,
-    though often at the expense of safety,
-    and always comes at the expense of any possibility to evolve the running program,
+    This approach makes it easy to gain extra performance in the simple cases;
+    however, this gain is made at the expense of safety, expressiveness, or both,
+    in a way to precludes any possibility to evolve the running program,
     while also making it extremely hard to evolve the data.
     It is extremely painful to share state between activities,
     as data must be marshalled and unmarshalled and its communication must follow
@@ -246,11 +248,12 @@ to make it painfully obvious
 what the proponents of live computing systems want,
 and what they reject about mainstream computer systems.
 On the other hand, the point won't be complete
-unless and until we find the non-evil justifications
+unless and until we find the good justifications
 behind the current state of affairs:
 we need to acknowledge the strength and the achievements of mainstream computer systems
-despite their total or partial embrace of the cult-of-dead computer paradigm;
-and we need to account for the weaknesses and failures of live computing systems.
+despite their total or partial embrace of the cult-of-dead computer paradigm,
+and because of this embrace.
+We need to account for the weaknesses and failures of live computing systems.
 Then we may see how both approaches do or may cope with their respective limitations,
 and what they can learn from the other approach.
 
@@ -263,7 +266,8 @@ Now, these factors will persist as long as the cause persists,
 which means the foreseeable future.
 Yet, if as we allege live computing systems provide an edge in productivity,
 a strong secondary market in such systems may thrive,
-generating technological progress that gets incorporated into mainline cult-of-dead computer systems.
+generating technological progress
+that gets incorporated into mainline cult-of-dead computer systems.
 Live programmers will argue that this has already been happening,
 and that mainstream cult-of-dead computer systems have thusly adopted many of
 the formerly distinctive features of live computing systems,
@@ -307,7 +311,7 @@ they are dead.
 That is, their behavior is cast in stone in ways that it isn't by definition in a live program.
 Therefore, whichever user or meta-program analyses a dead program
 can reach answers that are not going to be randomly invalidated
-by some future action by the user.
+by some future action by the user or input from the environment.
 This is quite practical especially in cases
 where the program is supposed to run without supervision,
 whether on the computer of an "end-user" unable or unwilling to program,
@@ -318,7 +322,9 @@ or be otherwise decommissioned and replaced.
 So any prediction made based on analyzing the dead program
 is conditional on the program being maintained running in a suitable environment.
 Still, predictions under reasonable assumptions
-can be much better than "anything goes at the slightest change".
+can be much better than "anything goes at the slightest change",
+and the rare actions that invalidate those assumptions
+can be specially detected, logged and manually audited.
 
 Whatever their technical shortcomings and the non-technical factors
 that went into making them dominant on the technical scene,
@@ -336,7 +342,7 @@ by one person or one small team of people, and dies off
 when that person dies, retires, or changes interest, or
 when that group is dissolved for whatever combination of corporate or personal reasons.
 Meanwhile, developers of cult-of-dead computer systems by necessity have had to invest early on
-in social infrastructure to work together, because their systems are so bad
+in social infrastructure to work together, because their systems are so unproductive
 that they couldn't build anything of interest alone, anyway.
 So we see again a psychological tension,
 not just between programmers and managers, but between programmers and other programmers.
@@ -349,6 +355,7 @@ and can have their meaning not depend on changing context,
 can more easily be isolated, duplicated, tested, analyzed, quality-controlled,
 sandboxed, virtualized, compiled, reasoned about,
 proven to satisfy some safety property, their bugs reproduced, etc.
+Discrepancy from expected standards can be detected early and automatically.
 A live computing system, by contrast, can easily become "autistic",
 the meaning of the evolving body code crucially relying
 on unspecified assumptions about the environment
@@ -393,6 +400,10 @@ Live computing and dead programs are paradigms, points of view.
 Actual software fits somewhere in between,
 and many systems the design and history of which are rooted in live computing
 have adopted innovations from cult-of-dead computer systems, and the other way around.
+Or rather, software development occupies a continuum
+Homoiconicity and dualism are therefore two complementary points of view on programming,
+and an advanced enough programming system will allow users to seamlessly shift point of view.
+
 Let's reexamine the opposition between those two paradigms in this light.
 
 @subsection{Transparence and Opacity}
@@ -462,7 +473,8 @@ Regarding homoiconicity or dualism,
 we find that actual live computing systems,
 to achieve decent performance, always rely on "optimizations" such as dynamic compilation
 that take advantage of an enforced segregation of code and data,
-within contexts that are invalidated when the code is modified.
+within contexts that are invalidated when the code is modified,
+which is hopefully relatively infrequent.
 Much of the advantages of dead systems can similarly be achieved
 by creating such contexts inside which relevant fragments of code are dead, immutable,
 or rather immuted, with any attempt to mutate the code,
@@ -497,9 +509,12 @@ for only through code mutation may we navigate as we desire
 through the space of possible computer behaviors,
 a space too large, indeed beyond astronomically large,
 for more than a tiny fraction of it to be statically encoded in any dead computer system.
-
 Therefore even the deadest of systems possesses ways to work around its lack of homoiconicity.
 And these workarounds soon enough become favorite techniques for all decent programmers.
+
+
+@subsection{Dynamic and Static Approaches}
+
 Thus the success of "scripting" languages that can bring life to otherwise dead systems:
 even in the clumsiest of static programming systems that doesn't make it easy
 to interactively manipulate high-level data structures,
@@ -509,19 +524,47 @@ and from there on your system has life.
 Indeed, much of the success of Unix,
 besides the legal and technical ease of porting it,
 can be attributed to the interactive expressive power of its shell,
-as compared to the batch command processors of rival systems;
-the unix shell was the first massively successful scripting language,
+as compared to the batch command processors of contemporary rival systems:
+the unix shell was the first massively successful "scripting language",
 despite it being a haphazard pile of ill-conceived features
 that brings horror to the heart of any programming language designer.
+It is common practice nowadays that a large enough system
+written in a static programming language will have
+some kind of scripting language to extend it;
+the practice is so common that these days,
+there is no need to reinvent such languages from scratch,
+for there now exist many somewhat efficient implementations
+of somewhat reasonably designed dynamic language
+that can be easily "embedded" in such applications.
+Thus, dead programming systems may have a static language at their heart (such as C for Unix),
+programmers have learned to program them mostly with dynamic "scripting" language,
+for only with such dynamic tools can developers automate the drudgery
+of writing, building, testing and debugging
+both the application engine and higher-level programs that use this engine.
 
-@subsection{Dynamic and Static Approaches}
+Conversely, even the most dynamic programming languages
+quickly grow a "foreign function interface" to access functions and data structures
+written in low-level static languages available on the same underlying software architecture.
+Indeed, it is the ability to easily access functionality available in C libraries
+that made the success of Tcl, Perl, Python and Ruby as dynamic programming languages.
+The ability to call into a static language where performance or compatibility matters
+is an important feature for any dynamic language,
+whether it be inline assembly or call to C code written in separate files,
+and live programming systems will dynamically call a C compiler
+and link the resulting code in the current image if needed.
+There again, clumsy as they might be, many infrastructures exist to facilitate
+the development of such interfaces.
+Moreover, many dynamic programming languages also include the ability to write code
+in a special static programming dialect, with static types and other restrictions,
+which allows for extra performance and compatibility with low-level programs,
+at the expense of some combination of dynamicity, expressiveness, conciseness and safety.
+
 
 @bold{XXX XXX TO BE CONTINUED XXX XXX}
 
-Dead programming systems may have a static language at their heart (such as C for Unix),
-programmers have learned to program them mostly with dynamic "scripting" language,
-for only with such dynamic tools can developers automate the drudgery
-of writing, building, testing and debugging the code.
+
+If no computing, just result, not program.
+Something changes.
 
 @subsection{Persistence and Impermanence}
 

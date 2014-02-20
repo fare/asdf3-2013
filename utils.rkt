@@ -10,12 +10,7 @@
   scribble/bnf
   (for-syntax syntax/parse))
 
-(provide
-  backend html-only pdf-only
-  multiple-sections include-asdf1-diffs include-asdf2-diffs
-  cl clcode
-  XXX latin de_facto CL
-  ASDF ASDF1 ASDF2 ASDF3 ASDF-Install POIU XCVB DEFSYSTEM defsystem mk-defsystem Make)
+(provide (all-defined-out))
 
 (define backend (make-parameter '#:html))
 (define-syntax-rule (html-only x ...) (when (eq? (backend) '#:html) (list x ...)))
@@ -47,6 +42,7 @@
 (define (XXX . rest) '())
 (define (latin x) (emph x))
 (define (de_facto) @latin{de facto})
+(define (bydef . x) (emph x))
 
 (define (ASDF . x) @cl[(apply string-append "ASDF" (if (null? x) '() (cons " " x)))])
 (define (ASDF1) (ASDF "1"))
@@ -59,3 +55,9 @@
 (define (defsystem) @cl{defsystem})
 (define (mk-defsystem) @cl{mk-defsystem})
 (define (Make) @tt{Make})
+
+(define-cite ~cite cite-noun generate-bib)
+
+(define-syntax-rule (define-bib name stuff ...)
+  (define name (make-bib stuff ...)))
+

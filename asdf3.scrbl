@@ -27,9 +27,9 @@ less interested in Common Lisp itself.
 
 @section{Introduction}
 
-I'm pleased to announce that as of February 2013,
+I'm pleased to announce that as of 2013,
 Common Lisp is now on par with 1977 technology for building software!
-Indeed since release 2.27,
+Indeed since ASDF 2.27, released in February,
 @hyperlink["http://common-lisp.net/project/asdf/" (ASDF)]
 can now properly process @emph{and propagate} timestamps
 to rebuild dependencies as required;

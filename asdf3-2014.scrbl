@@ -11,7 +11,7 @@
 @conferenceinfo["ELS 2014" "May 5--6, Paris, France."]
 @copyrightyear{2014}
 
-@title{ASDF 3, or Why Lisp is Now an Acceptable Scripting Language}
+@title{@(ASDF3), or Why Lisp is Now an Acceptable Scripting Language}
 
 @abstract{
 @(ASDF), the @(de_facto) standard build system for @(CL),
@@ -69,20 +69,20 @@ that can depend on other components,
 and the build system transforms the transitive closure of these components
 into a working program.
 
-With the recent release of @(ASDF) 3 in May 2013,
+With the recent release of @(ASDF3) in May 2013,
 it has become possible to write @emph{portable} software in @(CL),
 that can do anything you can in any so-called "scripting" language:
 notably invoke other programs and capture their output,
 or be invoked by other programs and process command-line arguments;
-also being able to deliver the result as either small portably executable scripts
-or large, non-portable but self-contained binaries with no startup delay.
-Previously, key parts of a program had to be programmed or configured to match
+also being able to deliver programs as either small portably executable scripts
+or large non-portable but self-contained binaries that have no startup delay.
+Previously, key parts of a program had to be configured to match
 one's specific @(CL) implementation and specific software installation paths.
 Now, all of one's usual Unix scripting needs can be entirely fulfilled by @(CL),
 while benefitting from its efficient implementations, hundreds of software libraries, etc.
 The utility @tt{cl-launch} can help get Lisp programs be portably invoked.
 
-In a first part, we will describe the major changes in ASDF
+In a first part, we will describe the major changes in @(ASDF)
 since the original version 1 series.
 To make things easier to @(CL) programmers who have used the tool at some point,
 we break down improvements by major milestones.
@@ -103,12 +103,12 @@ and the way we could make them,
 illustrate what was wrong, and was right, about @(CL),
 so that growers of other programming languages may learn from the experience.
 
-@section{ASDF, Before and Now}
+@section{A History of @(ASDF)}
 
-@subsection{ASDF: Basic Concepts}
+@subsection{@(ASDF): Basic Concepts}
 
 @(ASDF) is a build system for @(CL):
-it helps developers divide software into a hierarchy of smaller @bydef{components},
+it helps developers divide software into a hierarchy of @bydef{components},
 and automatically generate a working program from all the source code.
 
 Top components are called @bydef{systems} in an age-old Lisp tradition,
@@ -122,73 +122,85 @@ in a same source code @bydef{repository}.
 Each system may depend on code from other systems,
 that may come from the same repository, or from a different repository.
 @(ASDF) itself has no notion of repositories,
-but other tools do, on top of @(ASDF):
+but other tools, on top of @(ASDF), do:
 Quicklisp @~cite[Quicklisp] will provide together
 systems from a same repository as a @bydef{release},
 and provide hundreds of releases as a @bydef{distribution},
-automatically downloading on demand
-requested systems and all their transitive dependencies.
+and automatically download on demand
+required systems and all their transitive dependencies.
 
-A system is itself organized in a hierarchy of @bydef{components}:
-each component may be either an individual source @bydef{file} or some kind
+A system is itself organized in a hierarchy of components,
+where each component may be either an individual @bydef{file},
 (usually, a @(CL) source file),
-or a @bydef{module} that recursively contains other components.
+or a @bydef{module} that may recursively contain other components.
 Modules may or may not directly fit the filesystem directory hierarchy.
+
 Each component may explicitly depend on other components.
-@(ASDF) ensures that before a component is compiled or loaded,
-all its declared dependencies have themselves been
-compiled and loaded in the current image and are up-to-date,
-with all their own transitive dependencies.
+Dependencies are typically files that contain definitions for
+packages, macros, variables, classes, generic functions,
+and any functions used at compile-time, notably during macro expansion.
 
-@XXX{
-To
-@(ASDF) is a tool to describe how Lisp source code is organized in systems, and how to build a system in term of
-actions that depend on previous actions.
+Building software is modeled as a direct acyclic graph of @bydef{actions},
+each action being a pair of an operation and a component.
+Unlike its predecessors, @(ASDF) makes a @bydef{plan} of all actions needed
+to obtain an up-to-date version of the build output,
+before it @bydef{performs} these actions.
+In @(ASDF) itself, this plan is a list of actions to be performed sequentially.
+But it is possible to write an extension that makes a complete graph
+of actions to be performed in parallel:
+this has been done as a small extension called @(POIU),
+that compiles files in parallel on Unix multiprocessors using @tt{fork}),
+and still loads them sequentially, to minimize latency.
+@note{
+  Initially written by Andreas Fuchs for @(ASDF1),
+  @(POIU) was later maintained by François-René Rideau later,
+  who ported it to many implementations, and simplified it
+  by co-developing it with @(ASDF2) then @(ASDF3).
+}
+In making this plan,
+@(ASDF) ensures that before the action that compiles or loads component is performed,
+all the actions that compile and load its declared dependencies have themselves been performed,
+which also includes all their own transitive dependencies.
 
-Typical actions consist in compiling a Lisp source file (if not up to date) and loading the resulting
-compilation output (if not both loaded and up to date).
-And you must typically compile and load files that
-define packages, macros, variables, before you may compile and load other files that use them.
-
-It is roughly what @(CL) hackers use to build and load software where C hackers might use GNU Make to
-build software and ld.so to load it.
-
-@tt{asdf/defsystem} is the part that people usually refer to as @(ASDF),
-with @tt{uiop} being only a supporting library,
-that happens to be distributed at the same time, by necessity.
-
-
-portability, robustness,
-usability, extensibility, configurability, internal consistency, and the ability to create standalone
-executables.
-It was pre-released as 2.27 on February 1st 2013, released as 3.0.0 on May 15th 2013, with further
-stable releases since.
+@(ASDF) is thus roughly what @(CL) programmers use to build and load software,
+where C hackers might use GNU @tt{Make} to build software and @tt{ld.so} to load it.@note{
+  As for @tt{autoconf} similar horrors, no equivalent is needed in Lisp:
+  Lisp provides full introspection at runtime, and the full power of runtime at compile-time,
+  in addition to a system of @bydef{features} and conditional reading of code and data
+  to distinguish between implementations, operating systems and hardware architectures.
+  Additionally, since Lisp itself is defined at a higher-level than C,
+  a lot of the low-level details for which @tt{autoconf} is used
+  are not needed for Lisp programs, since the implementation already handles these details.
+  Lisp thus allows for simple use of a clean and powerful language to do
+  what in C requires unmaintainable scripts in a hodge podge of multiple ad hoc languages,
+  all of them dismally designed, and at the same time makes
+  this general kind of configuration less needed.
 }
 
-@subsection{DEFSYSTEM before ASDF}
+@subsection{DEFSYSTEM before @(ASDF)}
 
 Ever since the late 1970s, Lisp implementations
 have been each providing their variant of the original
 Lisp Machine @tt{DEFSYSTEM} @~cite[CHINE-NUAL].
 These build systems allowed users to define @bydef{systems},
-units of software development made of many files,
+units of software development made of many @bydef{files},
 themselves often grouped as @bydef{modules};
 many @bydef{operations} were available to transform those systems and files,
 mainly to compile the files and to load them,
 but also to extract and print documentation,
-to create an archive, etc.;
+to create an archive, issue hot patches, etc.;
 @tt{DEFSYSTEM} users could further declare dependency rules
 between operations on those files, modules and systems,
 such that files providing definitions
 should be compiled and loaded before files using those definitions.
 
-Back in 2001, the state of the art in free software @(CL) build systems
-was still @tt{mk-defsystem} @~cite[MK-DEFSYSTEM], originally developed in 1990.
-Like later variants of DEFSYSTEM on all Lisp systems,
+Since 1990, the state of the art in free software @(CL) build systems
+was @tt{mk-defsystem} @~cite[MK-DEFSYSTEM].
+Like late 1980s variants of DEFSYSTEM on all Lisp systems,
 it featured a declarative model to define a system in terms of
-a hierarchical tree of @bydef{components} that could be modules or files,
-each component being able to declare dependencies on other components.
-The many subtle rules concerning the build operations
+a hierarchical tree of @bydef{components},
+with each component being able to declare dependencies on other components.
+The many subtle rules constraining build operations
 could be automatically deduced from these declarations,
 instead of having to be manually specified by users.
 
@@ -202,21 +214,26 @@ and/or editing some machine configuration file to define "logical pathname trans
 allowing to map "logical pathnames" used by those files to actual physical pathnames;
 back when there were a few data centers each with a full time administrator,
 each configuring the system once for tens of users, this was a small issue;
-but when hundreds of programmers were each installing software on their home computer,
+but when hundreds of amateur programmers
+were each installing software on their home computer,
 this was less than ideal.
 Second, extending the code was very hard:
 Mark Kantrovitz had to restrict his code to functionality universally available in 1990,
-and add a lot of boilerplate and magic to support many implementations;
+and to add a lot of boilerplate and magic to support many implementations;
 adding new features needed in 2001 would have required modifying the carefully crafted file,
 which would require a lot of work, yet eventually would probably still break
 the support for now obsolete implementations that couldn't be tested anymore.
 
-@subsection{ASDF 1: A Successful Experiment}
+@subsection{@(ASDF1): A Successful Experiment}
 
 In 2001, Dan Barlow, a then prolific @(CL) hacker,
 wanted a good @tt{defsystem} variant suitable for his needs;
 instead of attempting to modify @tt{mk-defsystem}, at high cost for little expected benefit,
-he wrote a new one, @(ASDF):
+he wrote a new one, @(ASDF):@note{
+  In a combined reverence to tradition and joke,
+  @(ASDF) stands for "Another System Definition Facility",
+  as well as for consecutive letters on a QWERTY keyboard.
+}
 he could abandon the strictures of supporting long obsolete implementations,
 and instead target modern @(CL) implementations.
 In 2002, he published @(ASDF), made it part of SBCL,
@@ -229,19 +246,20 @@ with an uncontroversial MIT-style software license.
 It was an immediate success.
 
 @(ASDF) included many brilliant innovations.
-To make configuration easy, @(ASDF) used
+To make configuration easy, @(ASDF) cleverly used
 the @tt{*load-truename*} feature of modern Lisps:
-thus, systems didn't need to be edited anymore,
-since pathnames of all components could be deduced
+on the one hand, systems didn't need to be edited anymore,
+since pathnames of all components could now be deduced
 from the pathname of the system definition file itself;
 and because the @tt{truename} resolved Unix symlinks,
 you could have symlinks to all your Lisp systems
 in one or a few directories, and
 @(ASDF) could find all of them.
-Configuration was a matter of initializing @(ASDF)'s
+Configuration was thus a matter of initializing @(ASDF)'s
 @tt{*central-registry*} of directories in which to look for system definition files,
-and maintaining the "link farms" in those directories;
-much simpler and easier to automate than what was required with @tt{mk-defsystem}.
+and maintaining "link farms" in those directories;
+that was much simpler than what was required with @tt{mk-defsystem},
+and easier to automate too.
 
 Also, following earlier suggestions by Kent Pitman @~cite[Pitman-Large-Systems],
 Dan Barlow used object-oriented style to make his @tt{defsystem} extensible
@@ -274,23 +292,43 @@ didn't scale to large systems with thousands of files;
 the extensibility API was lacking in many ways
 that required redefining @(ASDF) internals.
 
-What more, every implementation had its own version,
-with its own bug fixes and its own bugs,
-and some large projects had their own patches
-to redefine or work around significant chunks of ASDF.
+What more, there was a vicious circle preventing
+@(ASDF) bugs from being fixed or features from being added @~cite[Software-Irresponsibility]:
+Every implementation had its own version,
+with its own bug fixes and its own bugs;
+so developers of portable systems could not assume anything
+but the lowest common denominator, which was very buggy.
+On the other hand, because users were not using new features,
+but that their kluges and workarounds tended to institutionalize old bugs,
+there was no incentive for implementations
+and strong incentive to not change anything until everyone else already did.
+Finally it was both impossible
+to build portable libraries into a Lisp image without having @(ASDF) loaded,
+and to upgrade @(ASDF) once it was loaded.
+Thus, one couldn't reliably assume bugs to ever be fixed,
+unless one maintained one's own copy of @(ASDF),
+and closely managed the entire build chain,
+starting from a naked Lisp, then
+getting this copy of @(ASDF) compiled and loaded,
+before any system could be loaded.
+Software distributions such as Debian couldn't really help.
+Finally, since there was little demand for bug fixes,
+supply followed by not being active fixing bugs.
 
 
-@subsection{ASDF 2: Productizing ASDF}
+@subsection{@(ASDF2): Productizing @(ASDF)}
 
-@(ASDF) maintainership and development was taken over
-by François-René Rideau in November 2009;
-which l
-A first major rewrite led to ASDF 2, released in May 2010.
+In November 2009, François-René Rideau took over
+@(ASDF) maintainership and development.
+A first major rewrite led to @(ASDF2), released in May 2010.
 
-ASDF 2 (2010) @~cite[Evolving-ASDF] was a major rewrite that brought
-portability, configurability, robustness and upgradability,
-and later (2011) working defsystem dependencies, Windows support, selective system forcing,
-and (2012) encoding support, and hooks to wrap around compilation and check user invariants.
+@subsubsection{Upgradability}
+
+The first bug fix was to break the vicious circle preventing bug fixes.
+The solution found was to enable hot upgrade of @(ASDF),
+so that users could always load a fixed version
+on top of whatever the implementation or distribution provided,
+as described in our ILC 2010 article @~cite[Evolving-ASDF].
 @note{
   Since we published that paper,
   a lot of the complexity we described was done away with:
@@ -301,28 +339,131 @@ and (2012) encoding support, and hooks to wrap around compilation and check user
   also allows us to simply use @tt{fmakunbound} everywhere,
   instead of having to @tt{unintern} some functions.
 }
+Soon enough, users felt confident relying on bug fixes and new features,
+and all implementations started providing @(ASDF2).
 
+Upgradability crucially decoupled what ASDF users could rely on
+from implementations provided, enabling a virtuous circle of universal upgrades,
+where previously where everyone was waiting for others to upgrade, in a deadlock.
 
+@subsubsection{Portability}
 
-the ASDF 2 series culminated with ASDF 2.26,
+A lot of work was spent on portability.
+@(ASDF1) officially supported 4 implementations: allegro, ccl, clisp, sbcl;
+variants may or may not have worked on a handful other implementations.
+@(ASDF) 2.000 supported 9 implementations, adding: abcl, cmucl, ecl, lispworks, gcl.
+@(ASDF) 2.26 supported 15 implementations, adding: cormanlisp, genera, mkcl, rmcl, scl, xcl.
+Since then, have been added: mocl, and hopefully soon brcl.
+
+@(ASDF) as originally designed would only reliably work on Unix variants
+(Linux, BSD, etc., now also MacOS X, Android, iOS, maybe cygwin).
+It can now deal with very different operating system families:
+most importantly Windows, but also the ancient MacOS 9 and Genera.
+
+Of course, this required writing abstraction layers
+over functionality that was never standardized,
+and working around a few bugs in each system.
+But the greatest source of portability woe was in handling @emph{pathnames}.
+So great is the disaster of @(CL) pathnames,
+that they deserve a chapter of their own in this article. See below. @[XXX]
+
+Portability decoupled which implementation and operating system
+were used to develop a system from which it could be compiled with,
+where previously any non-trivial use of pathnames, filesystem access
+or subprocess invocation was a portability minefield.
+
+@subsubsection{Configurability}
+
+Configurability decoupled use and installation of libraries,
+whereby multiple parties could each modularly contribute some software systems
+and provide configuration for it without being required
+to know configuration of other systems,
+where previously, who installed software couldn't notify users,
+and users had to know and specify configuration of all software installed.
+
+@subsubsection{Usability}
+
+@tt{(asdf:load-system :foo)} instead of @tt{(asdf:operate 'asdf:load-op :foo)}.
+
+@subsubsection{Robustness}
+
+Countless bug fixes.
+
+Automated regression tests must all pass on all supported implementations before release.
+
+Robustness decoupled the need for testing:
+assuming that @(ASDF) itself is tested and the tests are complete enough
+(sadly, an often preposterous assumption),
+if your defsystem definitions worked on one implementation,
+they would work identically on all implementations.
+(as for the code in the system itself —
+it might still require testing on all supported implementations,
+since the semantics of Common Lisp is not fully specified
+but leaves a lot of leeway to implementors, unlike e.g. ML or Java).
+
+@subsection{Features introduced in the @(ASDF2) series}
+
+@subsubsection{Working @tt{defsystem} dependencies}
+
+2011.
+@tt{:defsystem-depends-on}
+
+@subsubsection{Working selective system forcing}
+
+2011, 2012.
+@tt{:force}, @tt{:force-not}, @tt{require-system}.
+
+@subsubsection{Encoding support}
+
+2012.
+
+@subsubsection{Hooks aroud compilation}
+
+@tt{:around-compile}
+@tt{:compile-check}
+
+@subsubsection{The end}
+
+The @(ASDF2) series culminated with ASDF 2.26,
 at which time all the code had been rewritten,
 and the core @tt{traverse} algorithm had been refactored
-into
+into smaller, more understandable functions.
+
+Last bug to fix... opened a Pandora's box.
 
 
 @subsection{ASDF 3: A Mature Build}
 
-ASDF 3 (2013) was completely revamped, twice over, to correctly compute timestamps
+@(ASDF3) (2013) was completely revamped, twice over, to correctly compute timestamps
 across an arbitrary action graph;
 users may specify how operations do or don't propagate
-along the component hierarchy;
+along the component hierarchy.
+
+@(ASDF3) was pre-released as 2.27 in February 2013,
+then officially released as 3.0.0 on May 15th 2013, with further stable releases since.
+
+@subsubsection{Portability Layer}
+
+@(ASDF3) notably brought a user-visible portability layer UIOP.
+Abstracting over pathnames, filesystem access;
+but also run-program, Lisp image lifecycle, and many other everyday concerns.
+
+@subsubsection{extensibility}
+
+Better operations.
+
+@subsubsection{configurability}
+
+better supported are conditional compilation, versioning, and more.
+
+@subsubsection{internal consistency}
+
+@subsubsection{creating standalone executables}
+
 there are several ways to deliver software in a single-file "bundle",
 including a single FASL for a system and/or its dependencies, or
 (on supported implementations) a standalone executable programs;
-better supported are conditional compilation, versioning, and more.
-ASDF 3 also brought a user-visible portability layer UIOP, abstracting over
-pathnames, filesystem access, run-program, Lisp image lifecycle, and
-many other everyday concerns.
+
 
 @subsection{ASDF 3.1: Lifting Lisp}
 
@@ -344,6 +485,12 @@ were notably hard;
 even more complexity was involved to
 @emph{robustly} deal with countless corner cases.
 ASDF 3.1 provides solutions to these issues, and many more.
+
+Future: Robert Goldman assumed maintainership in July 2013,
+a few months after the release of ASDF 3,
+and but François-René Rideau remained main developer until
+release of 3.1.1 in February 2014.
+
 
 @section{Evolving Code in an Immutable Community}
 
@@ -367,51 +514,8 @@ deferred-warnings, unconstrained versions,
 :current-directory, *system-cache* and get-uid, asdf-utilities, asdf-utils,
 d as nickname to asdf-driver, DBG macro.
 
-
 @section{Conclusion: Lessons for Language Growers}
 
 
-
-
-
-and ASDF 3 released in May 2013
-(beta releases starting with 2.27 in February 2013).
-Robert Goldman assumed maintainership in July 2013,
-a few months after the release of ASDF 3,
-and but François-René Rideau remained main developer until
-and February 2014,
-who also was
-
-with the release of @(ASDF) 2 in May 2010,
-of @(ASDF) 3 beta (aka 2.27) in February 2013,
-and @(ASDF) 3.1 in February 2014, with Robert Goldman taking
-
-
-
-
-@section{New Features}
-
-@subsection{From ASDF 2}
-
-The most important features from ASDF 2
-were described Robert Goldman's and my ILC 2010 article @~cite[Evolving-ASDF]
-
-Upgradability crucially decoupled what ASDF users could rely on
-from implementations provided, enabling a virtuous circle of universal upgrades,
-where previously where everyone was waiting for others to upgrade, in a deadlock.
-
-Portability decoupled which implementation and operating system
-were used to develop a system from which it could be compiled with,
-where previously any non-trivial use of pathnames, filesystem access
-or subprocess invocation was a portability minefield.
-
-Configurability decoupled use and installation of libraries,
-whereby multiple parties could each modularly contribute some software systems
-and provide configuration for it without being required
-to know configuration of other systems,
-where previously, who installed software couldn't notify users,
-and users had to know and specify configuration of all software installed.
-
-Robustness decoupled the need for testing
 
 @(generate-bib)

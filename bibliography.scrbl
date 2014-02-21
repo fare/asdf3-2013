@@ -29,11 +29,24 @@
   ;; #:number "874"
   #:url "ftp://publications.ai.mit.edu/ai-publications/pdf/AITR-874.pdf")
 
+(define-bib MK-DEFSYSTEM
+  #:author "Mark Kantrovitz"
+  #:title "Defsystem: A Portable Make Facility for Common Lisp"
+  #:date "1990" ;; January 1990.
+  ;; School of Computer Science. Carnegie Mellon University.
+  #:url "ftp://ftp.cs.rochester.edu/pub/archives/lisp-standards/defsystem/pd-code/mkant/defsystem.ps.gz")
+
 (define-bib ASDF-Manual
   #:title "ASDF Manual"
-  #:author "Daniel Barlow and contributors"
+  #:author "Daniel Barlow" ;; and contributors?
   #:date "2004" ;; 2001—2014
   #:url "http://common-lisp.net/project/asdf/")
+
+(define-bib Software-Irresponsibility
+  #:author "François-René Rideau"
+  #:title "Software Irresponsibility"
+  #:date "2009"
+  #:url "http://fare.livejournal.com/149264.html")
 
 (define-bib Evolving-ASDF
   #:author "François-René Rideau and Robert Goldman"

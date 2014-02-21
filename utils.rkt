@@ -38,6 +38,7 @@
   (apply tt str))
 
 (define (CL) "Common Lisp")
+(define (CLOS) "Common Lisp Object System")
 
 (define (XXX . rest) '())
 (define (latin x) (emph x))

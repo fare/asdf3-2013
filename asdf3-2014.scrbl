@@ -3,8 +3,11 @@
 
 @(require scribble/base
           scriblib/autobib scriblib/footnote
+          scribble/decode scribble/core scribble/manual-struct scribble/decode-struct
+          scribble/html-properties scribble/tag
           (only-in scribble/core style)
           "utils.rkt" "bibliography.scrbl")
+
 
 @authorinfo["François-René Rideau" "Google" "tunes@google.com"]
 
@@ -37,7 +40,7 @@ in bringing change to the @(CL) community.
 @(ASDF) has been the @(de_facto) standard build system
 for portable @(CL) software since shortly after its release
 by Dan Barlow in 2002 @~cite[ASDF-Manual].@note{
-@(CL) is a language defined in the ANSI standard X3.226-1994.
+  @(CL) is a language defined in the ANSI standard X3.226-1994.
   It is a multi-paradigm dynamically-typed high-level language:
   though it is still known for its decent support for functional programming,
   its support for Object-Oriented Programming is what remains unsurpassed in many ways,
@@ -45,7 +48,7 @@ by Dan Barlow in 2002 @~cite[ASDF-Manual].@note{
   or support for interactive development.
   It was explicitly designed to allow for high-performance implementations;
   some of them, depending on the application,
-  may rival with compiled "C" programs in terms of speed,
+  may rival with compiled C programs in terms of speed,
   or at least be in the same ball park for performance,
   usually far ahead of "scripting" languages and their implementations.
 
@@ -130,7 +133,7 @@ and automatically download on demand
 required systems and all their transitive dependencies.
 
 A system is itself organized in a hierarchy of components,
-where each component may be either an individual @bydef{file},
+where each component may be either an individual @bydef{file}
 (usually, a @(CL) source file),
 or a @bydef{module} that may recursively contain other components.
 Modules may or may not directly fit the filesystem directory hierarchy.
@@ -142,21 +145,23 @@ and any functions used at compile-time, notably during macro expansion.
 
 Building software is modeled as a direct acyclic graph of @bydef{actions},
 each action being a pair of an operation and a component.
-Unlike its predecessors, @(ASDF) makes a @bydef{plan} of all actions needed
+Unlike its immediate predecessor,
+@(ASDF) makes a @bydef{plan} of all actions needed
 to obtain an up-to-date version of the build output,
 before it @bydef{performs} these actions.
 In @(ASDF) itself, this plan is a list of actions to be performed sequentially.
 But it is possible to write an extension that makes a complete graph
 of actions to be performed in parallel:
-this has been done as a small extension called @(POIU),
-that compiles files in parallel on Unix multiprocessors using @tt{fork}),
-and still loads them sequentially, to minimize latency.
+Andreas Fuchs did it in 2006, in a small extension called @(POIU),
+the Parallel Operator on Independent Units,
 @note{
-  Initially written by Andreas Fuchs for @(ASDF1),
-  @(POIU) was later maintained by François-René Rideau later,
-  who ported it to many implementations, and simplified it
-  by co-developing it with @(ASDF2) then @(ASDF3).
+  François-René Rideau later rewrote @(POIU), making it portable
+  and simpler by co-developing it with @(ASDF).
+  Understanding just how Andreas Fuchs subverted @(ASDF)
+  led to many aha moments, instrumental when fixing @(ASDF2) into @(ASDF3).
 }
+that compiles files in parallel on Unix multiprocessors using @tt{fork},
+while still loading them sequentially, minimizing latency.
 In making this plan,
 @(ASDF) ensures that before the action that compiles or loads component is performed,
 all the actions that compile and load its declared dependencies have themselves been performed,
@@ -180,11 +185,11 @@ where C hackers might use GNU @tt{Make} to build software and @tt{ld.so} to load
 @subsection{DEFSYSTEM before @(ASDF)}
 
 Ever since the late 1970s, Lisp implementations
-have been each providing their variant of the original
+have each been providing their variant of the original
 Lisp Machine @tt{DEFSYSTEM} @~cite[CHINE-NUAL].
 These build systems allowed users to define @bydef{systems},
 units of software development made of many @bydef{files},
-themselves often grouped as @bydef{modules};
+themselves often grouped into @bydef{modules};
 many @bydef{operations} were available to transform those systems and files,
 mainly to compile the files and to load them,
 but also to extract and print documentation,
@@ -268,7 +273,8 @@ Using the now standardized @(CLOS),
 Dan Barlow defined his @tt{defsystem} in terms of @bydef{generic functions}
 specialized on two arguments, @tt{operation} and @tt{component},
 (using multiple dispatch, an essential OO feature unhappily not available
-in lesser programming languages, i.e. sadly almost of them).
+in lesser programming languages, i.e. sadly almost of them —
+they make do by using the "visitor pattern").
 Extending @(ASDF) is a matter of simply by defining new subclasses
 of @tt{operation} and/or @tt{component}
 and a handful of new methods for the existing generic functions,
@@ -314,13 +320,13 @@ before any system could be loaded.
 Software distributions such as Debian couldn't really help.
 Finally, since there was little demand for bug fixes,
 supply followed by not being active fixing bugs.
-
+And so @(ASDF) development stagnated for many years.
 
 @subsection{@(ASDF2): Productizing @(ASDF)}
 
-In November 2009, François-René Rideau took over
-@(ASDF) maintainership and development.
-A first major rewrite led to @(ASDF2), released in May 2010.
+In November 2009, François-René Rideau
+took over @(ASDF) maintainership and development.
+A first set of major changes led to @(ASDF2), released in May 2010.
 
 @subsubsection{Upgradability}
 
@@ -335,14 +341,19 @@ as described in our ILC 2010 article @~cite[Evolving-ASDF].
   instead of trying to dynamically upgrade data,
   we "punt" and drop in-memory data if the schema has changed in incompatible ways,
   instead of trying hard to provide methods for @tt{update-instance-for-redefined-class}.
-  Dropping the data in hard cases, combined with preemptive upgrading of ASDF,
+  Dropping the data in hard cases, combined with preemptive upgrading of @(ASDF),
   also allows us to simply use @tt{fmakunbound} everywhere,
   instead of having to @tt{unintern} some functions.
 }
 Soon enough, users felt confident relying on bug fixes and new features,
 and all implementations started providing @(ASDF2).
 
-Upgradability crucially decoupled what ASDF users could rely on
+These days, you can @tt{(require "asdf")} on pretty much any @(CL) implementation,
+and start building systems using @(ASDF)
+(most implementation already provide @(ASDF3);
+one still lags with @(ASDF2), but will hopefully be updated this year).
+
+Upgradability crucially decoupled what @(ASDF) users could rely on
 from implementations provided, enabling a virtuous circle of universal upgrades,
 where previously where everyone was waiting for others to upgrade, in a deadlock.
 
@@ -350,22 +361,34 @@ where previously where everyone was waiting for others to upgrade, in a deadlock
 
 A lot of work was spent on portability.
 @(ASDF1) officially supported 4 implementations: allegro, ccl, clisp, sbcl;
-variants may or may not have worked on a handful other implementations.
+@(ASDF) variants may or may not have worked on a handful other implementations.
 @(ASDF) 2.000 supported 9 implementations, adding: abcl, cmucl, ecl, lispworks, gcl.
-@(ASDF) 2.26 supported 15 implementations, adding: cormanlisp, genera, mkcl, rmcl, scl, xcl.
-Since then, have been added: mocl, and hopefully soon brcl.
+@(ASDF) 2.26 supported 15, adding: cormanlisp, genera, mkcl, rmcl, scl, xcl.
+Since then, new implementations are released with @(ASDF) support:
+mocl, and hopefully soon clasp.
 
 @(ASDF) as originally designed would only reliably work on Unix variants
-(Linux, BSD, etc., now also MacOS X, Android, iOS, maybe cygwin).
+(Linux, BSD, etc., maybe cygwin, and now also MacOS X, Android, iOS).
 It can now deal with very different operating system families:
 most importantly Windows, but also the ancient MacOS 9 and Genera.
 
 Of course, this required writing abstraction layers
 over functionality that was never standardized,
 and working around a few bugs in each system.
-But the greatest source of portability woe was in handling @emph{pathnames}.
+But the greatest source of portability woe was in handling @emph{pathnames}:
+the standard specification of their behavior is so lacking,
+and the implementations so differ in their often questionable behavior,
+that instead of the problem being an abundance of corner cases,
+the problem was a dirth of common case.
 So great is the disaster of @(CL) pathnames,
-that they deserve a chapter of their own in this article. See below. @[XXX]
+that they deserve their own appendix to this article.
+
+Lisp programmers can now "write once, run anywhere",
+as far as defining systems go;
+but they still have to otherwise avoid non-standardized behavior
+and implementation-specific extensions (unless hidden behind a portability layer)
+if they want their programs to be portable
+— @(ASDF) cannot solve these issues intrinsic to @(CL).
 
 Portability decoupled which implementation and operating system
 were used to develop a system from which it could be compiled with,
@@ -384,6 +407,8 @@ and users had to know and specify configuration of all software installed.
 @subsubsection{Usability}
 
 @tt{(asdf:load-system :foo)} instead of @tt{(asdf:operate 'asdf:load-op :foo)}.
+
+Pathname specification much simplified (see the Pathname appendix).
 
 @subsubsection{Robustness}
 
@@ -424,7 +449,7 @@ but leaves a lot of leeway to implementors, unlike e.g. ML or Java).
 
 @subsubsection{The end}
 
-The @(ASDF2) series culminated with ASDF 2.26,
+The @(ASDF2) series culminated with @(ASDF) 2.26,
 at which time all the code had been rewritten,
 and the core @tt{traverse} algorithm had been refactored
 into smaller, more understandable functions.
@@ -432,7 +457,7 @@ into smaller, more understandable functions.
 Last bug to fix... opened a Pandora's box.
 
 
-@subsection{ASDF 3: A Mature Build}
+@subsection{@(ASDF) 3: A Mature Build}
 
 @(ASDF3) (2013) was completely revamped, twice over, to correctly compute timestamps
 across an arbitrary action graph;
@@ -465,9 +490,9 @@ including a single FASL for a system and/or its dependencies, or
 (on supported implementations) a standalone executable programs;
 
 
-@subsection{ASDF 3.1: Lifting Lisp}
+@subsection{@(ASDF) 3.1: Lifting Lisp}
 
-ASDF 3.1 (2014) builds on top of ASDF 3 to provide new features.
+@(ASDF) 3.1 (2014) builds on top of @(ASDF3) to provide new features.
 
 The @tt{asdf/package-system} extension supports
 a one-file, one-package, one-system style of programming
@@ -484,10 +509,10 @@ or even manipulating pathnames and accessing the filesystem,
 were notably hard;
 even more complexity was involved to
 @emph{robustly} deal with countless corner cases.
-ASDF 3.1 provides solutions to these issues, and many more.
+@(ASDF) 3.1 provides solutions to these issues, and many more.
 
 Future: Robert Goldman assumed maintainership in July 2013,
-a few months after the release of ASDF 3,
+a few months after the release of @(ASDF3),
 and but François-René Rideau remained main developer until
 release of 3.1.1 in February 2014.
 
@@ -516,6 +541,7 @@ d as nickname to asdf-driver, DBG macro.
 
 @section{Conclusion: Lessons for Language Growers}
 
-
-
 @(generate-bib)
+
+@section[#:style (make-style 'appendix '(unnumbered))]{Appendix A: Pathnames}
+

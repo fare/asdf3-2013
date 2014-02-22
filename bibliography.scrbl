@@ -9,7 +9,7 @@
   #:author "Dan Weinreb and David Moon"
   ;;#:publisher "MIT"
   #:date "1981"
-  #:url "http://unlambda.com/XXX")
+  #:url "https://bitsavers.trailing-edge.com/pdf/mit/cadr/chinual_4thEd_Jul81.pdf")
 
 (define-bib Pitman-Large-Systems
   #:author "Kent Pitman"

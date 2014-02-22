@@ -45,7 +45,7 @@
 (define (de_facto) @latin{de facto})
 (define (bydef . x) (emph x))
 
-(define (ASDF . x) @cl[(apply string-append "ASDF" (if (null? x) '() (cons " " x)))])
+(define (ASDF . x) (list @cl{ASDF} (unless (null? x) (cons " " x))))
 (define (ASDF1) (ASDF "1"))
 (define (ASDF2) (ASDF "2"))
 (define (ASDF3) (ASDF "3"))

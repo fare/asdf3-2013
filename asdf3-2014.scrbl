@@ -159,15 +159,16 @@ In @(ASDF) itself, this plan is a list of actions to be performed sequentially.
 But it is possible to write an extension that makes a complete graph
 of actions to be performed in parallel.
 @note{
-  Andreas Fuchs in 2006, wrote a brilliant small extension called @(POIU)
-  the Parallel Operator on Independent Units,
+  Andreas Fuchs in 2006, wrote a very small but quite brilliant @(ASDF) extension
+  called @(POIU), the Parallel Operator on Independent Units,
   that compiles files in parallel on Unix multiprocessors using @tt{fork},
   while still loading them sequentially, minimizing latency.
 
   François-René Rideau later rewrote @(POIU), making it
   both more portable and simpler by, co-developing it with @(ASDF).
-  Understanding just how Andreas Fuchs overcame
-  the limitations and conceptual bugs of @(ASDF)
+  Understanding the sometimes bizarre and useless-looking
+  but actually extremely clever and extremely necessary tricks
+  by which Andreas Fuchs overcame the limitations and conceptual bugs of @(ASDF)
   led to many aha moments, instrumental when fixing @(ASDF2) into @(ASDF3).
 }
 In making this plan,
@@ -258,7 +259,14 @@ such that files providing definitions
 should be compiled and loaded before files using those definitions.
 
 Since 1990, the state of the art in free software @(CL) build systems
-was @tt{mk-defsystem} @~cite[MK-DEFSYSTEM].
+was @tt{mk-defsystem} @~cite[MK-DEFSYSTEM].@note{
+  The variants of @tt{DEFSYSTEM} available
+  on each of the major proprietary @(CL) implementations
+  (Allegro, LispWorks, and formerly, Genera),
+  seem to have been much better than @tt{mk-defsystem}.
+  But they were not portable, not mutually compatible, and not free software,
+  and therefore @tt{mk-defsystem} because @emph{de facto} standard for free software.
+}
 Like late 1980s variants of DEFSYSTEM on all Lisp systems,
 it featured a declarative model to define a system in terms of
 a hierarchical tree of @bydef{components},
@@ -287,7 +295,7 @@ adding new features needed in 2001 would have required modifying the carefully c
 which would require a lot of work, yet eventually would probably still break
 the support for now obsolete implementations that couldn't be tested anymore.
 
-@subsection{@(ASDF) Innovations}
+@section{@(ASDF) Innovations}
 
 @subsection{@(ASDF1): A Successful Experiment}
 
@@ -394,23 +402,33 @@ took over @(ASDF) maintainership and development.
 A first set of major changes led to @(ASDF2), released in May 2010.
 The versions released by Dan Barlow and the maintainers who succeeded him,
 and numbered 1.x are thereafter referred to at @(ASDF1).
+These changes are explained in more detail in
+our ILC 2010 article @~cite[Evolving-ASDF].
 
 @subsubsection{Upgradability}
 
-The first bug fix was to break the vicious circle preventing bug fixes.
+The first bug fix was to break the vicious circle
+preventing bug fixes from being relevant.
 The solution found was to enable hot upgrade of @(ASDF),
 so that users could always load a fixed version
-on top of whatever the implementation or distribution provided,
-as described in our ILC 2010 article @~cite[Evolving-ASDF].
+on top of whatever the implementation or distribution did or didn't provide.
 @note{
   Since we published that paper,
-  a lot of the complexity we described was done away with:
+  a lot of the described complexity was done away with:
   instead of trying to dynamically upgrade data,
   we "punt" and drop in-memory data if the schema has changed in incompatible ways,
   instead of trying hard to provide methods for @tt{update-instance-for-redefined-class}.
-  Dropping the data in hard cases, combined with preemptive upgrading of @(ASDF),
+  Dropping the data in hard cases,
   also allows us to simply use @tt{fmakunbound} everywhere,
   instead of having to @tt{unintern} some functions.
+  Finally, to avoid either having data to drop
+  or being caught upgrading @(ASDF) in midflight,
+  @(ASDF3) will preemptive upgrading itself at the beginning of the build
+  (if an upgrade is available as configured).
+  The only potential impact of this reduction in upgrade capability
+  would be users who upgrade code in a long-running live server;
+  but considering how daunting that task is, properly upgrading @(ASDF)
+  despite reduced support might be the least of their problems.
 }
 Soon enough, users felt confident relying on bug fixes and new features,
 and all implementations started providing @(ASDF2).
@@ -535,31 +553,68 @@ and users had to know and specify configuration of all software installed.
 
 @subsubsection{Robustness}
 
-Countless bug fixes.
+During the development of @(ASDF2) (then 3),
+a great number of bugs were introduced, and even more bugs were fixed.
+We eventually acquired the discipline to systematically write regression tests
+and tests for new features;
+Furthermore, we took to regularly running the entire test suite
+on all supported implementations (the list of which steadily grew),
+particularly so just before releases.
+And the code was not to be released unless
+every regression test passed on every implementation
+or was marked as a known failure due to some implementation bugs.
+The test system itself was vastly improved
+to make it easier to reproduce failures and debug them,
+and to handle a wider variety of test cases.
 
-Automated regression tests must all pass on all supported implementations before release.
+This led to very robust code,
+at least compared to previous @(CL) build systems,
+that runs the same way in a great variety of contexts:
+on different implementations and operating systems,
+using various combinations of features,
+after some kind of hot software upgrade, etc.
 
-Robustness decoupled the need for testing:
-assuming that @(ASDF) itself is tested and the tests are complete enough
-(sadly, an often preposterous assumption),
-if your defsystem definitions worked on one implementation,
-they would work identically on all implementations.
-(as for the code in the system itself —
+Robustness decoupled the testing of systems that use @(ASDF)
+from testing of @(ASDF) itself:
+assuming the @(ASDF) test suite is complete enough
+(sadly, all too often a preposterous assumption),
+a @tt{defsystem} definition that works on one implementation
+will work identically on all implementations.
+As for the code in the system itself —
 it might still require testing on all supported implementations,
-since the semantics of Common Lisp is not fully specified
-but leaves a lot of leeway to implementors, unlike e.g. ML or Java).
+since the semantics of @(CL) is not fully specified
+but leaves a lot of leeway to implementors, unlike e.g. ML or Java.
 
 @subsubsection{Usability}
 
 Usability was an important concern while developing @(ASDF2).
 Portability, Configurability and Robustness already contribute to Usability,
-as does all improvements to the software,
-some specific changes were made XXX
-Beside all the above concerns, Usability.
+as does all improvements to the software;
+some changes were made, though, that were specifically introduced
+to ease usability of @(ASDF).
 
-@tt{(asdf:load-system :foo)} instead of @tt{(asdf:operate 'asdf:load-op :foo)}.
+As a trivial instance, the basic @(ASDF) invocation was the clumsy
+@tt{(asdf:operate 'asdf:load-op :foo)} or
+@tt{(asdf:oos 'asdf:load-op :foo)}.
+With @(ASDF2), that would be the more obvious
+@tt{(asdf:load-system :foo)}.
 
-Pathname specification much simplified (see the Pathname appendix).
+The way pathname are specified was made portable, with
+@(ASDF2) adopting Unix pathname syntax
+as an abstraction to specify pathnames while using portable @(CL) semantics.
+It became easy to specify relative pathnames,
+where previously doing it portably was extremely tricky.
+@(ASDF2) similarly provided sensible rules for pathname types and type overrides.
+(See the Appendix on pathnames.)
+
+Usability decoupled the knowledge of how to use @(ASDF)
+from the knowledge of @(ASDF) internals and @(CL) pathname idiosyncrasies.
+Any beginner with a basic understanding of @(CL) and Unix pathnames
+could now use @(ASDF) where defining a non-trivial system,
+what more portably, was previously a task reserved to experts
+and/or involving copy-pasting magical incantations.
+The principle followed was that
+@bold{the cognitive load on each kind of users must be minimized}.
 
 @subsection{Features introduced in the @(ASDF2) series}
 
@@ -673,6 +728,29 @@ preference files, generalized around method combinations, asdf-binary-locations,
 deferred-warnings, unconstrained versions,
 :current-directory, *system-cache* and get-uid, asdf-utilities, asdf-utils,
 d as nickname to asdf-driver, DBG macro.
+
+@subsection{Uniformity}
+
+While developing @(ASDF), we sometimes made many things more uniform
+at the cost of a slight backward incompatibility
+with a few existing systems using kluges.
+For instance, @(ASDF2) made pathname arguments uniformly non-evaluated in a @tt{defsystem} form,
+when they used to be evaluated for toplevel systems but not for other (most) components;
+this evaluation was used by a few users to use @tt{merge-pathnames}
+to portably specify relative pathnames, a task made unnecessary by
+@(ASDF2) being capable of specifying these pathnames portably with Unix syntax.
+
+@(ASDF3) removed the magic undocumented capability of specifying a systems
+as dependencies of a system or module by declaring it in the list of subcomponent
+rather than the list of dependencies;
+this capability seems to have been an undesigned artifact of how systems used to be parsed,
+though at the same time it seems to have been compatible with how some older defsystems did things,
+and one user relied on the capability whose system definition had been ported from @tt{mk-defsystem}.
+
+At the cost of a handful of users having to cleanup their code a bit,
+we could thus notably @bold{reduce the cognitive load on users} for all future systems.
+No more need to learn complex syntactic and semantic constraints
+and even more complex tricks to evade those constraints.
 
 @section{Conclusion: Lessons for Language Growers}
 

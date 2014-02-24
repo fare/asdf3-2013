@@ -221,20 +221,22 @@ by Lisp's vastly better architecture.
     where to find the libraries your code depends on, further improved in @(ASDF2).
     In C, instead, then are tens of incompatible ways to do it,
     between @tt{libtool}, @tt{autoconf}, @tt{gconf}, @tt{kde-config},
-    various manual @tt{./configure} scripts,
+    various manual @tt{./configure} scripts, and countless other protocols,
     so that each new piece of software requires
     to learn a new ad hoc configuration method,
-    making maintenance and distribution expensive.
+    making it an expensive endeavour to use and/or distribute libraries.
   }
   @item{
-    @(ASDF) uses the very same mechanism to configure both runtime and compile-time
-    so there is no need for completely different mechanism at runtime and compile-time.
+    @(ASDF) uses the very same mechanism to configure both runtime and compile-time,
+    so there is only one configuration mechanism to learn and to use,
+    and no risk of discrepancy between the two.
     In C, completely different and incompatible mechanisms are used
-    at runtime (@tt{ld.so}) and compile-time (unspecified mess),
+    at runtime (@tt{ld.so}) and compile-time (an unspecified mess),
     which further makes it hard to match
     source code, compilation headers, static and dynamic libraries,
     requiring huge complex "software distribution" infrastructure
-    (that admittedly also manage versioning, downloading and precompilation).
+    (that admittedly also manage versioning, downloading and precompilation),
+    and causing very hard to understand bugs when subtle discrepancies creep in.
   }
 ]
 
@@ -390,6 +392,8 @@ And so @(ASDF) development stagnated for many years.
 In November 2009, François-René Rideau
 took over @(ASDF) maintainership and development.
 A first set of major changes led to @(ASDF2), released in May 2010.
+The versions released by Dan Barlow and the maintainers who succeeded him,
+and numbered 1.x are thereafter referred to at @(ASDF1).
 
 @subsubsection{Upgradability}
 
@@ -419,20 +423,23 @@ one still lags with @(ASDF2), but will hopefully be updated this year).
 Upgradability crucially decoupled what @(ASDF) users could rely on
 from implementations provided, enabling a virtuous circle of universal upgrades,
 where previously where everyone was waiting for others to upgrade, in a deadlock.
-@emph{Allowing for divergence creates an incentive towards convergence}.
+@bold{Allowing for divergence creates an incentive towards convergence}.
 
 @subsubsection{Portability}
 
 A lot of work was spent on portability.
-@(ASDF1) officially supported 4 implementations: allegro, ccl, clisp, sbcl;
+@(ASDF1) officially supported 4 implementations:
+@tt{allegro}, @tt{ccl}, @tt{clisp}, @tt{sbcl};
 @(ASDF) variants may or may not have worked on a handful other implementations;
 system definition semantics often varied subtly between implementations,
 notably regarding pathnames.
-@(ASDF) 2.000 supported 9 implementations, adding: abcl, cmucl, ecl, lispworks, gcl;
+@(ASDF) 2.000 supported 9 implementations, adding:
+@tt{abcl}, @tt{cmucl}, @tt{ecl}, @tt{lispworks}, @tt{gcl};
 system definition semantics was uniform across platforms.
-@(ASDF) 2.26 supported 15, adding: cormanlisp, genera, mkcl, rmcl, scl, xcl.
+@(ASDF) 2.26 supported 15, adding:
+@tt{cormanlisp}, @tt{genera}, @tt{mkcl}, @tt{rmcl}, @tt{scl}, @tt{xcl}.
 Since then, new implementations are released with @(ASDF) support:
-mocl, and hopefully soon clasp.
+@tt{mocl}, and hopefully soon @tt{clasp}.
 
 @(ASDF) as originally designed would only reliably work on Unix variants
 (Linux, BSD, etc., maybe cygwin, and now also MacOS X, Android, iOS).
@@ -464,17 +471,66 @@ or subprocess invocation was a portability minefield.
 
 @subsubsection{Configurability}
 
-Configurability was also discussed at length
-in our ILC 2010 article @~cite[Evolving-ASDF].
-In writing @(ASDF2), we followed this guiding principle:
-@emph{Each can specify what he knows, none need specify what he doesn't}.
-@XXX{who knows and/or controls is who specifies the configuration.}
+@(ASDF1) was much improved over what preceded it,
+but its configuration mechanism was still lacking:
+there was no modular way
+for whoever installed software systems to register them
+in a way that users could see them;
+and there was no way for program writers to deliver executable scripts
+that could run without knowing where libraries were installed.
 
-Configurability decoupled use and installation of libraries,
-whereby multiple parties could each modularly contribute some software systems
+One key feature introduced with @(ASDF2) @~cite[Evolving-ASDF] was
+a new configuration mechanism for programs to find libraries,
+the @bydef{source-registry}, that followed this guiding principle:
+@bold{Each can specify what he knows, none need specify what he doesn't}.
+Configuration information is taken from multiple sources,
+with the former partially or completely overriding the latter:
+argument explicitly passed to @cl{initialize-source-registry},
+environment variable,
+central user configuration file,
+modular user configuration directory,
+central system configuration files,
+modular system configuration directories,
+implementation configuration.
+Also, the source-registry is optionally capable
+of recursing through subdirectories
+(excluding source control directories),
+where @tt{*central-registry*} itself couldn't.
+
+A similar mechanism, the @bydef{output-translations},
+also allows to specify where output files are to be stored,
+which by default seggregates them by
+implementation, operating system, ABI, version, etc.,
+allowing for sharing source code between several users
+who themselves may use many different versions of many implementations, etc.
+Thus, whoever or whichever software manages installation of source code
+does not have to also know which compiler is to be used by which user;
+configuration remains modular, and code can be shared by all who trust it,
+without affecting those who don't.
+There used to be an extension to @(ASDF1) called @tt{asdf-binary-locations}
+that fulfilled the same functionality,
+but apart from its suffering
+from the same lack of modularity as the @tt{*central-registry*},
+it also had a chicken-and-egg problem:
+you couldn't use @(ASDF) to load it without having at least one
+program compiled without @tt{asdf-binary-locations} enabled,
+namely @tt{asdf-binary-locations} itself;
+it thus required special purpose loading and configuration
+in whichever file did the loading @(ASDF), making it not modular at all.
+This was resolved by moving the functionality into @(ASDF) itself,
+illustrating the design principle followed by @(ASDF2):
+@bold{make it as simple as possible, but no simpler}.
+This is in contrast with the principle apparently followed for @(ASDF1):
+"make it as simple as possible while handling the common case correctly"
+— which might have been a great principle for experimenting with new concepts,
+as Dan Barlow was doing, but was not a good one for a robust product.
+
+Configurability decoupled use and installation of software:
+multiple parties could now each modularly contribute some software,
+whether applications, libraries or implementations,
 and provide configuration for it without being required
-to know configuration of other systems,
-where previously, who installed software couldn't notify users,
+to know configuration of other software;
+previously, whoever installed software couldn't notify users,
 and users had to know and specify configuration of all software installed.
 
 @subsubsection{Robustness}

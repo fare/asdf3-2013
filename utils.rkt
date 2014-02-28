@@ -20,6 +20,9 @@
 (define include-asdf1-diffs (make-parameter #t))
 (define include-asdf2-diffs (make-parameter #t))
 
+(define (moneyquote . x) (bold x))
+(define (q . x) (list "\"" x "\""))
+
 (define-syntax (clblock stx)
   (syntax-parse stx
     [(_ #:line-numbers ln str ...)
@@ -50,6 +53,7 @@
 (define (ASDF2) (ASDF "2"))
 (define (ASDF3) (ASDF "3"))
 (define (ASDF-Install) @cl{ASDF-Install})
+(define (UIOP) @cl{UIOP})
 (define (POIU) @cl{POIU})
 (define (XCVB) @cl{XCVB})
 (define (DEFSYSTEM) @cl{DEFSYSTEM})

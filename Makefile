@@ -5,6 +5,7 @@ src = asdf3.scrbl live-programming.scrbl old-bug.scrbl history.scrbl utils.rkt t
 export PLTCOLLECTS:=$(shell pwd):${PLTCOLLECTS}
 
 all: asdf3-2014.html # html # slideshow # PDF
+p: asdf3-2014.PDF
 html: ${ae}.html
 pdf: ${ae}.pdf
 PDF: pdf ${ae}.PDF

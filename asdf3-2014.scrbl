@@ -8,7 +8,6 @@
           (only-in scribble/core style)
           "utils.rkt" "bibliography.scrbl")
 
-
 @authorinfo["François-René Rideau" "Google" "tunes@google.com"]
 
 @conferenceinfo["ELS 2014" "May 5--6, Paris, France."]
@@ -37,9 +36,10 @@ in bringing change to the @(CL) community.
 
 @section{Introduction}
 
-@(ASDF) has been the @(de_facto) standard build system
-for portable @(CL) software since shortly after its release
-by Dan Barlow in 2002 @~cite[ASDF-Manual].@note{
+Better late than never,
+but with the release of @(ASDF3) in May 2013,
+all the programs for which one uses so-called "scripting" languages
+may now be written @emph{portably} in @(CL):@note{
   @(CL) is a language defined in the ANSI standard X3.226-1994.
   It is a multi-paradigm dynamically-typed high-level language:
   though it is still known for its decent support for functional programming,
@@ -58,45 +58,51 @@ by Dan Barlow in 2002 @~cite[ASDF-Manual].@note{
   cheapest, and ported to most platforms.
   While it is possible to write useful programs
   using only the standardized parts of the language,
-  serious implementations each incompatibly provide
-  plenty of additional practical features not included in the standard,
-  such as threads, unicode support, or a "foreign function interface" to libraries written in C.
-  However software can be made to work on all the interesting combinations
-  of implementation, operating system and hardware architecture
-  by following reasonable portability constraints
-  and using existing libraries to abstract over discrepancies between implementations.
+  to fully take advantage of extant libraries
+  that harness modern hardware and software techniques
+  requires the use of various extensions.
+  Happily, each implementation provides its own extensions,
+  and there exist libraries to abstract over
+  the discrepancies these implementations, and provide portable access to
+  threads (@tt{bordeaux-threads}), unicode support (@tt{cl-unicode}),
+  a "foreign function interface" to libraries written in C (@tt{cffi}),
+  ML-style pattern-matching (@tt{optima}), etc.
+  A software distribution system, @(Quicklisp),
+  makes it easy to install hundreds of such libraries,
+  that were already using @(ASDF) as a basic software organization mechanism.
+  The new features in @(ASDF3) were just the last missing piece in this puzzle.
 }
+starting with quick scripts that glue together functionality provided
+by the operating system, external programs, C libraries, or network services;
+scaling them seamlessly into large, maintainable, modular, systems;
+and making those new services available to other programs via the command-line
+as well as via network protocols, etc.
+
+@(ASDF) has been the @(de_facto) standard build system
+for portable @(CL) software since shortly after its release
+by Dan Barlow in 2002 @~cite[ASDF-Manual].
 As a build system, it enables division of labor in software development:
 source code is organized in separately developed components
 that can depend on other components,
 and the build system transforms the transitive closure of these components
 into a working program.
 
-With the recent release of @(ASDF3) in May 2013,
-and its builtin portability layer @(UIOP),
-it has become possible to write @emph{portable} software in @(CL),
-that can do anything you can in any so-called "scripting" language:
-notably invoke other programs and capture their output,
-or be invoked by other programs and process command-line arguments;
-also being able to deliver programs as either small portably executable scripts
-or large non-portable but self-contained binaries that have no startup delay.
+Its latest rewrite, @(ASDF3),
+beside fixing numerous bugs deep and shallow
+somewhat faster than were introduced,
+sports a portability layer, @(UIOP),
+that makes this portable scripting possible:
+it enables the writing of Lisp programs
+that may be invoked from the command line,
+or may spawn external programs and capture their output;
+it allows to deliver these programs as standalone executable files,
+or, with the companion script @tt{cl-launch} (see @secref{cl-launch})
+as light-weight scripts that can be run unmodified
+on many different kinds of machines each differently configured.
 Previously, key parts of a program had to be configured to match
 one's specific @(CL) implementation and specific software installation paths.
 Now, all of one's usual Unix scripting needs can be entirely fulfilled by @(CL),
 while benefitting from its efficient implementations, hundreds of software libraries, etc.
-
-The companion utility @tt{cl-launch} can help get Lisp programs be portably invoked:
-@clcode{
-cl -s lisp-stripper -E lisp-stripper:count-lisp-locs -- *.lisp
-}
-
-It can also be used as a script interpreter:
-@clcode{
-#!/usr/bin/cl --system inferior-shell --restart cl-user::main
-(in-package :inferior-shell)
-(defun cl-user::main ()
-  (run `(pipe (ps fauwwwwwwwwwwwwx) (sort -r -k5)) :output t))
-}
 
 In a first part, we will give some context about what @(ASDF) is,
 how it compares to what is done in the C world,
@@ -145,7 +151,7 @@ Each system may depend on code from other systems,
 that may come from the same repository, or from a different repository.
 @(ASDF) itself has no notion of repositories,
 but other tools, on top of @(ASDF), do:
-Quicklisp @~cite[Quicklisp] will provide together
+,@(Quicklisp) @~cite[quicklisp] will provide together
 systems from a same repository as a @bydef{release},
 and provide hundreds of releases as a @bydef{distribution},
 and automatically download on demand
@@ -582,8 +588,11 @@ and all implementations started providing @(ASDF2).
 
 These days, you can @tt{(require "asdf")} on pretty much any @(CL) implementation,
 and start building systems using @(ASDF).
-Most implementation already provide @(ASDF3);
-one still lags with @(ASDF2), but will hopefully be updated this year.
+Most implementation already provide @(ASDF3).
+A few still lag with @(ASDF2), or fail to provide @(ASDF);
+the former can be upgraded with @cl{(asdf:upgrade-asdf)},
+we provide a script to automatically install @(ASDF3),
+that works on all those implementations that are not too completely obsolete.
 
 Upgradability crucially decoupled what @(ASDF) users could rely on
 from implementations provided, enabling a virtuous circle of universal upgrades,
@@ -610,6 +619,17 @@ Since then, new implementations are being released with @(ASDF) support:
 (Linux, BSD, etc., maybe cygwin, and now also MacOS X, Android, iOS).
 It can now deal with very different operating system families:
 most importantly Windows, but also the ancient MacOS 9 and Genera.
+
+Portability is important, because depending on which
+specific task you're performing on which operating system, architecture, etc.,
+you'll want a different implementation.
+For instance, SBCL is quite popular for its runtime speed
+on intel-compatible Linux machines;
+but since it is slower at compiling,
+isn't the best choice for a quick script where fast startup matters;
+it also won't run on ARM, and doesn't have the best Windows support;
+and so you might prefer Clozure CL or another implementation,
+depending on your constraints.
 
 Portability was achieved by following the principle that
 @moneyquote{we must abstract away semantic discrepancies between underlying implementations}.
@@ -814,8 +834,16 @@ The principle followed was that
 @subsubsection{Working @tt{defsystem} dependencies}
 
 @(ASDF2) introduced a @tt{:defsystem-depends-on} option to @tt{defsystem},
-whereby a system could declare dependencies on build extensions,
-instead of system definition files having to procedurally load these extensions.
+whereby a system could declaratively specify dependencies on build extensions.
+Before that option, users would imperatively load any extension they need:
+in their @tt{asd} system definition file,
+they would for instance evaluate @cl{(asdf:load-system :cffi-grovel)},
+before they use @cl{defsystem} to define their systems.
+Indeed, a @tt{asd} file is just a Lisp source file
+that is loaded in a controlled context and may contain arbitrary side-effects;
+but such side-effects are frowned upon and
+a declarative style is more maintainable,
+hence this improvement.
 
 However, this feature was only made be usable in 2.016 (June 2011),
 when @(ASDF) started to accept keywords as designators
@@ -828,8 +856,16 @@ therefore, the extension had nowhere to intern or export any symbol
 that the rest of the @tt{defsystem} form could use.
 
 These days, this feature is the recommend way of loading extensions.
+But from the story of it, we can learn that
+@moneyquote{a feature isn't finished until it is used in production and tested}.
+Until then, there are likely issues that will need to be addressed.
 
-For instance, you could use:
+As an example use, the proper way to use the CFFI library
+is to use @cl{:defsystem-depends-on (:cffi)} as below,
+which will ensure CFFI is loaded before the system is processed;
+then CFFI defines the class @tt{asdf::cffi-grovel},
+that can be designated by the keyword @tt{:cffi-grovel}
+amongst the components of the system.
 
 @clcode{
 (defsystem some-system-using-ffi
@@ -839,14 +875,25 @@ For instance, you could use:
    ...))
 }
 
-And the CFFI library will define the class @tt{asdf::cffi-grovel}
-that is designated by the keyword @tt{:cffi-grovel}
-amongst the components of the system.
-
 @subsubsection{Working selective system forcing}
 
-2011, 2012.
-@tt{:force}, @tt{:force-not}, @tt{require-system}.
+As early as 2003, Dan Barlow introduced in @(ASDF)
+a mechanism to @emph{selectively} force the recompilation of some systems,
+but not others.
+However, this mechanism never worked as advertised;
+in 2010, the bug was found while working on @(ASDF2),
+and the code partially fixed but guarded by a continuable error message
+inviting users to contact the maintainer.@note{
+  @(CL) possesses a mechanism for continuable errors, @tt{cerror},
+  whereby users can interactively or programmatically
+  tell the system to continue despite the error.
+}
+Despite the feature demonstrably not having any single user,
+it was finally fixed and enabled in @(ASDF 2.015) (May 2011) rather than extirped,
+and extended in @(ASDF 2.21) (April 2012) to cover a negative @tt{force-not} feature,
+allowing the fulfillment of a user feature request:
+the ability to use @tt{require-system} rather than @tt{load-system},
+so that no attempt is made to upgrade already loaded systems.
 
 @subsubsection{Encoding support}
 
@@ -869,19 +916,39 @@ Last bug to fix... opened a Pandora's box.
 
 @subsection{@(ASDF) 3: A Mature Build}
 
-@(ASDF3) (2013) was completely revamped, twice over, to correctly compute timestamps
+@(ASDF3) was a complete rewrite of @(ASDF2), several times over,
+to correctly deal with its core issues.
+The originally unintended result was to turn it into
+a much more robust and versatile product than it was:
+not only does it cover the robust building of @(CL) software from @(CL),
+it also includes runtime software management functionality
+and integration both ways with the Unix command line.
+
+@(ASDF3) was pre-released as 2.27 in February 2013,
+then officially released as 3.0.0 on May 15th 2013.
+
+@subsubsection{Proper Timestamp Propagation}
+
+to correctly compute timestamps
 across an arbitrary action graph;
 users may specify how operations do or don't propagate
 along the component hierarchy.
 
-@(ASDF3) was pre-released as 2.27 in February 2013,
-then officially released as 3.0.0 on May 15th 2013, with further stable releases since.
+@subsubsection{A Consistent, Extensible, Model}
+
+
 
 @subsubsection{Portability Layer}
 
 @(ASDF3) notably brought a user-visible portability layer UIOP.
 Abstracting over pathnames, filesystem access;
 but also run-program, Lisp image lifecycle, and many other everyday concerns.
+
+@cl{inferior-shell}, that builds upon @cl{uiop:run-program}, can:
+@clcode{
+  (in-package :inferior-shell)
+  (run `(pipe (ps fauwwwwwwwwwwwwx) (sort -r -k5)))
+}
 
 @subsubsection{extensibility}
 
@@ -899,10 +966,104 @@ there are several ways to deliver software in a single-file "bundle",
 including a single FASL for a system and/or its dependencies, or
 (on supported implementations) a standalone executable programs;
 
+@subsubsection{cl-launch}
+
+Running Lisp code to portably create executable commands from Lisp is great,
+but there is a bootstrapping problem: when all you have is the command line,
+how are you going to portably invoke the Lisp code that creates a command,
+to begin with?
+
+This bootstrapping problem was solved some years ago with @(cl-launch),
+a bilingual program in a mix of portable shell script and @(CL),
+that provides a nice shell command interface to
+building shell-executable commands from Lisp code,
+including delivery as either portable shell scripts or
+self-contained precompiled executable files.
+
+In its latest incarnation, @(cl-launch 4) (March 2014),
+it was updated to take full advantage of @(ASDF3),
+its build specification interface was made more general,p
+and its Unix integration was improved.
+
+You thus may directly invoke Lisp code from the shell command-line:
+@verbatim|{
+cl -sp lisp-stripper \
+   -i "(print-loc-count \"asdf.lisp\")"
+}|
+
+It can also be used as a script "interpreter",
+except with a Lisp compiler underneath, where desired:
+@verbatim|{
+#!/usr/bin/cl -sp lisp-stripper -E main
+(defun main (argv)
+  (if argv
+      (map () 'print-loc-count argv)
+      (print-loc-count *standard-input*)))
+}|
+
+In the examples above, option @tt{-sp}, shorthand for @tt{--system-package},
+simultaneously loads a system using @(ASDF) during the build phase,
+and appropriately selects the current package;
+@tt{-i}, shorthand for @tt{--init} evaluates a form after the software is built;
+@tt{-E}, shorthand for @tt{--entry} evaluates after the software is built
+a form that calls specified function with the command-line arguments.
+As for @tt{lisp-stripper}, it's a simple library that counts lines of code
+after removing comments, blank lines, docstrings, and multiple lines in strings.
+
+@(cl-launch) will automatically detect an @(CL) implementation
+that is installed on your machine, with sensible defaults.
+You can easily override the defaults with a proper command-line option,
+a configuration file, or some installation-time configuration.
+See @tt{cl-launch --more-help} for complete information.
+Note that @(cl-launch) is on a bid to homestead the executable path
+@tt{/usr/bin/cl} on Linux distributions, but may slightly more portably
+be invoked as @tt{cl-launch}.
+
+A nice use of @(cl-launch) is to compare how various implementations
+evaluate some form, to see how portable it is in practice,
+whether the standard mandates a specific result or not:
+@verbatim|{
+for l in sbcl ccl clisp cmucl ecl abcl \
+         scl allegro lispworks gcl xcl ; do
+ cl-launch -l $l -i \
+ '(format t "'$l': ~S~%" `#5(1 ,@`(2 3)))' \
+ 2>&1 | grep "^$l:" # LW, GCL are verbose
+done
+}|
+
+@(cl-launch) compiles all the files and systems that are specified to be run,
+and keeps the compilation results in the same output-file cache as @(ASDF3).@note{
+  Historically, it is more accurate to say that @(ASDF) imported
+  the cache technology previously implemented by @(cl-launch),
+  which itself was reusing a technique popularized by
+  Debian's @tt{common-lisp-controller} as far back as 2004,
+  and by the more widely portable @tt{asdf-binary-locations} after it.
+  By defining an @cl{:around} method for the @tt{output-files} function,
+  it was possible for the user to control where @(ASDF)
+  would store its compilation output,
+  without the authors of @(ASDF) having had to create an explicit hook.
+  It is unclear who first came up with the idea,
+  but the fact that this technique could be developed as an extension to @(ASDF)
+  without the author explicitly designing the idea into it,
+  and without having to modify the source code,
+  is an illustration of how expressive and modular the @(CL) Object System can be.
+  Of course, for the solve the bootstrapping issue of
+  where the fasl for this object file should itself be stored,
+  this functionality had to be part of @(ASDF) itself,
+  and so was merged into @(ASDF2),
+  becoming @(ASDF)'s @tt{output-translations} layer.
+}
+Therefore, the first time it sees a given file or system,
+or after they have been updated, there may be a startup delay
+while the compiler processes the files;
+but subsequent invocations will be faster as the compiled code is directly loaded.
+This is in sharp contrast with other "scripting" languages,
+that have to slowly interpret or recompile everytime.
+For security reasons, the cache is not shared between users.
 
 @subsection{@(ASDF) 3.1: Lifting Lisp}
 
-@(ASDF) 3.1 (2014) builds on top of @(ASDF3) to provide new features.
+@(ASDF 3.1) (March 2014) builds on top of @(ASDF3) to provide new features.
 
 The @tt{asdf/package-system} extension supports
 a one-file, one-package, one-system style of programming
@@ -933,6 +1094,7 @@ In a second part, we will discuss the challenges of making acceptable change
 to a piece of community software that is not only used by hundreds of developers,
 but also extended in various ways by tens of them:
 backward compatibility is much harder in presence of extensibility.
+
 The following features succeeded,
 because they provided sufficient backward compatibility,
 for interesting values of "sufficient":
@@ -942,14 +1104,33 @@ replacement for if-component-dep-fails,
 if-bind for aif,
 compile-file* for *compile-file-function*,
 refactoring into one-file-one-package style.
+
 The following features failed,
 because they either weren't compatible enough, or didn't bring sufficient value:
 preference files, generalized around method combinations, asdf-binary-locations,
-deferred-warnings, unconstrained versions,
+*load-system-operation*,
+deferred-warnings, unconstrained versions, build-op
 :current-directory, *system-cache* and get-uid, asdf-utilities, asdf-utils,
 d as nickname to asdf-driver, DBG macro.
 
+
 @subsection{Uniformity}
+
+A best effort at providing
+Some attempts at improving usability were less successful.
+For instance, imitating the example set by Dan Barlow on SBCL,
+@(ASDF) was made to hook into the @cl{require} mechanism
+of a growing number of implementations.@note{
+So far (March 2014), seven:
+ABCL, GNU CLISP, Clozure CL, CMUCL, ECL, MKCL, SBCL.
+}
+Thus, users could subsequently use the standard
+but deliberately underspecified @(CL) mechanism for extending the language:
+by evaluating @cl{(require :foo)} they could have it implicitly rely on @(ASDF)
+to load the system if not present yet.
+However, users ended up not using it (1) this is not ubiquitous,
+therefore for portability you have to fall back to explicitly calling @(ASDF) anyway.
+
 
 While developing @(ASDF), we sometimes made many things more uniform
 at the cost of a slight backward incompatibility
@@ -971,6 +1152,42 @@ At the cost of a handful of users having to cleanup their code a bit,
 we could thus notably @moneyquote{reduce the cognitive load on users} for all future systems.
 No more need to learn complex syntactic and semantic constraints
 and even more complex tricks to evade those constraints.
+
+@subsection{Overriding the default pathname extension}
+
+Back in the bad old days of @(ASDF1),
+the official recipe, described in the manual,
+to override the default pathname type @tt{lisp} for Lisp source file to
+e.g. @tt{cl}, used to be:
+
+@clcode{
+(defmethod source-file-type
+   ((c cl-source-file) (s (eql (find-system 'my-sys))))
+   "cl")
+}
+
+Another recipe that got some following instead encouraged
+defining a new subclass of @cl{cl-source-file}
+and specializing a method on that class and @cl{module},
+which caused much grief when we tried to make @cl{system}
+not a subclass of @cl{module} anymore,
+but both be subclasses of @cl{parent-component} instead.
+
+In @(ASDF) 2.015, two new subclasses of @tt{cl-source-file} were introduced,
+@tt{cl-source-file.cl} and @tt{cl-source-file.lsp},
+that provide the respective types @tt{cl} and @tt{lsp},
+which covers the majority of systems that don't use @tt{lisp}.
+Users need simply add to their @cl{defsystem} the option
+@cl{:default-component-class :cl-source-file.cl}
+and files will have the specified type.
+Individual modules or files can be overridden, too,
+either by changing their class from @cl{:file} to @cl{:cl-source-file.cl},
+or more directly by specifying a @cl{:pathname} parameter.
+
+In any case, the protocol was roundabout both for users and implementers,
+and a new protocol was invented.
+Verbosity is a bad smell.
+
 
 @section{Conclusion: Lessons for Language Growers}
 
@@ -998,5 +1215,3 @@ pure transformations with local environments}.
 @(generate-bib)
 
 @section[#:tag "Pathnames" #:style (make-style 'appendix '(unnumbered))]{Appendix A: Pathnames}
-
-

@@ -54,8 +54,10 @@
   #:date "2010"
   #:url "http://common-lisp.net/project/asdf/doc/ilc2010draft.pdf")
 
-(define-bib Quicklisp
+(define-bib quicklisp
   #:author "Zach Beane"
   #:title "Quicklisp"
   #:date "2011"
   #:url "http://quicklisp.org/") ;; also see blog.quicklisp.org and xach.livejournal.com archives
+
+;; ASDF 2.26: http://fare.livejournal.com/170504.html

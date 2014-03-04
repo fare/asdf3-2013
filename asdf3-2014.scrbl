@@ -289,7 +289,8 @@ which also includes all their own transitive dependencies.
 
 @subsubsection{In-image}
 
-Finally, it is important to note that @moneyquote{@(ASDF) is an @q{in-image} build system}:
+Finally, it is important to note that
+@moneyquote{@(ASDF) is an @q{in-image} build system}:
 it compiles and loads systems in the current @(CL) image.
 For better or worse, this notably differs from the practice in most other languages,
 where the build system is a completely different piece of software running in a separate process:
@@ -308,7 +309,7 @@ but memory sizes have increased even faster.
 
 Still, for all these reasons, @(ASDF) follows the minimalist principle that
 @moneyquote{anything that can be provided as an extension
-should be provided as an extension and left out of the core}.
+            should be provided as an extension and left out of the core}.
 @(ASDF) thus cannot afford to include, say,
 management of an advanced persistence cache indexed by cryptographic digest of the contents,
 or control of distributed network of cross-compiling workers, etc. —
@@ -455,7 +456,7 @@ was @tt{mk-defsystem} @~cite[MK-DEFSYSTEM].@note{
   (Allegro, LispWorks, and formerly, Genera),
   seem to have been much better than @tt{mk-defsystem}.
   But they were not portable, not mutually compatible, and not free software,
-  and therefore @tt{mk-defsystem} because @emph{de facto} standard for free software.
+  and therefore @tt{mk-defsystem} because @(de_facto) standard for free software.
 }
 Like late 1980s variants of DEFSYSTEM on all Lisp systems,
 it featured a declarative model to define a system in terms of
@@ -631,8 +632,9 @@ on top of whatever the implementation or distribution did or didn't provide.
   This reduces the risk of either having data to drop from a previous @(ASDF),
   or much worse, being caught upgrading @(ASDF) in midflight.
   In turn, such special upgrading of @(ASDF) itself makes code upgrade easier.
-  Indeed, we had found that @moneyquote{@(CL) support for hot upgrade of code may exist
-  but is anything but seamless}.
+  Indeed, we had found that
+  @moneyquote{@(CL) support for hot upgrade of code may exist
+                    but is anything but seamless}.
   These simpler upgrades allow us to simply use @tt{fmakunbound} everywhere,
   instead of having to @tt{unintern} some functions before redefinition.
 }
@@ -782,12 +784,38 @@ and users had to know and specify configuration of all software installed.
 
 During the development of @(ASDF2) (then 3),
 a great number of bugs were introduced, and even more bugs were fixed.
+
+@(ASDF) used to pay no attention to robustness.
+A glaring issue, for instance, that was causing much aggravation in large projects
+was that interrupting a build while in the middle of compiling a file
+would result in a corrupt output file that would poison further builds
+until it was manually removed:
+    @; https://bugs.launchpad.net/asdf/+bug/587889
+@(ASDF) would fail the first time, then when restarted a second time,
+would silently load the partially compiled file,
+leaving the developer believing the build had succeeded when it hadn't,
+and then having to either debug an incomplete system.
+The problem could be even more aggravating, since it would sometimes happen
+because the compilation itself resulted in a fatal error
+(especially since in @(CL), developers can run arbitrary code
+to run during compilation, and that code can have fatal bugs);
+the developer, after restarting compilation, might not see the issue,
+and committing a change that others had to track down and painfully debug,
+because it broke their build in a way that mattered more directly to them.
+This was fixed by having @(ASDF) compile into a temporary location,
+and move the outputs to their destination only in case of success, atomically.@note{
+  Not all Lisp implementations and/or underlying operating systems
+  allowed this replacement to be atomic.
+  In the latest @(ASDF3), the function @cl{uiop:rename-file-overwriting-target}
+  abstracts over the details.
+}
+A lot of corner cases similarly had to be handled to make the build system robust.
+
 We eventually acquired the discipline to
 @moneyquote{systematically write tests for new features and fixed bugs}.
 The test system itself was vastly improved
 to make it easier to reproduce failures and debug them,
 and to handle a wider variety of test cases.
-
 Furthermore, we adopted the policy that the code was not to be released
 unless every regression test passed on every supported implementation
 (the list of which steadily grew),
@@ -797,7 +825,6 @@ and letting users sort out non-portable corner-cases with their implementation,
 @(ASDF2) followed the principle that is should
 @moneyquote{fail early for everyone rather than pass as working for some}
 and fail mysteriously for others.
-
 These two policies led to very robust code,
 at least compared to previous @(CL) build systems including @(ASDF1).
 
@@ -861,7 +888,13 @@ As a trivial instance, the basic @(ASDF) invocation was the clumsy
 @tt{(asdf:operate 'asdf:load-op :foo)} or
 @tt{(asdf:oos 'asdf:load-op :foo)}.
 With @(ASDF2), that would be the more obvious
-@tt{(asdf:load-system :foo)}.
+@tt{(asdf:load-system :foo)}.@note{
+  @tt{load-system} was actually implemented
+  by Gary King, the last maintainer of @(ASDF1), in June 2009;
+  but it isn't until @(ASDF2) made it possible in 2010
+  for everyone to use an up-to-date @(ASDF)
+  that users could @emph{rely} on @tt{load-system} being there.
+}
 
 @(ASDF2) provided a portable way to specify pathnames
 by adopting Unix pathname syntax as an abstraction,
@@ -930,22 +963,37 @@ amongst the components of the system.
 
 @subsubsection{Working selective system forcing}
 
+Since the beginning, @(ASDF) has a mechanism
+to force recompilation of everything:
+@clcode{
+  (asdf:oos 'asdf:load-op 'my-system :force t)
+}
+Which in a recent @(ASDF) would be more colloquially:
+@clcode{
+  (asdf:load-system :my-system :force :all)
+}
 As early as 2003, Dan Barlow introduced in @(ASDF)
-a mechanism to @emph{selectively} force the recompilation of some systems,
-but not others.
-@;
-@; MORE EXAMPLES!
-@;
-However, his implementation had a bug and never worked as advertised;
-in 2010, the bug was found while working on @(ASDF2),
-and the code partially fixed but guarded by a continuable error message
+a mechanism to @emph{selectively} @cl{:force}
+the recompilation of some systems, but not others:
+@cl{:force :all} would force recompilation of all systems;
+@cl{:force t} would only force recompilation of the requested system;
+and @cl{:force '(some list of systems)}
+would only force recompilation of the specified systems.
+However, his implementation had two bugs:
+@cl{:force t} would continue to force everything, like @cl{:force :all};
+and @cl{:force '(some list of systems)} would cause a runtime error
+(that could have been found at compile-time with static strong typing).
+
+Instead, the bugs were found in 2010 while working on @(ASDF2);
+the code was partially fixed, but
+support for the selective syntax was guarded by a continuable error message
 inviting users to contact the maintainer.@note{
   @(CL) possesses a mechanism for continuable errors, @tt{cerror},
   whereby users can interactively or programmatically
   tell the system to continue despite the error.
 }
 Despite the feature demonstrably not ever having had any single user,
-it had been partially documented, and was finally
+it had been partially documented, and so was finally
 fixed and enabled in @(ASDF 2.015) (May 2011) rather than removed.
 
 Then the feature was extended in @(ASDF 2.21) (April 2012)
@@ -960,12 +1008,17 @@ yet do not want to expensively scan every time
 the (configured subset of the) filesystem
 for updated (or worse, outdated) variants of their source code.
 The hook into the @cl{require} mechanism was then amended to use it.@note{
-  The two mechanisms were further enhanced in @(ASDF3);
-  furthermore, the force mechanism takes precedence over the force-not,
-  though is unclear whether this is better
-  than the opposite arbitrary choice would have been.
-  Either way, users have to explicitly compute mutually
-  exclusive lists of systems if they want to avoid the interference.
+  The two mechanisms were further enhanced in @(ASDF3).
+  One conceptual bug, though, was
+  having the @cl{:force} mechanism take precedence over @cl{:force-not},
+  so that users had to explicitly compute mutually exclusive lists of systems
+  if they want to avoid the interference.
+  However, though it wasn't obvious to me initially,
+  the common use-case, as above, would seem to be
+  @cl{:force :all :force-not '(some exceptions)}.
+  This is @XXX{TODO} fixed in @(ASDF3.1), where
+  @cl{:force-not} now has precedence over @cl{:force}.
+  @XXX{And a default value for force-not???}
 }
 
 This illustrates both Dan Barlow's foresight and
@@ -1021,21 +1074,121 @@ However, users ended up mostly not using it, we presume for the following reason
     at which point there ought to be
     a (transitively closed) persistent set of @tt{force-not} systems,
     which should take precedence over the @tt{force} directive.
+    @; https://bugs.launchpad.net/asdf/+bug/1184002
   } } ]
 
 @subsubsection{Encoding support}
 
-2012.
+Back in 2002, most programmers were still using 8-bit characters in various encodings
+(latin1, koi8-r, etc.), and Emacs did not support unicode very well, if at all.
+@(ASDF1) in its typical minimalist manner, just didn't specify any @cl{:external-format}
+and let the programmer deal with the implementation-dependent configuration
+of character encodings, if such an issue mattered to them.
+Most code was written in 7-bit ASCII, so usually, there was no issue;
+but occasionally, one would attempt to load a file encoded with latin1
+in a Lisp expecting strictly UTF-8 input, resulting in an error;
+or one would load a UTF-8 or Shift-JIS encoded file
+in a latin1 configured Lisp, resulting in mojibake.
 
-@subsubsection{Hooks aroud compilation}
+By 2012, however, Unicode was ubiquitous,
+UTF-8 was a @(de_facto) standard, and Emacs supported it well.
+A few library authors had started to rely on it (if only for their own names).
+To make the loading of library code more predictable,
+@(ASDF2) added an @tt{:encoding} option to @tt{defsystem},
+so that files may be loaded in the encoding they were written in,
+irrespective of which encoding the user may otherwise be using.
+Once again, the principle
+	@emph{each can specify what he knows,
+              none need specify what he doesn’t.}
+In this case, the person who knows what encoding he used
+is the author of the library.
 
-@tt{:around-compile}
-@tt{:compile-check}
+The encoding option of a system or module was inherited by its components,
+unless they overrode it.
+The accepted syntax of the option is a keyword, abstracting over
+the implementation-dependent @cl{:external-format},
+which is not specified by the @(CL) standard.@note{
+  And indeed, though all other implementations that support unicode
+  accept @cl{:utf-8} as an external format,
+  GNU CLISP, always the outlier,
+  wants @cl{charset:utf-8} in its own package @cl{charset}.
+}
+The only encoding supported out of the box is @cl{:utf-8},
+because that's the only universally accepted encoding that's useful;
+but if your system specifies
+@cl{:defsystem-depends-on ("asdf-encodings")},
+it can use any encoding your implementation supports.
+However, the only other completely portable option is @cl{:latin1},
+the previous implicit standard being evolved from.
+On old implementations without support for Unicode or external-formats,
+@(ASDF) fallback to using the 8-bit implementation @cl{:default}.
 
-@subsubsection{The end}
+Though @cl{:utf-8} was the @(de_facto) standard,
+the default was temporarily left to @cl{:default}
+for backward-compatibility,
+to give time to adapt to the authors of a dozen libraries
+that were implicitly using @cl{:latin1}, out of over 700 in @(Quicklisp),
+compared to a hundred that implicitly used @cl{:utf-8}
+and the rest plain ASCII.
+This default changed to @cl{:utf-8} one year later,
+with the pre-release of @(ASDF3),
+under the theory that
+@moneyquote{it's good practice to release
+                 all small backward-incompatible changes
+                 together with a big one},
+since that's the time users will have to pay attention, anyway.
+Though it did break a few libraries that were still unmaintained after a year,
+the new defaults actually made things more reliable for many other libraries,
+as witnessed by the automated testing tool @tt{cl-test-grid}. @XXX{Give URL!}
+
+Because we had learned that a feature isn't complete until it's tested,
+we published library to demonstrate how to put this new infrastructure to good use:
+@cl{lambda-reader}, a utility that lets you use the unicode character @cl{λ}
+instead of @cl{lambda} in your code.@note{
+  And yes, it does feel good to write @cl{λ} this way,
+  and it does improve code that uses higher-order functions.
+  My @tt{.emacs} has a @tt{(global-set-key "\C-cl" "λ")},
+  and my @tt{.XCompose} has @tt{<Multi_key> <period> <backslash> : "λ" U03BB}.
+}
+Originally based on code originally by Brian Mastenbrook,
+it was modified to fall back gracefully to working mojibake
+on implementations that do not support Unicode, and
+to offer the syntax modification via the @(de_facto) standard
+@cl{named-readtables} extension.
+Users still had to enable the modified syntax
+at the beginning of every file,
+then carefully disable it at the end of the file,
+least they cause havoc in other files and/or in the user's environment.
+
+@subsubsection{Hooks around compilation}
+
+A recurrent question to @(ASDF) developers was about how to properly
+modify the @(CL) syntax for some files,
+without breaking the syntax for other files:
+locally giving short nicknames to packages,
+changing the readtable, or the reader function, etc.
+@cl{:around-compile} (2.019, November 2011);
+
+@cl{:around-compile} (2.019, November 2011);
+
+@subsubsection{Enforcing user-defined invariants}
+
+@cl{:compile-check} (2.23, July 2012).
+
+@cl{asdf-finalizers}
+
+@subsubsection{The end of @(ASDF2)}
 
 The @(ASDF2) series culminated with @(ASDF) 2.26,
-at which time all the code had been rewritten,
+after a few months were the few changes were all
+portability tweaks, fixes to remote corner cases, or minor cleanups.
+Only two obscure bugs remained in the bug tracker,
+from back in the old days of @(ASDF1):
+@;https://bugs.launchpad.net/asdf/+bug/479522   wanted: recompile system when dependency changes
+@;https://bugs.launchpad.net/asdf/+bug/627173   asdf doesn't recompile when .asd file has changed
+@; This was spawned after 2.26.8:
+@;https://bugs.launchpad.net/asdf/+bug/1087609  failure to check timestamps of dependencies
+
 and the core @tt{traverse} algorithm had been refactored
 into smaller, more understandable functions.
 
@@ -1349,7 +1502,7 @@ its semantics are defined in terms of
 @emph{irreversible side-effects to a global environment}.
 A better principle would be to
 @moneyquote{define a programming language's semantics in terms of
-pure transformations with local environments}.
+                   pure transformations with local environments}.
 
 @(generate-bib)
 

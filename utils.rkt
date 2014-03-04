@@ -54,6 +54,7 @@
 (define (ASDF1) (ASDF 1))
 (define (ASDF2) (ASDF 2))
 (define (ASDF3) (ASDF 3))
+(define (ASDF3.1) (ASDF 3.1))
 (define (cl-launch (version #f)) (software-version "cl-launch" version))
 (define (ASDF-Install) @cl{ASDF-Install})
 (define (UIOP) @cl{UIOP})

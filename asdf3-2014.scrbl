@@ -70,7 +70,7 @@ may now be written @emph{portably} in @(CL):@note{
   A software distribution system, @(Quicklisp),
   makes it easy to install hundreds of such libraries,
   that were already using @(ASDF) as a basic software organization mechanism.
-  The new features in @(ASDF3) were just the last missing piece in this puzzle.
+  The new features in @(ASDF3) were only the last missing pieces in this puzzle.
 }
 starting with quick scripts that glue together functionality provided
 by the operating system, external programs, C libraries, or network services;
@@ -250,11 +250,17 @@ under the same @bydef{parent} system or module,
 that can themselves be files or modules.
 
 @subsubsection{Action graph}
+@; TODO: add a graph!
 
 Building software is modeled as a Direct Acyclic Graph (DAG) of @bydef{action}s:
 each action is a pair of an operation and a component,
 and must be @bydef{perform}ed but only after
 all the actions it depends on have already been performed.
+
+For instance, in @cl{fare-quasiquote} above,
+the @emph{loading} of @tt{quasiquote.lisp} depends-on
+the @emph{compiling} of @tt{quasiquote.lisp},
+which itself depends-on the @emph{loading} of @tt{package.lisp}, etc.
 
 Importantly, though, this graph is distinct
 from the preceding graph of components:
@@ -380,8 +386,8 @@ by Lisp's vastly better architecture.
   }
 ]
 
-Nevertheless, there are also many ways in which @(ASDF) pales to other build systems
-for @(CL), C, Java, or other systems:
+Nevertheless, there are also many ways in which @(ASDF) pales in comparison
+to other build systems for @(CL), C, Java, or other systems:
 
 @itemlist[
   @item{
@@ -730,6 +736,7 @@ One key feature introduced with @(ASDF2) @~cite[Evolving-ASDF] was
 a new configuration mechanism for programs to find libraries,
 the @bydef{source-registry}, that followed this guiding principle:
 @bold{Each can specify what he knows, none need specify what he doesn't}.
+
 Configuration information is taken from multiple sources,
 with the former partially or completely overriding the latter:
 argument explicitly passed to @cl{initialize-source-registry},
@@ -738,22 +745,35 @@ central user configuration file,
 modular user configuration directory,
 central system configuration files,
 modular system configuration directories,
-implementation configuration.
+implementation configuration, with sensible defaults.
 Also, the source-registry is optionally capable
 of recursing through subdirectories
 (excluding source control directories),
 where @tt{*central-registry*} itself couldn't.
+Software management programs at either user or system level
+could thus update independent configuration files in a modular way
+to declare where the installed software was located;
+users could manually edit a file describing where he manually downloaded software;
+users could export environment variables to customize or override
+the default configuration with context-dependent information;
+and scripts could completely control the process
+and build software in a predictable, deterministic way;
+it is always possible to take advantage of well-configured system,
+and always possible to avoid and inhibit any misconfiguration
+that was out of one's control.
 
 A similar mechanism, the @bydef{output-translations},
 also allows to specify where output files are to be stored,
-which by default seggregates them by
+depending on where the corresponding input files are located.
+By default, @(ASDF) will seggregate these output files by
 implementation, operating system, ABI, version, etc.,
 allowing for sharing source code between several users
 who themselves may use many different versions of many implementations, etc.
 Thus, whoever or whichever software manages installation of source code
-does not have to also know which compiler is to be used by which user;
-configuration remains modular, and code can be shared by all who trust it,
+does not have to also know which compiler is to be used by which user at what time.
+The configuration remains modular, and code can be shared by all who trust it,
 without affecting those who don't.
+
 There used to be an extension to @(ASDF1) called @tt{asdf-binary-locations}
 that fulfilled the same functionality;
 but apart from its suffering
@@ -821,8 +841,9 @@ unless every regression test passed on every supported implementation
 (the list of which steadily grew),
 or was marked as a known failure due to some implementation bugs.
 Unlike @(ASDF1), that focused on getting the common case working,
-and letting users sort out non-portable corner-cases with their implementation,
-@(ASDF2) followed the principle that is should
+and letting users sort out non-portable uncommon cases with their implementation,
+@(ASDF2) followed the principle that code should either work of fail everywhere the same,
+and in the latter case,
 @moneyquote{fail early for everyone rather than pass as working for some}
 and fail mysteriously for others.
 These two policies led to very robust code,
@@ -947,15 +968,15 @@ But from the story of it, we can learn that
 Until then, there are likely issues that will need to be addressed.
 
 As an example use, the proper way to use the CFFI library
-is to use @cl{:defsystem-depends-on (:cffi)} as below,
+is to use @cl{:defsystem-depends-on ("cffi")} as below,
 which will ensure CFFI is loaded before the system is processed;
 then CFFI defines the class @tt{asdf::cffi-grovel},
 that can be designated by the keyword @tt{:cffi-grovel}
 amongst the components of the system.
 
 @clcode{
-(defsystem some-system-using-ffi
-  :defsystem-depends-on (:cffi)
+(defsystem "some-system-using-ffi"
+  :defsystem-depends-on ("cffi")
   :components
   ((:cffi-grovel "foreign-functions")
    ...))
@@ -1086,7 +1107,13 @@ and let the programmer deal with the implementation-dependent configuration
 of character encodings, if such an issue mattered to them.
 Most code was written in 7-bit ASCII, so usually, there was no issue;
 but occasionally, one would attempt to load a file encoded with latin1
-in a Lisp expecting strictly UTF-8 input, resulting in an error;
+in a Lisp expecting strictly UTF-8 input, resulting in an error;@note{
+  The encoding issues during compilation were made worse by the (legitimate) behavior of SBCL:
+  at the same time, (1) SBCL set the default encoding in a given session
+  based on the same environment variable as the @tt{libc} locale,
+  which could vary wildly between developers, even more between hypothetical end-users, and
+  (2) SBCL would issue an error rather accept invalid UTF-8.
+}
 or one would load a UTF-8 or Shift-JIS encoded file
 in a latin1 configured Lisp, resulting in mojibake.
 
@@ -1109,9 +1136,9 @@ The accepted syntax of the option is a keyword, abstracting over
 the implementation-dependent @cl{:external-format},
 which is not specified by the @(CL) standard.@note{
   And indeed, though all other implementations that support unicode
-  accept @cl{:utf-8} as an external format,
+  accept the keyword @cl{:utf-8} as an external format,
   GNU CLISP, always the outlier,
-  wants @cl{charset:utf-8} in its own package @cl{charset}.
+  wants the symbol @cl{charset:utf-8} in a special package @cl{charset}.
 }
 The only encoding supported out of the box is @cl{:utf-8},
 because that's the only universally accepted encoding that's useful;
@@ -1167,32 +1194,142 @@ modify the @(CL) syntax for some files,
 without breaking the syntax for other files:
 locally giving short nicknames to packages,
 changing the readtable, or the reader function, etc.
-@cl{:around-compile} (2.019, November 2011);
 
-@cl{:around-compile} (2.019, November 2011);
+The answer in 2011 was that it possible to define
+a new subclass @cl{my-cl-file} of @cl{cl-source-file},
+and then a method on @cl{perform :around ((o compile-op) (c my-cl-file))},
+that would wrap the processing of the function inside a context
+where syntax was modified.
+But not only was it a cumbersome interface, it had the annoying corner case
+of having to also define a method for the seldom used operation @cl{load-source-op},
+and for any future such imaginable operation involving reading the file.
+
+A better, more declarative interface was desirable,
+and implemented in @(ASDF 2.018) (October 2011):
+each component could define an option @cl{:around-compile},
+or inherit it from its parent module or system,
+that could designate a function that, when defined,
+would be called around the compilation.
+If @cl{nil} is explicitly specified, the function inherited from the system
+will not be called, which is usually a necessity in the first few files of a system,
+before said function was defined.
+
+Actually, the function usually cannot be named by a symbol,
+because at the time the @tt{.asd} file is read, none of the code has been compiled,
+and the package in which the symbol will be interned doesn't exist yet;
+therefore, @(ASDF 2.019) (November 2011) made it possible
+to designate a function by a string that will be @cl{read} later.
+Hence, for instance, systems defined in Stelian Ionescu's IOLib,@note{
+  IOLib is a comprehensive general purpose I/O library for @(CL),
+  written by Stelian Ionescu, that strives at doing the Right Thing™
+  where many other libraries sacrifice code quality,
+  feature coverage or portability for the sake of expediency.
+}
+use @cl{:around-compile "iolib/asdf:compile-wrapper"},
+except for the system @cl{iolib/asdf} itself,
+that defines these package and function.
 
 @subsubsection{Enforcing user-defined invariants}
 
-@cl{:compile-check} (2.23, July 2012).
+Another related feature, added in @(ASDF 2.23) (July 2012),
+was the ability for users to define invariants to be enforced by @(ASDF)
+when compiling their code:
+a file might be compliant @(CL) code, and compile correctly,
+yet failed to satisfy application-specific invariants
+essential to the robustness of the application.
+Without the build system checking after every file's compilation,
+the user would be left with an invalid system,
+and after he eventually gets a runtime error,
+would have to chase which of thousands of files broke the invariant.
+Thanks to the @cl{:compile-check} feature,
+an @cl{:around-compile} hook could tell @(ASDF) to check the invariant
+before it would accept a compilation output
+that would otherwise poison future builds
+(see @secref{Robustness} above about poisoned builds).
 
-@cl{asdf-finalizers}
+There were two notable use cases at ITA Software.
+In the simpler one, the error logging infrastructure
+was registering at compile-time all strings that could be seen by end-users,
+to build a database that could be localized to another language,
+as per legal requirements of the customer.
+But it was not enough to do the registering at compile-time,
+because unless you were building everything from scratch in the same process,
+the compile-time state was lost before the final build image was dumped;
+and it was not possible to do the registering as part of the macro's expansion,
+because this expansion was not for code to be evaluated at the toplevel,
+but only for code called conditionally, in exceptional situations.
+One solution would have been to side-effect external files;
+a better solution was for the macro to defer registration
+to a cleanup form to be evaluated at the toplevel before the end of the file's compilation.
+But since there is no standard mechanism to achieve this effect,
+this required users to explicitly include a @cl{(final-forms)}
+at the end of their file.
+Now, users are prone to forgetting to include such a statement,
+when they are aware at all that they need to.
+But thanks to the new @cl{:compile-check} feature,
+the system could automatically check the invariant that
+no deferred form should be left dangling without a @cl{final-forms},
+and reject the file with a helpful error message
+instructing the programmer to insert said form.
+The @cl{asdf-finalizers} provides such an infrastructure of
+@cl{eval-at-toplevel} to evaluate a form and defer it for later inclusion at the top-level,
+and @cl{final-forms} to include all registered such forms at the top-level;
+user code would then specify in their @cl{defsystem}
+the @cl{:around-compile "asdf-finalizers:check-finalizers-around-compile"} hook
+for @(ASDF) to enforce the invariant.
+
+The more complex use case was similarly solved with @cl{asdf-finalizers}.
+Our data schema included hundreds of parametric types
+such as @cl{(list-of passenger)} of @cl{(ascii-string 3 5)}
+(for strings of ASCII characters length between 3 and 5).
+Checking that data verified the proper invariants
+before to insert corrupted data records in the database
+or to message them to partners was an essential robustness feature.
+But to define the type via the @(CL) @cl{deftype} mechanism,
+these types had to expand to things like
+@cl{(and list (satisfies list-of-passenger-p))},
+where the predicate function @cl{list-of-passenger-p}
+could not be provided additional parameters,
+and had to be independently defined by a form @cl{(declare-list-of passenger)};
+there again, this form could not be part of the type expansion,
+and was not enough to @cl{eval}uate at compile-time,
+but had to be explicitly included at the top-level.
+Manually managing those forms was a maintenance burden,
+and @cl{asdf-finalizers} eliminated this burden.
+
+The principle we recognized was that
+@moneyquote{every large enough application is a Domain-Specific Language with its own invariants,
+                  and the programming language is but the implementation language of the DSL}.
+This implementation will be extremely fragile
+if it cannot automatically enforce the invariants of the DSL.
+A good programming language will let you define new invariants,
+and a good build system will enforce them.
+In @(CL), this can all happen without leaving the language.
 
 @subsubsection{The end of @(ASDF2)}
 
-The @(ASDF2) series culminated with @(ASDF) 2.26,
-after a few months were the few changes were all
-portability tweaks, fixes to remote corner cases, or minor cleanups.
-Only two obscure bugs remained in the bug tracker,
-from back in the old days of @(ASDF1):
 @;https://bugs.launchpad.net/asdf/+bug/479522   wanted: recompile system when dependency changes
 @;https://bugs.launchpad.net/asdf/+bug/627173   asdf doesn't recompile when .asd file has changed
-@; This was spawned after 2.26.8:
+@;https://bugs.launchpad.net/asdf/+bug/656450   Forcing logic is baked into traverse
+@; This was spawned from 479522 after 2.26.8:
 @;https://bugs.launchpad.net/asdf/+bug/1087609  failure to check timestamps of dependencies
 
-and the core @tt{traverse} algorithm had been refactored
-into smaller, more understandable functions.
-
-Last bug to fix... opened a Pandora's box.
+The @(ASDF2) series culminated with @(ASDF) 2.26,
+after a few months when the few changes were all
+portability tweaks, fixes to remote corner cases, or minor cleanups.
+Only one really serious bug remained in the bug tracker, with maybe two other minor bugs,
+all of them related to the @tt{traverse} algorithm that walks the dependency tree.
+That algorithm had been inherited almost unchanged from the early days of @(ASDF1),
+with only some superficial bugs fixed, and
+no one dared change the essentials of it, because
+no one really understood what it was doing, why it was doing it,
+and why that did or didn't work — and the original author was long gone,
+and not available to answer questions.
+However, its spaghetti implementation had been refactored and broken up
+into smaller, more understandable function while fixing bugs for @(ASDF2),
+and now at least it was clear what it was doing, if not why that was right or wrong;
+and since that was the "last" bug, and there seemed nothing better to do,
+the bug was tackled... that that opened a Pandora's Box of bigger issues.
 
 
 @subsection{@(ASDF) 3: A Mature Build}
@@ -1420,9 +1557,6 @@ d as nickname to asdf-driver, DBG macro.
 
 @subsection{Uniformity}
 
-
-
-
 While developing @(ASDF), we sometimes made many things more uniform
 at the cost of a slight backward incompatibility
 with a few existing systems using kluges.
@@ -1443,7 +1577,6 @@ At the cost of a handful of users having to cleanup their code a bit,
 we could thus notably @moneyquote{reduce the cognitive load on users} for all future systems.
 No more need to learn complex syntactic and semantic constraints
 and even more complex tricks to evade those constraints.
-
 
 @subsection{Overriding the default pathname extension}
 
@@ -1479,6 +1612,46 @@ or more directly by specifying a @cl{:pathname} parameter.
 In any case, the protocol was roundabout both for users and implementers,
 and a new protocol was invented.
 Verbosity is a bad smell.
+
+@subsection{Syntax Control}
+
+Guy Steele has been quoted
+as vaunting the programmability of Lisp's syntax by saying:
+@emph{If you give someone Fortran, he has Fortran.
+If you give someone Lisp, he has any language he pleases.}
+Unhappily, if he were speaking about @(CL) specifically,
+he would have had to add:
+@emph{but it can't be the same as any one else's}.
+Indeed, syntax in @(CL) is controled via
+a fuzzy set of global variables,
+and making non-trivial modifications to the content of these variables,
+notably the @cl{*readtable*}, is both possible and frowned upon,
+because if such modifications escape their intended scope,
+they can cause unexpected breakage in unrelated parts of the system,
+written by different people, and there is
+Even though the Lisp ideal is one of ubiquitous syntax extension,
+and indeed extension through macros is ubiquitous,
+extens
+
+@moneyquote{any language feature has to be safe before it may be ubiquitous}.
+
+
+Now, other Lisp dialects, such as Racket,
+have succeeded at making syntax customization both safe and ubiquitous,
+by having it be strictly scoped to the current file or REPL.
+
+Now, @(ASDF3)
+
+Due to build issues with managing the global variables
+that control syntax, he has any language he pleases,
+Systems like @cl{named-readtables} are making it easier
+to manage local syntax modification,
+but cooperation from the build system is necessary
+before syntax customization may become safe; and
+
+With @(ASDF3), we tried to impose stricter rules on syntax modifications,
+but that broke too many systems, and
+
 
 
 @section{Conclusion: Lessons for Language Growers}

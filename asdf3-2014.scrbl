@@ -1029,17 +1029,12 @@ yet do not want to expensively scan every time
 the (configured subset of the) filesystem
 for updated (or worse, outdated) variants of their source code.
 The hook into the @cl{require} mechanism was then amended to use it.@note{
-  The two mechanisms were further enhanced in @(ASDF3).
-  One conceptual bug, though, was
-  having the @cl{:force} mechanism take precedence over @cl{:force-not},
-  so that users had to explicitly compute mutually exclusive lists of systems
-  if they want to avoid the interference.
-  However, though it wasn't obvious to me initially,
-  the common use-case, as above, would seem to be
-  @cl{:force :all :force-not '(some exceptions)}.
-  This is @XXX{TODO} fixed in @(ASDF3.1), where
-  @cl{:force-not} now has precedence over @cl{:force}.
-  @XXX{And a default value for force-not???}
+  The two mechanisms were further enhanced in @(ASDF3), then in @(ASDF3.1).
+  One conceptual bug was having the @cl{:force} mechanism take precedence over @cl{:force-not};
+  this didn't fit the common use cases of users having
+  a set of immutable systems that shouldn't be refreshed at all, and
+  needing to stop a @cl{:force :all} from recursing into them.
+  This was only fixed in @(ASDF3.1).
 }
 
 This illustrates both Dan Barlow's foresight and
@@ -1080,7 +1075,8 @@ However, users ended up mostly not using it, we presume for the following reason
     as many portability landmines.
     In case of disagreement, it is much better to let each implementation's variant
     exist in its own, distinct namespace, which avoids any confusion.
-  }@item{
+  }
+  @item{
     The @tt{require} mechanism purposefully avoids loading a module that has already been provided,
     thereby making it unpopular in a culture of ubiquitous modifiable source code;
     if you modified a file, you really want it to be reloaded automatically.@note{
@@ -1090,11 +1086,10 @@ However, users ended up mostly not using it, we presume for the following reason
       would cause a new load attempt — this was fixed with the introduction of
       the above-mentioned @cl{require-system} in @(ASDF 2.21) in 2012,
       and its use instead of @cl{load-system}.
-    Maybe the more general point is that @(ASDF) does not have a good story with regards to
-    extending the set of things that are considered "system" versus "user" defined,
-    at which point there ought to be
-    a (transitively closed) persistent set of @tt{force-not} systems,
-    which should take precedence over the @tt{force} directive.
+    Maybe the more general point is that @(ASDF) did not have a good story with regards to
+    extending the set of things that are considered "system" versus "user" defined.
+    @(ASDF3.1) adds a notion of "immutable systems"
+    that should not be refreshed from filesystem once loaded into memory.
     @; https://bugs.launchpad.net/asdf/+bug/1184002
   } } ]
 
@@ -1317,9 +1312,12 @@ In @(CL), this can all happen without leaving the language.
 The @(ASDF2) series culminated with @(ASDF) 2.26,
 after a few months when the few changes were all
 portability tweaks, fixes to remote corner cases, or minor cleanups.
-Only one really serious bug remained in the bug tracker, with maybe two other minor bugs,
-all of them related to the @tt{traverse} algorithm that walks the dependency tree.
-That algorithm had been inherited almost unchanged from the early days of @(ASDF1),
+Only one serious bug remained in the bug tracker,
+with maybe two other minor bugs;
+all of them were bugs as old as @(ASDF) itself,
+related to the @tt{traverse} algorithm that walks the dependency tree.
+
+That algorithm had been inherited essentially unchanged from the early days of @(ASDF1),
 with only some superficial bugs fixed, and
 no one dared change the essentials of it, because
 no one really understood what it was doing, why it was doing it,
@@ -1329,14 +1327,15 @@ However, its spaghetti implementation had been refactored and broken up
 into smaller, more understandable function while fixing bugs for @(ASDF2),
 and now at least it was clear what it was doing, if not why that was right or wrong;
 and since that was the "last" bug, and there seemed nothing better to do,
-the bug was tackled... that that opened a Pandora's Box of bigger issues.
+the bug was investigated... and that opened a Pandora's Box of bigger issues.
+Fixing one issue led to another, etc., which resulted in...
 
 
 @subsection{@(ASDF) 3: A Mature Build}
 
-@(ASDF3) was a complete rewrite of @(ASDF2), several times over,
+@(ASDF3) was a complete rewrite of @(ASDF), several times over,
 to correctly deal with its core issues.
-The originally unintended result was to turn it into
+The unintended result of these rewrites was to turn it into
 a much more robust and versatile product than it was:
 not only does it cover the robust building of @(CL) software from @(CL),
 it also includes runtime software management functionality
@@ -1355,6 +1354,12 @@ along the component hierarchy.
 @subsubsection{A Consistent, Extensible, Model}
 
 
+@subsubsection{Understandable Internals}
+
+Before a deep refactoring changing how things were done was possible,
+a more shallow refactoring was needed:
+reorganizing the source code so that it becomes understandable,
+by cutting it in smaller chunks, each with clear dependencies to other chunks.
 
 @subsubsection{Portability Layer}
 

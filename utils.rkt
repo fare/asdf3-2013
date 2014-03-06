@@ -56,18 +56,23 @@
 (define (ASDF3) (ASDF 3))
 (define (ASDF3.1) (ASDF 3.1))
 (define (cl-launch (version #f)) (software-version "cl-launch" version))
-(define (ASDF-Install) @cl{ASDF-Install})
-(define (UIOP) @cl{UIOP})
-(define (POIU) @cl{POIU})
-(define (XCVB) @cl{XCVB})
-(define (DEFSYSTEM) @cl{DEFSYSTEM})
-(define (defsystem) @cl{defsystem})
-(define (mk-defsystem) @cl{mk-defsystem})
-(define (Make) @tt{Make})
+
+(define-syntax defpretty
+  (lambda (stx)
+    (syntax-case stx ()
+      [(_ pretty name ...)
+       (with-syntax ([(string ...) (map symbol->string (syntax->datum #'(name ...)))])
+         #'(begin
+             (define (name) (pretty string)) ...))])))
+
+(defpretty cl
+  ASDF-Install UIOP POIU XCVB DEFSYSTEM defsystem mk-defsystem
+  operation component depends-on load-op compile-op traverse
+  component-depends-on load-system operate)
+(defpretty tt Make)
 (define (Quicklisp) "Quicklisp")
 
 (define-cite ~cite cite-noun generate-bib)
 
 (define-syntax-rule (define-bib name stuff ...)
   (define name (make-bib stuff ...)))
-

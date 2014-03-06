@@ -60,4 +60,11 @@
   #:date "2011"
   #:url "http://quicklisp.org/") ;; also see blog.quicklisp.org and xach.livejournal.com archives
 
+(define-bib XCVB-2009
+  #:author "François-René Rideau and Spencer Brody"
+  #:title "XCVB: an eXtensible Component Verifier and Builder for Common Lisp"
+  #:url "http://common-lisp.net/projects/xcvb/"
+  ;; International Lisp Conference
+  #:date "2009")
+
 ;; ASDF 2.26: http://fare.livejournal.com/170504.html

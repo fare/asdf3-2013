@@ -64,9 +64,9 @@ may now be written @emph{portably} in @(CL):@note{
   Happily, each implementation provides its own extensions,
   and there exist libraries to abstract over
   the discrepancies these implementations, and provide portable access to
-  threads (@tt{bordeaux-threads}), unicode support (@tt{cl-unicode}),
-  a "foreign function interface" to libraries written in C (@tt{cffi}),
-  ML-style pattern-matching (@tt{optima}), etc.
+  threads (@cl{bordeaux-threads}), unicode support (@cl{cl-unicode}),
+  a "foreign function interface" to libraries written in C (@cl{cffi}),
+  ML-style pattern-matching (@cl{optima}), etc.
   A software distribution system, @(Quicklisp),
   makes it easy to install hundreds of such libraries,
   that were already using @(ASDF) as a basic software organization mechanism.
@@ -97,7 +97,7 @@ it enables the writing of Lisp programs
 that may be invoked from the command line,
 or may spawn external programs and capture their output;
 it allows to deliver these programs as standalone executable files,
-or, with the companion script @tt{cl-launch} (see @secref{cl-launch})
+or, with the companion script @cl{cl-launch} (see @secref{cl-launch})
 as light-weight scripts that can be run unmodified
 on many different kinds of machines each differently configured.
 Previously, key parts of a program had to be configured to match
@@ -142,9 +142,9 @@ and automatically generate a working program from all the source code.
 
 Top components are called @bydef{system}s in an age-old Lisp tradition,
 while the bottom ones are source files, typically written in @(CL).
-Users may then @tt{operate} on these components with various build @bydef{operation}s,
-most prominently compiling the source code (operation @tt{compile-op}) and
-loading the result in the current Lisp image (operation @tt{load-op}).
+Users may then @(operate) on these components with various build @bydef{operation}s,
+most prominently compiling the source code (operation @(compile-op)) and
+loading the result in the current Lisp image (operation @(load-op)).
 
 Several related systems may be developed together
 in a same source code @bydef{repository}.
@@ -166,7 +166,7 @@ Modules may or may not directly fit the filesystem directory hierarchy.
 
 Further, each component may explicitly declare
 a @bydef{dependency} on other components.
-A component @tt{depends-on} other components
+A component @(depends-on) other components
 that contain definitions for
 packages, macros, variables, classes, generic functions,
 and any functions that it uses at compile-time,
@@ -174,7 +174,7 @@ notably during the read and macro expansion phases.
 
 @subsubsection{Example system definitions}
 
-For instance, here is how the @tt{fare-quasiquote} system is defined
+For instance, here is how the @cl{fare-quasiquote} system is defined
 in a file @tt{fare-quasiquote.asd}:@note{
   Examples in this article have been slightly edited down from actual code,
   both to fit in the article format and better illustrate the points at hand.
@@ -197,15 +197,15 @@ in a file @tt{fare-quasiquote.asd}:@note{
     (test-op :fare-quasiquote-test))))
 }
 
-Notice how it depends on another system, @tt{fare-utils},
+Notice how it @(depends-on) another system, @cl{fare-utils},
 a collection of utility functions and macros from another repository,
-whereas testing is specified to be done by @tt{fare-quasiquote-test},
-a system defined in a different file @tt{fare-quasiquote-test.asd}
+whereas testing is specified to be done by @cl{fare-quasiquote-test},
+a system defined in a different file @cl{fare-quasiquote-test.asd}
 within the same repository.
 It otherwise contains three files, @tt{packages.lisp},
 @tt{quasiquote.lisp} and @tt{pp-quasiquote.lisp}
 (the pathname type is automatically added based on the component class;
-here, the default @tt{.lisp}; see @secref{Pathnames}).
+here, the default @tt{.lisp}; see @secref{pathnames}).
 The latter files two each depend on the first,
 that defines the @(CL) packages@note{
   Each @(CL) image has a global flat two-level namespace of symbols in packages:
@@ -240,7 +240,7 @@ looks like this (with a lot of elisions):
 
 This illustrates the use of modules,
 with a file @tt{package.lisp},
-a module @tt{base},
+a module @cl{base},
 that, in absence of contrary declaration,
 corresponds directory @tt{base/},
 and itself contains files
@@ -249,18 +249,20 @@ As you can see, dependencies name @bydef{sibling} components
 under the same @bydef{parent} system or module,
 that can themselves be files or modules.
 
-@subsubsection{Action graph}
+@subsubsection{Action Graph}
 @; TODO: add a graph!
 
-Building software is modeled as a Direct Acyclic Graph (DAG) of @bydef{action}s:
+Building software is modeled as a Direct Acyclic Graph (DAG) of @bydef{action}s,
+that defines a partial order:
 each action is a pair of an operation and a component,
 and must be @bydef{perform}ed but only after
-all the actions it depends on have already been performed.
+all the actions it (transitively) depends on have already been performed.
 
 For instance, in @cl{fare-quasiquote} above,
-the @emph{loading} of @tt{quasiquote.lisp} depends-on
-the @emph{compiling} of @tt{quasiquote.lisp},
-which itself depends-on the @emph{loading} of @tt{package.lisp}, etc.
+the @emph{loading} of (the compilation output of) @tt{quasiquote.lisp}
+depends-on the @emph{compiling} of @tt{quasiquote.lisp},
+which itself depends-on
+the @emph{loading} of (the compilation output of) @tt{package.lisp}, etc.
 
 Importantly, though, this graph is distinct
 from the preceding graph of components:
@@ -268,38 +270,44 @@ the graph of actions is not a mere refinement of the graph of components,
 but a transformation of it that also incorporates
 crucial information about the structure of operations.
 
-Unlike its immediate predecessor @tt{mk-defsystem},
+Unlike its immediate predecessor @(mk-defsystem),
 @(ASDF) makes a @bydef{plan} of all actions needed
 to obtain an up-to-date version of the build output,
 before it @bydef{performs} these actions.
-In @(ASDF) itself, this plan is a list of actions to be performed sequentially.
-But it is possible to write an extension that reifies
-the complete direct acyclic graph of actions to be performed in parallel.@note{
-  Indeed, Andreas Fuchs in 2006 wrote a very small but quite brilliant @(ASDF) extension
-  called @(POIU), the Parallel Operator on Independent Units,
-  that compiles files in parallel on Unix multiprocessors using @tt{fork},
-  while still loading them sequentially, minimizing latency.
-
-  François-René Rideau later rewrote @(POIU), making it
-  both more portable and simpler by, co-developing it with @(ASDF).
-  Understanding the sometimes bizarre and useless-looking
-  but actually extremely clever and emminently necessary tricks
-  by which Andreas Fuchs overcame the limitations and conceptual bugs of @(ASDF)
-  to build such a complete DAG of actions
-  led to many aha moments, instrumental when fixing @(ASDF2) into @(ASDF3).
-}
-In making this plan,
-@(ASDF) ensures that before the action that compiles or loads component is performed,
+In @(ASDF) itself, this plan is a list of actions to be performed sequentially:
+a total order that is a linear extension of the partial order of dependencies,
+ensuring that before the action that compiles or loads component is performed,
 all the actions that compile and load its declared dependencies have themselves been performed,
-which also includes all their own transitive dependencies.
+including all their own transitive dependencies.
+
+It is of course possible to reify the complete direct acyclic graph of actions
+rather than a linear extension of it.
+Indeed, Andreas Fuchs in 2006 wrote a very small but quite brilliant @(ASDF) extension
+called @(POIU), the Parallel Operator on Independent Units,
+that compiles files in parallel on Unix multiprocessors using @tt{fork},
+while still loading them sequentially into a main image, minimizing latency.
+François-René Rideau later rewrote @(POIU), making it
+both more portable and simpler by, co-developing it with @(ASDF).
+Understanding the sometimes bizarre and useless-looking
+but actually extremely clever and emminently necessary tricks
+by which Andreas Fuchs overcame the limitations and conceptual bugs of @(ASDF)
+to build such a complete DAG of actions
+led to many aha moments, instrumental when fixing @(ASDF2) into @(ASDF3)
+(see @secref{timestamps}).
 
 @subsubsection{In-image}
 
 Finally, it is important to note that
-@moneyquote{@(ASDF) is an @q{in-image} build system}:
-it compiles and loads systems in the current @(CL) image.
+@moneyquote{@(ASDF) is an @q{in-image} build system},
+just like the build systems that preceded it in the Lisp @(defsystem) tradition:
+it compiles (if necessary) and loads software in the current @(CL) image.
 For better or worse, this notably differs from the practice in most other languages,
-where the build system is a completely different piece of software running in a separate process:
+where the build system is a completely different piece of software running in a separate process:@note{
+  Of course, it is possible to write build system for @(CL) that compile in other processes;
+  we did in the past XCVB @~cite[XCVB-2009].
+  As of the wide variety of Lisp dialects beside @(CL),
+  they have as many different build systems, often integrated with a module system.
+}
 on the one hand, it makes it somewhat easier to extend the build system;
 on the other hand, it puts great pressure on @(ASDF) to remain minimal.
 
@@ -328,7 +336,7 @@ It is therefore worth constrasting @(ASDF) to the tools used by C programmers
 to provide similar services.
 
 To build build and load software, C programmers typically use
-@tt{make} to build the software, and @tt{ld.so} to load it;
+@(Make) to build the software, and @tt{ld.so} to load it;
 additionally, they use a tool like @tt{autoconf}
 to locate available libraries and identify their features.
 In many ways is these C solutions are vastly more engineered than @(ASDF),
@@ -407,7 +415,7 @@ to other build systems for @(CL), C, Java, or other systems:
       being simplified and tailored for the common use case
       of compiling and loading Lisp code;
       and their ability to call arbitrary shell programs
-      was a misdesigned afterthought (copied over from @tt{mk-defsystem})
+      was a misdesigned afterthought (copied over from @(mk-defsystem))
       the implementation of which wasn't portable, with too many corner cases.
     }
   }
@@ -416,8 +424,8 @@ to other build systems for @(CL), C, Java, or other systems:
     that is much simpler and more elegant than @(ASDF),
     if it could have required software to follow some simple organization constraints,
     without much respect for legacy:
-    a constructive proof of that is Alastair Bridgewater's @tt{quick-build}
-    (or the similar and earlier @tt{faslpath} by Peter Etter),
+    a constructive proof of that is Alastair Bridgewater's @cl{quick-build}
+    (or the similar and earlier @cl{faslpath} by Peter Etter),
     being a fraction of the size of the original @(ASDF), which is a fraction of @(ASDF3)'s,
     and with a fraction of the bugs — but none of the generality and extensibility.
     @; See below @secref{asdf-package-system}. XXX
@@ -442,7 +450,7 @@ to other build systems for @(CL), C, Java, or other systems:
 
 Ever since the late 1970s, Lisp implementations
 have each been providing their variant of the original
-Lisp Machine @tt{DEFSYSTEM} @~cite[CHINE-NUAL].
+Lisp Machine @(DEFSYSTEM) @~cite[CHINE-NUAL].
 These build systems allowed users to define @bydef{systems},
 units of software development made of many @bydef{files},
 themselves often grouped into @bydef{modules};
@@ -450,19 +458,19 @@ many @bydef{operations} were available to transform those systems and files,
 mainly to compile the files and to load them,
 but also to extract and print documentation,
 to create an archive, issue hot patches, etc.;
-@tt{DEFSYSTEM} users could further declare dependency rules
+@(DEFSYSTEM) users could further declare dependency rules
 between operations on those files, modules and systems,
 such that files providing definitions
 should be compiled and loaded before files using those definitions.
 
 Since 1990, the state of the art in free software @(CL) build systems
-was @tt{mk-defsystem} @~cite[MK-DEFSYSTEM].@note{
-  The variants of @tt{DEFSYSTEM} available
+was @(mk-defsystem) @~cite[MK-DEFSYSTEM].@note{
+  The variants of @(DEFSYSTEM) available
   on each of the major proprietary @(CL) implementations
   (Allegro, LispWorks, and formerly, Genera),
-  seem to have been much better than @tt{mk-defsystem}.
+  seem to have been much better than @(mk-defsystem).
   But they were not portable, not mutually compatible, and not free software,
-  and therefore @tt{mk-defsystem} because @(de_facto) standard for free software.
+  and therefore @(mk-defsystem) because @(de_facto) standard for free software.
 }
 Like late 1980s variants of DEFSYSTEM on all Lisp systems,
 it featured a declarative model to define a system in terms of
@@ -472,7 +480,7 @@ The many subtle rules constraining build operations
 could be automatically deduced from these declarations,
 instead of having to be manually specified by users.
 
-However, @tt{mk-defsystem} suffered from several flaws,
+However, @(mk-defsystem) suffered from several flaws,
 in addition to a slightly annoying software license;
 these flaws were probably justified at the time it was written,
 several years before the @(CL) standard was adopted,
@@ -497,9 +505,9 @@ the support for now obsolete implementations that couldn't be tested anymore.
 @subsection{@(ASDF1): A Successful Experiment}
 
 In 2001, Dan Barlow, a then prolific @(CL) hacker,
-wanted a good @tt{defsystem} variant suitable for his needs,
+wanted a good @(defsystem) variant suitable for his needs,
 notably regarding extensibility.
-Instead of attempting to modify @tt{mk-defsystem}, at high cost for little expected benefit,
+Instead of attempting to modify @(mk-defsystem), at high cost for little expected benefit,
 he wrote a new one, @(ASDF):@note{
   In a combined reverence to tradition and joke,
   @(ASDF) stands for "Another System Definition Facility",
@@ -509,7 +517,7 @@ thus he could abandon the strictures of supporting long obsolete implementations
 and instead target modern @(CL) implementations.
 In 2002, he published @(ASDF), made it part of SBCL,
 and used it for his popular @(CL) software.
-It was many times smaller than @tt{mk-defsystem}
+It was many times smaller than @(mk-defsystem)
 (under a thousand line of code, instead of five thousand),
 much more usable, actually extensible,
 and easy to port to other modern @(CL) implementations,
@@ -519,42 +527,42 @@ It was an immediate success.
 @(ASDF) featured many brilliant innovations in its own right.
 
 Perhaps most importantly as far as usability goes,
-@(ASDF) cleverly used the @tt{*load-truename*} feature of modern Lisps,
-whereby programs (in this case, the @tt{defsystem} form)
+@(ASDF) cleverly used the @cl{*load-truename*} feature of modern Lisps,
+whereby programs (in this case, the @(defsystem) form)
 can identify from which file they are loaded.
 Thus, system definition files didn't need to be edited anymore,
-as was previously required with @tt{mk-defsystem},
+as was previously required with @(mk-defsystem),
 since pathnames of all components could now be deduced
 from the pathname of the system definition file itself;
-furthermore, because the @tt{truename} resolved Unix symlinks,
+furthermore, because the @cl{truename} resolved Unix symlinks,
 you could have symlinks to all your Lisp systems
 in one or a handful directories that @(ASDF) knew about,
 and it could trivially find all of them.
 Configuration was thus a matter of configuring @(ASDF)'s
-@tt{*central-registry*} with a list directories
+@cl{*central-registry*} with a list directories
 in which to look for system definition files,
 and maintaining "link farms" in those directories
 — and both aspects could be automated.
 (See below for how @(ASDF2) improved on that.)
 
 Also, following earlier suggestions by Kent Pitman @~cite[Pitman-Large-Systems],
-Dan Barlow used object-oriented style to make his @tt{defsystem} extensible
+Dan Barlow used object-oriented style to make his @(defsystem) extensible
 without the need to modify the main source file.@note{
   Dan Barlow may also have gotten from Kent Pitman
   the idea of executing a reified plan rather than
   walking the dependencies on the go.
 }
 Using the now standardized @(CLOS),
-Dan Barlow defined his @tt{defsystem} in terms of @bydef{generic functions}
-specialized on two arguments, @tt{operation} and @tt{component},
+Dan Barlow defined his @(defsystem) in terms of @bydef{generic functions}
+specialized on two arguments, @(operation) and @(component),
 (using multiple dispatch, an essential OO feature unhappily not available
 in lesser programming languages, i.e. sadly almost of them —
 they make do by using the "visitor pattern").
 Extending @(ASDF) is a matter of simply by defining new subclasses
-of @tt{operation} and/or @tt{component}
+of @(operation) and/or @(component)
 and a handful of new methods for the existing generic functions,
 specialized on these new subclasses.
-Dan Barlow then demonstrated such simple extension with his @tt{SB-GROVEL},
+Dan Barlow then demonstrated such simple extension with his @cl{sb-grovel},
 a system to automatically extract low-level details
 of C function and data structure definitions,
 so they may be used by SBCL's foreign function interface.
@@ -625,7 +633,7 @@ on top of whatever the implementation or distribution did or didn't provide.
   as compared to other languages, we found that it's not easy enough to maintain;
   therefore instead of trying hard to maintain that code,
   we "punt" and drop in-memory data if the schema has changed in incompatible ways;
-  thus we do not try hard to provide methods for @tt{update-instance-for-redefined-class}.
+  thus we do not try hard to provide methods for @cl{update-instance-for-redefined-class}.
   The only potential impact of this reduction in upgrade capability
   would be users who upgrade code in a long-running live server;
   but considering how daunting that task is, properly upgrading @(ASDF)
@@ -641,13 +649,13 @@ on top of whatever the implementation or distribution did or didn't provide.
   Indeed, we had found that
   @moneyquote{@(CL) support for hot upgrade of code may exist
                     but is anything but seamless}.
-  These simpler upgrades allow us to simply use @tt{fmakunbound} everywhere,
-  instead of having to @tt{unintern} some functions before redefinition.
+  These simpler upgrades allow us to simply use @cl{fmakunbound} everywhere,
+  instead of having to @cl{unintern} some functions before redefinition.
 }
 Soon enough, users felt confident relying on bug fixes and new features,
 and all implementations started providing @(ASDF2).
 
-These days, you can @tt{(require "asdf")} on pretty much any @(CL) implementation,
+These days, you can @cl{(require "asdf")} on pretty much any @(CL) implementation,
 and start building systems using @(ASDF).
 Most implementation already provide @(ASDF3).
 A few still lag with @(ASDF2), or fail to provide @(ASDF);
@@ -749,7 +757,7 @@ implementation configuration, with sensible defaults.
 Also, the source-registry is optionally capable
 of recursing through subdirectories
 (excluding source control directories),
-where @tt{*central-registry*} itself couldn't.
+where @cl{*central-registry*} itself couldn't.
 Software management programs at either user or system level
 could thus update independent configuration files in a modular way
 to declare where the installed software was located;
@@ -774,14 +782,14 @@ does not have to also know which compiler is to be used by which user at what ti
 The configuration remains modular, and code can be shared by all who trust it,
 without affecting those who don't.
 
-There used to be an extension to @(ASDF1) called @tt{asdf-binary-locations}
+There used to be an extension to @(ASDF1) called @cl{asdf-binary-locations}
 that fulfilled the same functionality;
 but apart from its suffering
-from the same lack of modularity as the @tt{*central-registry*},
+from the same lack of modularity as the @cl{*central-registry*},
 it also had a chicken-and-egg problem:
 you couldn't use @(ASDF) to load it without having at least one
-program compiled without @tt{asdf-binary-locations} enabled,
-namely @tt{asdf-binary-locations} itself;
+program compiled without @cl{asdf-binary-locations} enabled,
+namely @cl{asdf-binary-locations} itself;
 it thus required special purpose loading and configuration
 in whichever file did the loading @(ASDF), making it not modular at all.
 This was resolved by moving the functionality into @(ASDF) itself,
@@ -868,7 +876,7 @@ but leaves a lot of leeway to implementors, unlike e.g. ML or Java.
 @subsubsection{Performance}
 
 @(ASDF1) performance didn't scale well to large systems,
-because Dan Barlow was using the @tt{list} data structure everywhere
+because Dan Barlow was using the @cl{list} data structure everywhere
 while walking a system, leading to a polynomial increase of running time
 as the size of systems increased.
 However, it did scale reasonably well to a large number of small systems,
@@ -906,15 +914,15 @@ some changes were made, though, that were specifically introduced
 to ease usability of @(ASDF).
 
 As a trivial instance, the basic @(ASDF) invocation was the clumsy
-@tt{(asdf:operate 'asdf:load-op :foo)} or
-@tt{(asdf:oos 'asdf:load-op :foo)}.
+@cl{(asdf:operate 'asdf:load-op :foo)} or
+@cl{(asdf:oos 'asdf:load-op :foo)}.
 With @(ASDF2), that would be the more obvious
-@tt{(asdf:load-system :foo)}.@note{
-  @tt{load-system} was actually implemented
+@cl{(asdf:load-system :foo)}.@note{
+  @(load-system) was actually implemented
   by Gary King, the last maintainer of @(ASDF1), in June 2009;
-  but it isn't until @(ASDF2) made it possible in 2010
-  for everyone to use an up-to-date @(ASDF)
-  that users could @emph{rely} on @tt{load-system} being there.
+  but users couldn't casually @emph{rely} on it being there
+  until @(ASDF2) made it possible in 2010
+  for everyone to hot upgrade whatever their implementation was providing.
 }
 
 @(ASDF2) provided a portable way to specify pathnames
@@ -923,7 +931,7 @@ while using standard @(CL) semantics underneath.
 It became easy to specify hierarchical relative pathnames,
 where previously doing it portably was extremely tricky.
 @(ASDF2) similarly provided sensible rules for pathname types and type overrides.
-(See @secref{Pathnames}.)
+(See @secref{pathnames}.)
 @(ASDF) made it hard to get pathname specifications right portably;
 @(ASDF2) @moneyquote{made it hard to get it wrong} or make it non-portable.
 
@@ -938,15 +946,15 @@ The principle followed was that
 
 @subsection{Features introduced in the @(ASDF2) series}
 
-@subsubsection{Working @tt{defsystem} dependencies}
+@subsubsection{@(defsystem) dependencies}
 
-@(ASDF2) introduced a @tt{:defsystem-depends-on} option to @tt{defsystem},
+@(ASDF2) introduced a @cl{:defsystem-depends-on} option to @(defsystem),
 whereby a system could declaratively specify dependencies on build extensions.
 Before that option, users would imperatively load any extension they need:
-in their @tt{asd} system definition file,
+in their @tt{.asd} system definition file,
 they would for instance evaluate @cl{(asdf:load-system :cffi-grovel)},
-before they use @cl{defsystem} to define their systems.
-Indeed, a @tt{asd} file is just a Lisp source file
+before they use @(defsystem) to define their systems.
+Indeed, a @tt{.asd} file is just a Lisp source file
 that is loaded in a controlled context and may contain arbitrary side-effects;
 but such side-effects are frowned upon and
 a declarative style is more maintainable,
@@ -954,9 +962,9 @@ hence this improvement.
 
 However, this feature was only made be usable in 2.016 (June 2011),
 when @(ASDF) started to accept keywords as designators
-for classes defined in an extension in the @tt{:asdf} package.
+for classes defined in an extension in the @cl{:asdf} package.
 Before then, there was a chicken-and-egg problem,
-because the @tt{defsystem} form containing the @tt{:defsystem-depends-on} declaration
+because the @(defsystem) form containing the @cl{:defsystem-depends-on} declaration
 was read before the extension was loaded
 (what more, read in a temporary package, under @(ASDF1) and @(ASDF2));
 therefore, the extension had nowhere to intern or export any symbol
@@ -970,8 +978,8 @@ Until then, there are likely issues that will need to be addressed.
 As an example use, the proper way to use the CFFI library
 is to use @cl{:defsystem-depends-on ("cffi")} as below,
 which will ensure CFFI is loaded before the system is processed;
-then CFFI defines the class @tt{asdf::cffi-grovel},
-that can be designated by the keyword @tt{:cffi-grovel}
+then CFFI defines the class @cl{asdf::cffi-grovel},
+that can be designated by the keyword @cl{:cffi-grovel}
 amongst the components of the system.
 
 @clcode{
@@ -982,16 +990,16 @@ amongst the components of the system.
    ...))
 }
 
-@subsubsection{Working selective system forcing}
+@subsubsection{Selective System Forcing}
 
-Since the beginning, @(ASDF) has a mechanism
+Since the beginning, @(ASDF) has had a mechanism
 to force recompilation of everything:
 @clcode{
   (asdf:oos 'asdf:load-op 'my-system :force t)
 }
 Which in a recent @(ASDF) would be more colloquially:
 @clcode{
-  (asdf:load-system :my-system :force :all)
+  (asdf:load-system 'my-system :force :all)
 }
 As early as 2003, Dan Barlow introduced in @(ASDF)
 a mechanism to @emph{selectively} @cl{:force}
@@ -1009,7 +1017,7 @@ Instead, the bugs were found in 2010 while working on @(ASDF2);
 the code was partially fixed, but
 support for the selective syntax was guarded by a continuable error message
 inviting users to contact the maintainer.@note{
-  @(CL) possesses a mechanism for continuable errors, @tt{cerror},
+  @(CL) possesses a mechanism for continuable errors, @cl{cerror},
   whereby users can interactively or programmatically
   tell the system to continue despite the error.
 }
@@ -1018,9 +1026,9 @@ it had been partially documented, and so was finally
 fixed and enabled in @(ASDF 2.015) (May 2011) rather than removed.
 
 Then the feature was extended in @(ASDF 2.21) (April 2012)
-to cover a negative @tt{force-not} feature,
+to cover a negative @cl{force-not} feature,
 allowing the fulfillment of a user feature request:
-a variant @tt{require-system} of @tt{load-system}
+a variant @cl{require-system} of @(load-system)
 that makes no attempt to upgrade already loaded systems.
 This is useful in some situations: e.g. where large systems
 already loaded and compiled in a previously dumped image
@@ -1063,7 +1071,7 @@ However, users ended up mostly not using it, we presume for the following reason
     This mechanism is still not ubiquitous enough,
     therefore for portability and reliability,
     you have to know about @(ASDF) and be able fall back to it explicitly, anyway;
-    thus trying to "optimize" the easy case with @tt{require}
+    thus trying to "optimize" the easy case with @cl{require}
     is just gratuitous cognitive load for no gain;
     this is illustrates once again the principle that
     @moneyquote{it's counter-productive to standardize underspecified software};
@@ -1077,7 +1085,7 @@ However, users ended up mostly not using it, we presume for the following reason
     exist in its own, distinct namespace, which avoids any confusion.
   }
   @item{
-    The @tt{require} mechanism purposefully avoids loading a module that has already been provided,
+    The @cl{require} mechanism purposefully avoids loading a module that has already been provided,
     thereby making it unpopular in a culture of ubiquitous modifiable source code;
     if you modified a file, you really want it to be reloaded automatically.@note{
       At the same time, @(ASDF) wasn't reliable in avoiding to reload provided modules,
@@ -1085,7 +1093,7 @@ However, users ended up mostly not using it, we presume for the following reason
       call to @cl{require} was successful, and therefore next call to @cl{require}
       would cause a new load attempt — this was fixed with the introduction of
       the above-mentioned @cl{require-system} in @(ASDF 2.21) in 2012,
-      and its use instead of @cl{load-system}.
+      and its use instead of @(load-system).
     Maybe the more general point is that @(ASDF) did not have a good story with regards to
     extending the set of things that are considered "system" versus "user" defined.
     @(ASDF3.1) adds a notion of "immutable systems"
@@ -1116,7 +1124,7 @@ By 2012, however, Unicode was ubiquitous,
 UTF-8 was a @(de_facto) standard, and Emacs supported it well.
 A few library authors had started to rely on it (if only for their own names).
 To make the loading of library code more predictable,
-@(ASDF2) added an @tt{:encoding} option to @tt{defsystem},
+@(ASDF2) added an @cl{:encoding} option to @(defsystem),
 so that files may be loaded in the encoding they were written in,
 irrespective of which encoding the user may otherwise be using.
 Once again, the principle
@@ -1161,7 +1169,7 @@ under the theory that
 since that's the time users will have to pay attention, anyway.
 Though it did break a few libraries that were still unmaintained after a year,
 the new defaults actually made things more reliable for many other libraries,
-as witnessed by the automated testing tool @tt{cl-test-grid}. @XXX{Give URL!}
+as witnessed by the automated testing tool @cl{cl-test-grid}. @XXX{Give URL!}
 
 Because we had learned that a feature isn't complete until it's tested,
 we published library to demonstrate how to put this new infrastructure to good use:
@@ -1269,7 +1277,7 @@ instructing the programmer to insert said form.
 The @cl{asdf-finalizers} provides such an infrastructure of
 @cl{eval-at-toplevel} to evaluate a form and defer it for later inclusion at the top-level,
 and @cl{final-forms} to include all registered such forms at the top-level;
-user code would then specify in their @cl{defsystem}
+user code would then specify in their @(defsystem)
 the @cl{:around-compile "asdf-finalizers:check-finalizers-around-compile"} hook
 for @(ASDF) to enforce the invariant.
 
@@ -1315,20 +1323,25 @@ portability tweaks, fixes to remote corner cases, or minor cleanups.
 Only one serious bug remained in the bug tracker,
 with maybe two other minor bugs;
 all of them were bugs as old as @(ASDF) itself,
-related to the @tt{traverse} algorithm that walks the dependency tree.
+related to the @(traverse) algorithm that walks the dependency tree.
 
-That algorithm had been inherited essentially unchanged from the early days of @(ASDF1),
-with only some superficial bugs fixed, and
+That algorithm had been inherited essentially unchanged from the early days of @(ASDF1);
+many bugs fixed for correctness (fix some corner cases), robustness (gracefully handle errors),
+and performance (made it O(n) instead of O(n³)), but
 no one dared change the essentials of it, because
-no one really understood what it was doing, why it was doing it,
-and why that did or didn't work — and the original author was long gone,
-and not available to answer questions.
-However, its spaghetti implementation had been refactored and broken up
-into smaller, more understandable function while fixing bugs for @(ASDF2),
-and now at least it was clear what it was doing, if not why that was right or wrong;
-and since that was the "last" bug, and there seemed nothing better to do,
-the bug was investigated... and that opened a Pandora's Box of bigger issues.
-Fixing one issue led to another, etc., which resulted in...
+no one really understood how and why it worked or didn't
+— with the original author long gone and not available to answer questions.
+However, the implementation had been broken up
+into smaller, more understandable function while fixing bugs,
+and now at least it was clear what it was doing, if not why that was right or wrong:
+it was maintaining a "forced" flag, recursing into modules,
+having two unexplained kinds of dependencies, the usual "in-order-to" vs a special "do-first",
+whereby the latter would be triggered if a change had been detected in the former
+during a simulation with the former only, etc.
+
+Now, since these was the "last" bugs standing, and longstanding, they was investigated...
+and that opened a Pandora's Box of bigger issues, where
+fixing one issue led to another, etc., which resulted in...
 
 
 @subsection{@(ASDF) 3: A Mature Build}
@@ -1344,7 +1357,71 @@ and integration both ways with the Unix command line.
 @(ASDF3) was pre-released as 2.27 in February 2013,
 then officially released as 3.0.0 on May 15th 2013.
 
-@subsubsection{Proper Timestamp Propagation}
+@subsubsection[#:tag "timestamps"]{Proper Timestamp Propagation}
+
+To reuse the vocabulary introduced in @secref{Action_Graph},
+@(ASDF)'s @(traverse) algorithm was recursing through components,
+propagating all operations along the component hierarchy,
+first sideways amongst siblings, then specially downwards toward children:
+if A depends-on B (in the component DAG),
+then any operation on A depends-on same operation on B
+(this being a dependency in the distinct action DAG);
+then, any operation on A depends-on same operation on
+each of A's children (if any).
+Additionally, a @(load-op)
+@(compile-op) on A has a special "do-first"
+dependency on a @(load-op)
+would have a special  kind);
+then any 
+
+, to a component from its dependencies
+was being propagated a flag indicating whether a component
+was to be (re)compiled in the current session,
+, but
+that flag was originally not propagated properly
+when recursing inside a module's (or system's) contents:
+if module A depends-on B, and B was flagged for (re)compilation,
+then all the contents of A need to be flagged, too.
+Robert Goldman had fixed a variant of this bug in the leadup to the @(ASDF2) release,
+by correctly propagating the flag to modules inside a system;
+but that didn't work reliably between systems:
+if system A depends-on system B, both were once compiled,
+and after B was separately modified and recompiled,
+you'd ask @(ASDF) to compile A again,
+then it would not flag B for recompilation, and therefore not flag A.
+For modules within a system, the problem mostly did not arise because
+the granularity of an @cl{operate} request was a system,
+and so there was no way to request compilation of B without triggering compilation of A.
+But working on a system B, compiling it and debugging it,
+then working on a client system A, was not only possible but a usual workflow.
+Seeing no way to fix the bug reliably,
+Robert had refrained from propagating the flag between systems,
+which at least was predictable behavior.
+The usual workaround for users was to force recompilation of A using @cl{:force t},
+which was actual recompiling everything (see @secref{Selective_System_Forcing}),
+eschewing any other such issue in the current session.
+
+Investigating the bug years later, we realized that the deeper underlying issue was that
+@(ASDF) should have been propagating timestamps,
+not just flags for recompilation in the current session!
+So we'd painfully modify the existing algorithm to support timestamps rather than a flag;
+we'd then find that @cl{do-first} dependencies such as loading a file
+had to be stamped not with the time of loading, but the time of the file being loaded.
+Then, we'd start to adapt @(POIU) to use timestamps,
+@(POIU) being an @(ASDF) extension that maintains a complete action graph
+to compile in parallel (see @secref{Action_Graph}).
+Then it would fail, and we'd be left wondering why,
+and realize that was because we'd deleted what looked like an unexplained kludge:
+@(POIU), in addition to the dependencies propagated by @(ASDF),
+was having each node in the action graph depend on the dependencies of each of its transitive parents,
+inefficiently maintaining the list in a list updated with append at quadratic worst time cost.
+Indeed, the do-first dependencies of a component's parent and ancestors were all implicitly depended upon.
+And the kluge in @(POIU) could be removed by making that an explicit dependency on a new kind of action
+, adding a
+
+
+
+
 
 to correctly compute timestamps
 across an arbitrary action graph;
@@ -1370,7 +1447,8 @@ but also run-program, Lisp image lifecycle, and many other everyday concerns.
 @cl{inferior-shell}, that builds upon @cl{uiop:run-program}, can:
 @clcode{
   (in-package :inferior-shell)
-  (run `(pipe (ps fauwwwwwwwwwwwwx) (sort -r -k5)))
+  (run `(pipe (ps fauwwwwwwwwwwwwx)
+              (sort -r -k5)))
 }
 
 @subsubsection{extensibility}
@@ -1460,10 +1538,10 @@ likewise nicely segregated by implementation, ABI, version, etc.@note{
   Historically, it is more accurate to say that @(ASDF) imported
   the cache technology previously implemented by @(cl-launch),
   which itself was reusing a technique popularized by
-  Debian's @tt{common-lisp-controller} as far back as 2002,
-  and by the more widely portable @tt{asdf-binary-locations} after it.
+  Debian's @cl{common-lisp-controller} as far back as 2002,
+  and by the more widely portable @cl{asdf-binary-locations} after it.
 
-  By defining an @cl{:around} method for the @tt{output-files} function,
+  By defining an @cl{:around} method for the @cl{output-files} function,
   it was possible for the user to control where @(ASDF)
   would store its compilation output,
   without the authors of @(ASDF) having had to create an explicit hook.
@@ -1474,26 +1552,26 @@ likewise nicely segregated by implementation, ABI, version, etc.@note{
   and without having to modify the source code,
   is an illustration of how expressive and modular the @(CL) Object System can be.
 
-  Now, @tt{asdf-binary-locations} and other variants of the same idea
+  Now, @cl{asdf-binary-locations} and other variants of the same idea
   had a bootstrapping issue: the extension had to be specially loaded
   before it could be used, whether as source code or precompiled code,
   otherwise the potential clashes regarding its own compiled file
   would negate any advantage in avoiding clashes for files of other systems.
-  @tt{common-lisp-controller} was trying to solve the same issue
+  @cl{common-lisp-controller} was trying to solve the same issue
   by having managed software installations in a controlled way;
   it failed eventually, because these efforts were only available
   to @(CL) programmers using Debian or a few select other Linux software distributions,
   and only for the small number of slowly updated libraries,
   making the maintainers a bottleneck in a narrow distribution process.
-  @tt{common-lisp-controller} also attempted to manage a system-wide cache of compiled objects,
+  @cl{common-lisp-controller} also attempted to manage a system-wide cache of compiled objects,
   but this was ultimately abandoned for security issues;
   a complete solution would have required a robust and portable build service,
   which was much more work than justified by said narrow distribution process.
   The solution in @(ASDF2) was to merge this functionality in @(ASDF) itself,
-  yielding its @tt{output-translations} layer,
+  yielding its @cl{output-translations} layer,
   according to the principle of making everything as simple as possible,
   @emph{but no simpler}.
-  As another, more successful take on the idea of @tt{common-lisp-controller},
+  As another, more successful take on the idea of @cl{common-lisp-controller},
   Zach Beane eventually wrote @(Quicklisp), that uses @(ASDF2),
   and makes deployment of software ubiquitous by not requiring a particular system,
   but working in any user's environment on any system,
@@ -1511,15 +1589,15 @@ For security reasons, the cache is not shared between users.
 
 @(ASDF 3.1) (March 2014) builds on top of @(ASDF3) to provide new features.
 
-The @tt{asdf/package-system} extension supports
+The @cl{asdf/package-system} extension supports
 a one-file, one-package, one-system style of programming
 with maintainability benefits.
 
-UIOP's @tt{run-program} was generalized
+UIOP's @cl{run-program} was generalized
 to accept redirection of input and error-output as well as of output.
 
-New macros include a debugged and extended @tt{with-temporary-file}
-or the @tt{nest} macro.
+New macros include a debugged and extended @cl{with-temporary-file}
+or the @cl{nest} macro.
 
 Running an external program and getting its output,
 or even manipulating pathnames and accessing the filesystem,
@@ -1565,9 +1643,9 @@ d as nickname to asdf-driver, DBG macro.
 While developing @(ASDF), we sometimes made many things more uniform
 at the cost of a slight backward incompatibility
 with a few existing systems using kluges.
-For instance, @(ASDF2) made pathname arguments uniformly non-evaluated in a @tt{defsystem} form,
+For instance, @(ASDF2) made pathname arguments uniformly non-evaluated in a @(defsystem) form,
 when they used to be evaluated for toplevel systems but not for other (most) components;
-this evaluation was used by a few users to use @tt{merge-pathnames}
+this evaluation was used by a few users to use @cl{merge-pathnames}
 to portably specify relative pathnames, a task made unnecessary by
 @(ASDF2) being capable of specifying these pathnames portably with Unix syntax.
 
@@ -1576,7 +1654,7 @@ as dependencies of a system or module by declaring it in the list of subcomponen
 rather than the list of dependencies;
 this capability seems to have been an undesigned artifact of how systems used to be parsed,
 though at the same time it seems to have been compatible with how some older defsystems did things,
-and one user relied on the capability whose system definition had been ported from @tt{mk-defsystem}.
+and one user relied on the capability whose system definition had been ported from @(mk-defsystem).
 
 At the cost of a handful of users having to cleanup their code a bit,
 we could thus notably @moneyquote{reduce the cognitive load on users} for all future systems.
@@ -1587,13 +1665,14 @@ and even more complex tricks to evade those constraints.
 
 Back in the bad old days of @(ASDF1),
 the official recipe, described in the manual,
-to override the default pathname type @tt{lisp} for Lisp source file to
-e.g. @tt{cl}, used to be:
+to override the default pathname type @tt{.lisp} for Lisp source file to
+e.g. @tt{.cl}, used to be:
 
 @clcode{
 (defmethod source-file-type
-   ((c cl-source-file) (s (eql (find-system 'my-sys))))
-   "cl")
+    ((c cl-source-file)
+     (s (eql (find-system 'my-sys))))
+  "cl")
 }
 
 Another recipe that got some following instead encouraged
@@ -1603,11 +1682,11 @@ which caused much grief when we tried to make @cl{system}
 not a subclass of @cl{module} anymore,
 but both be subclasses of @cl{parent-component} instead.
 
-In @(ASDF) 2.015, two new subclasses of @tt{cl-source-file} were introduced,
-@tt{cl-source-file.cl} and @tt{cl-source-file.lsp},
-that provide the respective types @tt{cl} and @tt{lsp},
-which covers the majority of systems that don't use @tt{lisp}.
-Users need simply add to their @cl{defsystem} the option
+In @(ASDF) 2.015, two new subclasses of @cl{cl-source-file} were introduced,
+@cl{cl-source-file.cl} and @cl{cl-source-file.lsp},
+that provide the respective types @tt{.cl} and @tt{.lsp},
+which covers the majority of systems that don't use @tt{.lisp}.
+Users need simply add to their @(defsystem) the option
 @cl{:default-component-class :cl-source-file.cl}
 and files will have the specified type.
 Individual modules or files can be overridden, too,
@@ -1684,4 +1763,4 @@ A better principle would be to
 
 @(generate-bib)
 
-@section[#:tag "Pathnames" #:style (make-style 'appendix '(unnumbered))]{Appendix A: Pathnames}
+@section[#:tag "pathnames" #:style (make-style 'appendix '(unnumbered))]{Appendix A: Pathnames}

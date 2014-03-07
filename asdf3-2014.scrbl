@@ -194,7 +194,7 @@ in a file @tt{fare-quasiquote.asd}:@note{
     :depends-on ("quasiquote")))
   :in-order-to
   ((test-op
-    (test-op :fare-quasiquote-test))))
+    (test-op "fare-quasiquote-test"))))
 }
 
 Notice how it @(depends-on) another system, @cl{fare-utils},
@@ -293,7 +293,7 @@ but actually extremely clever and emminently necessary tricks
 by which Andreas Fuchs overcame the limitations and conceptual bugs of @(ASDF)
 to build such a complete DAG of actions
 led to many aha moments, instrumental when fixing @(ASDF2) into @(ASDF3)
-(see @secref{timestamps}).
+(see @secref{traverse}).
 
 @subsubsection{In-image}
 
@@ -1199,7 +1199,7 @@ locally giving short nicknames to packages,
 changing the readtable, or the reader function, etc.
 
 The answer in 2011 was that it possible to define
-a new subclass @cl{my-cl-file} of @cl{cl-source-file},
+a new subclass @cl{my-cl-file} of @(cl-source-file),
 and then a method on @cl{perform :around ((o compile-op) (c my-cl-file))},
 that would wrap the processing of the function inside a context
 where syntax was modified.
@@ -1309,41 +1309,6 @@ A good programming language will let you define new invariants,
 and a good build system will enforce them.
 In @(CL), this can all happen without leaving the language.
 
-@subsubsection{The end of @(ASDF2)}
-
-@;https://bugs.launchpad.net/asdf/+bug/479522   wanted: recompile system when dependency changes
-@;https://bugs.launchpad.net/asdf/+bug/627173   asdf doesn't recompile when .asd file has changed
-@;https://bugs.launchpad.net/asdf/+bug/656450   Forcing logic is baked into traverse
-@; This was spawned from 479522 after 2.26.8:
-@;https://bugs.launchpad.net/asdf/+bug/1087609  failure to check timestamps of dependencies
-
-The @(ASDF2) series culminated with @(ASDF) 2.26,
-after a few months when the few changes were all
-portability tweaks, fixes to remote corner cases, or minor cleanups.
-Only one serious bug remained in the bug tracker,
-with maybe two other minor bugs;
-all of them were bugs as old as @(ASDF) itself,
-related to the @(traverse) algorithm that walks the dependency tree.
-
-That algorithm had been inherited essentially unchanged from the early days of @(ASDF1);
-many bugs fixed for correctness (fix some corner cases), robustness (gracefully handle errors),
-and performance (made it O(n) instead of O(n³)), but
-no one dared change the essentials of it, because
-no one really understood how and why it worked or didn't
-— with the original author long gone and not available to answer questions.
-However, the implementation had been broken up
-into smaller, more understandable function while fixing bugs,
-and now at least it was clear what it was doing, if not why that was right or wrong:
-it was maintaining a "forced" flag, recursing into modules,
-having two unexplained kinds of dependencies, the usual "in-order-to" vs a special "do-first",
-whereby the latter would be triggered if a change had been detected in the former
-during a simulation with the former only, etc.
-
-Now, since these was the "last" bugs standing, and longstanding, they was investigated...
-and that opened a Pandora's Box of bigger issues, where
-fixing one issue led to another, etc., which resulted in...
-
-
 @subsection{@(ASDF) 3: A Mature Build}
 
 @(ASDF3) was a complete rewrite of @(ASDF), several times over,
@@ -1357,69 +1322,7 @@ and integration both ways with the Unix command line.
 @(ASDF3) was pre-released as 2.27 in February 2013,
 then officially released as 3.0.0 on May 15th 2013.
 
-@subsubsection[#:tag "timestamps"]{Proper Timestamp Propagation}
-
-To reuse the vocabulary introduced in @secref{Action_Graph},
-@(ASDF)'s @(traverse) algorithm was recursing through components,
-propagating all operations along the component hierarchy,
-first sideways amongst siblings, then specially downwards toward children:
-if A depends-on B (in the component DAG),
-then any operation on A depends-on same operation on B
-(this being a dependency in the distinct action DAG);
-then, any operation on A depends-on same operation on
-each of A's children (if any).
-Additionally, a @(load-op)
-@(compile-op) on A has a special "do-first"
-dependency on a @(load-op)
-would have a special  kind);
-then any 
-
-, to a component from its dependencies
-was being propagated a flag indicating whether a component
-was to be (re)compiled in the current session,
-, but
-that flag was originally not propagated properly
-when recursing inside a module's (or system's) contents:
-if module A depends-on B, and B was flagged for (re)compilation,
-then all the contents of A need to be flagged, too.
-Robert Goldman had fixed a variant of this bug in the leadup to the @(ASDF2) release,
-by correctly propagating the flag to modules inside a system;
-but that didn't work reliably between systems:
-if system A depends-on system B, both were once compiled,
-and after B was separately modified and recompiled,
-you'd ask @(ASDF) to compile A again,
-then it would not flag B for recompilation, and therefore not flag A.
-For modules within a system, the problem mostly did not arise because
-the granularity of an @cl{operate} request was a system,
-and so there was no way to request compilation of B without triggering compilation of A.
-But working on a system B, compiling it and debugging it,
-then working on a client system A, was not only possible but a usual workflow.
-Seeing no way to fix the bug reliably,
-Robert had refrained from propagating the flag between systems,
-which at least was predictable behavior.
-The usual workaround for users was to force recompilation of A using @cl{:force t},
-which was actual recompiling everything (see @secref{Selective_System_Forcing}),
-eschewing any other such issue in the current session.
-
-Investigating the bug years later, we realized that the deeper underlying issue was that
-@(ASDF) should have been propagating timestamps,
-not just flags for recompilation in the current session!
-So we'd painfully modify the existing algorithm to support timestamps rather than a flag;
-we'd then find that @cl{do-first} dependencies such as loading a file
-had to be stamped not with the time of loading, but the time of the file being loaded.
-Then, we'd start to adapt @(POIU) to use timestamps,
-@(POIU) being an @(ASDF) extension that maintains a complete action graph
-to compile in parallel (see @secref{Action_Graph}).
-Then it would fail, and we'd be left wondering why,
-and realize that was because we'd deleted what looked like an unexplained kludge:
-@(POIU), in addition to the dependencies propagated by @(ASDF),
-was having each node in the action graph depend on the dependencies of each of its transitive parents,
-inefficiently maintaining the list in a list updated with append at quadratic worst time cost.
-Indeed, the do-first dependencies of a component's parent and ancestors were all implicitly depended upon.
-And the kluge in @(POIU) could be removed by making that an explicit dependency on a new kind of action
-, adding a
-
-
+See @secref{traverse}.
 
 
 
@@ -1666,7 +1569,9 @@ and even more complex tricks to evade those constraints.
 Back in the bad old days of @(ASDF1),
 the official recipe, described in the manual,
 to override the default pathname type @tt{.lisp} for Lisp source file to
-e.g. @tt{.cl}, used to be:
+e.g. @tt{.cl}, used to be to define a method on the generic function
+@cl{source-file-type}, specialized on the class @cl{cl-source-file}
+and on your system (in this example, called @cl{my-sys}):
 
 @clcode{
 (defmethod source-file-type
@@ -1675,14 +1580,14 @@ e.g. @tt{.cl}, used to be:
   "cl")
 }
 
-Another recipe that got some following instead encouraged
-defining a new subclass of @cl{cl-source-file}
-and specializing a method on that class and @cl{module},
-which caused much grief when we tried to make @cl{system}
-not a subclass of @cl{module} anymore,
+Some people advertised this alternative, that also used to work,
+to define your own sub-class @tt{foo-file} of @(cl-source-file), and use:
+@cl{(defmethod source-file-type ((c foo-file) (s module)) "foo")}.
+This caused much grief when we tried to make @(system)
+not a subclass of @(module) anymore,
 but both be subclasses of @cl{parent-component} instead.
 
-In @(ASDF) 2.015, two new subclasses of @cl{cl-source-file} were introduced,
+In @(ASDF) 2.015, two new subclasses of @(cl-source-file) were introduced,
 @cl{cl-source-file.cl} and @cl{cl-source-file.lsp},
 that provide the respective types @tt{.cl} and @tt{.lsp},
 which covers the majority of systems that don't use @tt{.lisp}.
@@ -1761,6 +1666,355 @@ A better principle would be to
 @moneyquote{define a programming language's semantics in terms of
                    pure transformations with local environments}.
 
-@(generate-bib)
+While writing this article, I had to revisit many concepts and pieces of code,
+which led to many bug fixed and small refactorings;
+an earlier interactive "walkthrough" via Google Hangout also led to enhancements.
+This illustrates the principle that you should always
+@moneyquote{explain your programs}:
+having to intelligibly verbalize the concepts will make @emph{you} understand them better.
 
-@section[#:tag "pathnames" #:style (make-style 'appendix '(unnumbered))]{Appendix A: Pathnames}
+@section[#:tag "pathnames" #:style (make-style 'appendix '(unnumbered))]
+  {Appendix A: Pathnames}
+
+Abandon all hopes, ye who enter here!
+
+@section[#:tag "traverse" #:style (make-style 'appendix '(unnumbered))]
+  {Appendix B: A @(traverse) across the build}
+
+@subsection{The end of @(ASDF2)}
+
+@;https://bugs.launchpad.net/asdf/+bug/479522   wanted: recompile system when dependency changes
+@;https://bugs.launchpad.net/asdf/+bug/627173   asdf doesn't recompile when .asd file has changed
+@;https://bugs.launchpad.net/asdf/+bug/656450   Forcing logic is baked into traverse
+@; This was spawned from 479522 after 2.26.8:
+@;https://bugs.launchpad.net/asdf/+bug/1087609  failure to check timestamps of dependencies
+
+While the article itself describes
+the @emph{features} introduced by the various versions of @(ASDF),
+this appendix focuses on the @emph{bugs} that were the death of @(ASDF),
+and its rebirth as @(ASDF3).
+
+The @(ASDF2) series culminated with @(ASDF 2.26) in October 2012,
+after a few months during which there were only minor cleanups,
+portability tweaks, or fixes to remote corner cases.
+Only one small bug remained in the bug tracker,
+with maybe two other minor annoyances;
+all of them were bugs as old as @(ASDF) itself,
+related to the @(traverse) algorithm that walks the dependency DAG.
+
+The minor annoyances were that a change in the @tt{.asd} system definition file
+ought to trigger recompilation in case dependencies changed in a significant way,
+and that the @(traverse) algorithm inherited from @(ASDF1)
+was messy and could use refactoring to allow
+finer and more modular programmatic control of what to build or not to build.
+The real but small bug was that dependencies were not propagated across systems.
+Considering that my co-maintainer Robert Goldman
+had fixed the same bug earlier in the case of dependencies across modules within a system,
+and that one reason he had disabled the fix across systems
+was that some people claimed they enjoyed the behavior,
+it looked like the trivial issue of just enabling the obvious fix
+despite the conservative protests of some old users.
+It was a wafer thin mint of an issue.
+
+And so, of course, since this was the "last" bug standing, and longstanding,
+I opened it...
+except it was Pandora's Box of bigger issues,
+where the fixing of one quickly led to another, etc.,
+which resulted in the explosion of @(ASDF2).
+
+@subsection{The @(traverse) algorithm}
+
+In the last release by Dan Barlow, @(ASDF 1.85) in May 2004,
+the @(traverse) algorithm was a 77-line function with few comments,
+a terse piece of magic at the heart of the original 1101-line build system.
+Shortly before I inherited the code, in @(ASDF 1.369) in October 2009,
+it had grown to 120 lines, with no new comment but with some commented out debugging statements.
+By the time of @(ASDF 2.26) in October 2012,
+many changes had been made,
+for correctness (fixing the incorrect handling of many corner cases),
+for robustness (adding graceful error handling),
+for performance (enhancing asymptotic behavior from O(n⁴) to O(n)
+by using better data structures than naïve lists),
+for extensibility (moving away support for extra features such as @cl{:version} and @cl{:feature}),
+for portability (a trivial tweak to support old Symbolics Lisp Machines!),
+for maintainability (splitting it into multiple smaller functions and commenting everything).
+There were now 8 functions spanning 215 lines.
+Yet the heart of the algorithm remained essentially unchanged,
+in what was now a heavily commented 86-line function @cl{do-traverse}.
+Actually, it was one of a very few parts of the @(ASDF1) code base that we hadn't completely rewritten.
+
+Indeed, no one really understood the underlying design,
+why the code worked when it did (usually) and why it sometimes didn't.
+The original author was long gone and not available to answer questions,
+and it wasn't clear that he fully understood the answers himself —
+Dan Barlow had been experimenting, and how successfully!
+His @(ASDF) illustrates the truth that
+@moneyquote{code is discovery at least as much as design};
+he had tried many things, and while many failed,
+he struck gold once or twice, and that's achivement enough for anyone.
+
+Nevertheless, the way @(traverse) recursed into children components was particularly ugly;
+it involved an unexplained special kind of dependency, @(do-first),
+and propagation of a @(force) flag.
+But of course, any obvious attempt to simplify these things
+caused the algorithm to break somehow.
+
+Here is a description of @(ASDF1)'s @(traverse) algorithm,
+reusing the vocabulary introduced in @secref{Action_Graph}.
+
+@(traverse) recursively visits all the nodes in the DAG of actions,
+marking those that are visited, and detecting circularities.
+Each actions consist of an operation on a component;
+for a simple @(CL) system with regular Lisp files,
+these actions will be and @(compile-op) for compiling the code in the component,
+and @(load-op) for loading this compiled code;
+a component will be a @(system), a recursive @(module), or a @(file)
+(actually a @(cl-source-file)).
+
+When visiting the action of an operation on a component,
+it propagates the operations along the component hierarchy,
+first sideways amongst siblings, then specially downwards toward children:
+if A @(depends-on) B (in the component DAG),
+then any operation on A @(depends-on) same operation on B
+(this being a dependency in the distinct action DAG);
+then, any operation on A @(depends-on) same operation on
+each of A's children (if any).
+Thus, to complete the @(load-op) (resp. @(compile-op)) of a @(module),
+you must first complete the @(load-op) (resp. @(compile-op))
+of all the components it was declared as @(depends-on),
+then on all its own children.
+Additionally, a @(load-op) on A @(depends-on) a @(compile-op) on A;
+this is actually encoded in the extensible function @(component-depends-on):@note{
+  This function is quite ill-named,
+  since it describes dependencies between @emph{actions}, not between components.
+  But the original @(ASDF1) code and documentation
+  doesn't include an explicit notion of action,
+  except to mention "visited nodes" in comments about @(traverse).
+  The notion was made explicit while implementing @(ASDF3),
+  reusing the word from an earlier technical report by Robbins @~cite[AITR-874].
+}
+user-defined operation classes can be defined, with according new methods
+for the @(component-depends-on) function.
+
+Now here comes the tricky part.
+The action of a @(compile-op) on A has a special @(do-first) dependency
+on a @(load-op) of each of A's sideways dependencies.
+New @(do-first) dependencies can otherwise be specified in the @(defsystem) form,
+though no one does it and there is no extensible @cl{component-do-first} function.
+These dependencies are included in the plan not only before the action,
+but also before any of the operations on the component's children;
+yet they are not visited to determine whether the action needs to be performed,
+and so the children are specially visited after the siblings but before the @(do-first),
+yet the @(do-first) are inserted before the children.
+And this careful sequencing is baked into the @(traverse) algorithm
+rather than reified in dependencies of the action graph.
+
+What if you transform these @(do-first) dependencies
+into regular @(in-order-to) dependencies?
+Then there is no incremental compilation anymore,
+for the first time you attempt to @(load-op) a system,
+any file that has dependencies would have a @(compile-op) action
+that @(depends-on) the @(load-op) actions on its dependencies,
+that obviously haven't been completed yet;
+and so any file with dependencies would be recompiled every time.
+
+@subsection[#:tag "force"]{@emph{Force} Propagation}
+
+Now, as it @(traverse)d the action graph, @(ASDF) was propagating a @(force) flag
+indicating whether an action needed to be performed again in the current session
+due to some of its dependencies itself needing to be updated.
+
+The original bug was that this flag was not propagated properly.
+If some of the sideway dependencies were outdated,
+then all childen needed to be forced;
+but @(ASDF1) failed to do so.
+For instance, if @(module) A @(depends-on) B,
+and B is flagged for (re)compilation,
+then all the children of A need to be flagged, too.
+And so Robert Goldman had fixed a this bug in the leadup to the @(ASDF2) release,
+by correctly propagating the flag;
+except for some reason, he had declined at the time to propagate it for systems,
+propagating it only for modules inside systems.
+Glancing at the bug three years later,
+I naïvely figured it was just a matter of removing this limitation (2.26.8).
+Except that fix didn't work reliably between systems,
+and that was why he hadn't just done it.
+
+If system A @(depends-on) system B, both were once compiled,
+B was subsequently modified and separately recompiled,
+and you'd ask @(ASDF) to compile A again,
+then it would not flag B for recompilation, and therefore not flag A.
+Indeed, each compiled file in A looked up to date,
+when comparing it to the corresponding source file, as @(ASDF) did;
+since no @(force) flag from B was issued, @(ASDF) would think it was done.
+Bug.
+
+For modules within a system, the problem mostly did not arise,
+because the granularity of an @cl{operate} request was a system,
+and so there was no way to request compilation of B
+without triggering compilation of A.
+For the bug to be visible within a system,
+it took an external build interruption such as a machine crash or power loss,
+or angry programmer killing the process;
+in case of such obvious event, programmers would know to rebuild from clean
+if experiencing some seeming filesystem corruption.
+On the other hand, across systems, the problem arose quite naturally:
+working on a system B, compiling it and debugging it,
+then working on a client system A, was not only possible but the @emph{usual} workflow.
+
+Seeing no way to fix the bug reliably,
+Robert had disabled propagation of the flag between systems,
+which at least was predictable behavior.
+The usual workaround was for programmers to force recompilation of A using @cl{:force t};
+due to another bug (see @secref{Selective_System_Forcing}),
+this was actually recompiling everything,
+thus eschewing any other such issue in the current session.
+The problem, when diagnosed, was easily solved in wetware.
+Except of course it wasn't always easy to diagnose,
+resulting in hours wasted trying to debug changes that didn't happen,
+or worse, to committing bugs one was not seeing to a shared repository,
+and having other programmers try to figure out why their code stopped working
+after they updated their checkout.
+
+@subsection[#:tag "timestamps"]{@emph{Timestamp} Propagation}
+
+@(ASDF) should have been propagating timestamps,
+not just force flags for whether recompilation was needed in the current session!
+So we painfully modified the existing algorithm
+to support timestamps rather than a flag.
+
+As for @(do-first) dependencies such as loading a file,
+we would stamp a @(load-op) not with the time at which the file was loaded,
+but with the timestamp of the file being loaded.
+This wholly eliminated the previous need for kludges to avoid clock skew
+between the processor clock and the fileserver clock.
+Then we could get rid of @(do-first) itself, this ugly wart,
+by separating the propagated timestamp from a non-propagated flag
+telling whether the action needs to be done in the current image or not.
+The generic function @(compute-action-stamp) looks at the dependencies of an action,
+its inputs and outputs on disk, and possible stamps from it being done earlier in the current image,
+and returns a stamp for it and a flag for whether it needs to be done (or redone) in the current image.
+Thus, if a compiled file is up-to-date on disk and an up-to-date version was loaded,
+the @(compute-action-stamp) function will return its timestamp and @cl{t} (true);
+if the file is up-to-date on disk but either it wasn't loaded yet or an outdated version was loaded,
+the @(compute-action-stamp) function will return its timestamp and @(nil) (false);
+if the file is missing or out-of-date on disk, then no up-to-date version could be loaded yet,
+and @(compute-action-stamp) will return an infinity marker and @(nil).
+The infinity marker (implemented as boolean @cl{t}) is so that no timestamp is up-to-date in comparison,
+and corresponds to the force flag of @(ASDF1).
+A negative infinity marker (implemented as boolean @(nil)) also serves to mark as no dependency.@note{
+  Interestingly, because this @(compute-action-stamp) is a generic function
+  that takes a plan class as parameter,
+  the default method could easily be overridden with a new plan class,
+  such that instead of using timestamps,
+  it would use cryptographic digests of the various files;
+  a trivial change or override would need to be made to the 7-line function @cl{visit-dependencies}
+  to generalize the way stamps are combined rather than take the latest,
+  and there you'd go.
+  Of course, such a modification cannot be part of the standard @(ASDF) core,
+  because it has to be minimal and ubiquitous and can't afford to pull a cryptographic library (for now),
+  but an extension to @(ASDF), particularly one that who try to bring determinism and scalability,
+  could use this very simple change to upgrade from timestamps to using a peristent object cache
+  addressed by digest of inputs.
+}
+(Of course, @(do-first) would come back with a vengeance, see below @secref{Needed_In_Image}).
+
+Then, we started to adapt @(POIU) to use timestamps.
+@(POIU) is an @(ASDF) extension, originally written by Andreas Fuchs,
+that maintains a complete action graph to compile in parallel (see @secref{Action_Graph}).
+However, our attempt to run the modified @(POIU) would fail,
+and we'd be left wondering why, until we realized
+that was because we had previously deleted what looked like an unjustified kludge:
+@(POIU), in addition to the dependencies propagated by @(ASDF),
+was also having each node in the action graph
+depend on the dependencies of each of its transitive parents.
+Indeed, the loading of dependencies (both @(in-order-to) and @(do-first))
+of a component's parent (and transitively, ancestors),
+were all implicitly depended upon by each action.
+In an undocumented stroke of genius, Andreas Fuchs
+had been making explicit in the DAG the implicit sequencing done by traverse!
+However, these parent dependencies were being passed around
+inefficiently and inelegantly in a list, updated using @cl{append}
+for a quadratic worst time cost.
+This cost wouldn't explode as long as there were few systems and modules;
+but removing the magic sequencing of @(traverse)
+to replace it a different and inefficient kluge wasn't seem appealing,
+especially after having optimized @(traverse) into being of linear complexity only.
+
+And the solution was of course to explicitly reify in the action graph
+those implicit dependencies...
+
+@subsection{Prepare operation}
+
+And so we introduced a new operation, initially called @cl{parent-load-op} (2.26.14),
+but eventually renamed @(prepare-op) (2.26.21),
+corresponding to the steps required to be taken
+in preparation for a @(load-op) or @(compile-op),
+namely to have completed a @(load-op)
+on all the sideway dependencies of all the transitive parents.
+
+Now, unlike @(load-op) and @(compile-op)
+that both were propagated @emph{downward} along the dependency graph,
+from parents to children,
+@(prepare-op) had to be propagated @emph{upward}, from children to parents.
+And so, the @(operation) class had a new special subclass @(upward-operation),
+to be specially treated by @(traverse)...
+
+Or better, the propagation could be moved entirely out of @(traverse)
+and delegated to methods on @(component-depends-on)!
+A mixin class @(downward-operation) would handle
+the downward propagation along the component hierarchy
+for @(load-op), @(compile-op) and the likes,
+whereas @(upward-operation) would handle @(prepare-op);
+@(sideway-operation) would handle the dependency
+from @(prepare-op) to the @(load-op) of a component's declared @(depends-on),
+whereas @(selfward-operation) would handle the dependency of @(load-op) and @(compile-op)
+to @(prepare-op).
+Thanks to CLOS multiple inheritance and double dispatch, it all fell into place (2.26.21).
+
+For instance, the good old downward propagation was implemented by this mixin:
+@clcode|{
+(defclass downward-operation (operation) ())
+(defmethod component-depends-on
+     ((o downward-operation)
+      (c parent-component))
+  `((,o ,@(component-children c))
+    ,@(call-next-method)))
+}|
+The current version is more complex,
+with all of nine (full-length) lines of code plus comments and doctrings,
+for additional backward compatibility and extensibility, but this gives the gist:
+The action of a downward operation on a parent component
+depends on the same operation @cl{,o}
+on each of the component's children,
+followed by other dependencies from other aspects of the action.
+Had backward-compatibility not been required,
+the function would have been called @cl{action-depends-on},
+and its @cl{method-combination} would have been @cl{append},
+so that it wouldn't be necessary to write that @cl|{,@(call-next-method)}|
+in each and every method definition.
+But backward-compatibility was required.
+As they say, @moneyquote{if it's not backwards, it's not compatible}.
+
+In any case, classes like @(load-op) and @(compile-op) just inherit from this mixin,
+and voilà, no need for any magic in @(traverse),
+which at that point had been broken down in neat small functions,
+none more than fifteen lines long.
+If anything, some complexity had been moved to the function @(compute-action-stamp)
+that computes timestamps and deals with corner cases of missing inputs or missing outputs,
+which was 48 heavily commented lines of code,
+just slightly more than the misdesigned function @(operation-done-p)
+it was superseding.
+
+Now everything was much cleaner. But of course, it was a mistake to call it a victory yet,
+for @(do-first) came back to enact revenge for my killing it;
+and once again, Andreas Fuchs had prophesized the event and
+provided a weapon to successfully defend against the undead.
+
+@subsection{Needed In Image}
+
+And the kluge in @(POIU) could be removed by making that an explicit dependency on a new kind of action
+, adding a
+
+
+@(generate-bib)

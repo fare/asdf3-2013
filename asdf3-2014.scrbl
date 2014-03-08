@@ -34,7 +34,7 @@ and what approaches did or didn't work
 in bringing change to the @(CL) community.
 }
 
-@section[#:style (make-style 'appendix '(unnumbered))]{Introduction}
+@section[#:style (make-style 'introduction '(unnumbered))]{Introduction}
 
 Better late than never,
 with the release of @(ASDF3) in May 2013,
@@ -118,13 +118,22 @@ better programming practices or more powerful programs.
 
 In part one @secref{what_it_is}, we will give some context about what @(ASDF) is,
 how it compares to what is done in the C world,
-and what is the historical context in which it was designed.
+what is the historical context in which it was designed,
+and what it initially brought to the @(CL) community.
 
-In part two @secref{asdf_innovations},
-we will describe in chronological order
-the major innovations of the successive incarnations of @(ASDF).
+In part two @secref{asdf2},
+we will describe the innovations in @(ASDF2).
 
-In part three @secref{evolving}, we will discuss the challenges
+In part three @secref{asdf2.26},
+we will describe in  innovations in @(ASDF 2.26).
+
+In part four @secref{asdf3},
+we will describe in  innovations in @(ASDF 3).
+
+In part five @secref{asdf3.1},
+we will describe in  innovations in @(ASDF 3.1).
+
+In part six @secref{evolving}, we will discuss the challenges
 of making acceptable changes to a piece of community software
 that is not only used by hundreds of developers,
 but also extended in various ways by tens of them.
@@ -133,7 +142,8 @@ keeping all the old bugs that people have come to rely on;
 it is providing a smooth upgrade path to better software
 despite weak synchronization.
 
-In our conclusion, we explore the improvements we had to make
+In our conclusion @secref{conclusion},
+we explore the improvements we had to make
 and the way we could make them,
 illustrating what is wrong and is right about @(CL),
 so that growers of other programming languages can learn from the experience.
@@ -513,8 +523,6 @@ adding new features needed in 2001 would have required modifying the carefully c
 which would require a lot of work, yet eventually would probably still break
 the support for now obsolete implementations that couldn't be tested anymore.
 
-@section[#:tag "asdf_innovations"]{@(ASDF) Innovations}
-
 @subsection{@(ASDF1): A Successful Experiment}
 
 In 2001, Dan Barlow, a then prolific @(CL) hacker,
@@ -622,7 +630,7 @@ Finally, since there was little demand for bug fixes,
 supply followed by not being active fixing bugs.
 And so @(ASDF) development stagnated for many years.
 
-@subsection{@(ASDF2): Productizing @(ASDF)}
+@section[#:tag "asdf2"]{@(ASDF2): Productizing @(ASDF)}
 
 In November 2009, François-René Rideau
 took over @(ASDF) maintainership and development.
@@ -632,7 +640,7 @@ and numbered 1.x are thereafter referred to at @(ASDF1).
 These changes are explained in more detail in
 our ILC 2010 article @~cite[Evolving-ASDF].
 
-@subsubsection{Upgradability}
+@subsection{Upgradability}
 
 The first bug fix was to break the vicious circle
 preventing bug fixes from being relevant.
@@ -681,7 +689,7 @@ from implementations provided, enabling a virtuous circle of universal upgrades,
 where previously where everyone was waiting for others to upgrade, in a deadlock.
 @moneyquote{Allowing for divergence creates an incentive towards convergence}.
 
-@subsubsection{Portability}
+@subsection{Portability}
 
 A lot of work was spent on portability.
 @(ASDF1) officially supported 4 implementations:
@@ -743,7 +751,7 @@ were used to develop a system from which it could be compiled with,
 where previously any non-trivial use of pathnames, filesystem access
 or subprocess invocation was a portability minefield.
 
-@subsubsection{Configurability}
+@subsection{Configurability}
 
 @(ASDF1) was much improved over what preceded it,
 but its configuration mechanism was still lacking:
@@ -821,7 +829,7 @@ to know configuration of other software;
 previously, whoever installed software couldn't notify users,
 and users had to know and specify configuration of all software installed.
 
-@subsubsection{Robustness}
+@subsection{Robustness}
 
 During the development of @(ASDF2) (then 3),
 a great number of bugs were introduced, and even more bugs were fixed.
@@ -886,7 +894,7 @@ in case it doesn't strictly adhere to a portable subset of @(CL)
 since the semantics of @(CL) is not fully specified
 but leaves a lot of leeway to implementors, unlike e.g. ML or Java.
 
-@subsubsection{Performance}
+@subsection{Performance}
 
 @(ASDF1) performance didn't scale well to large systems,
 because Dan Barlow was using the @cl{list} data structure everywhere
@@ -917,7 +925,7 @@ Now, developers could organize or reorganize their code
 without having to shape it in a particular way
 to suit the specific choice of internals by @(ASDF) itself.
 
-@subsubsection{Usability}
+@subsection{Usability}
 
 Usability was an important concern while developing @(ASDF2).
 Portability, Configurability, Robustness and Performance
@@ -957,9 +965,9 @@ and/or involving copy-pasting magical incantations.
 The principle followed was that
 @moneyquote{the cognitive load on each kind of users must be minimized}.
 
-@subsection{Features introduced in the @(ASDF2) series}
+@section[#:tag "asdf2.26"]{Features introduced in the @(ASDF2) series}
 
-@subsubsection{@(defsystem) dependencies}
+@subsection{@(defsystem) dependencies}
 
 @(ASDF2) introduced a @cl{:defsystem-depends-on} option to @(defsystem),
 whereby a system could declaratively specify dependencies on build extensions.
@@ -1003,7 +1011,7 @@ amongst the components of the system.
    ...))
 }
 
-@subsubsection{Selective System Forcing}
+@subsection{Selective System Forcing}
 
 Since the beginning, @(ASDF) has had a mechanism
 to force recompilation of everything:
@@ -1030,7 +1038,7 @@ Instead, the bugs were found in 2010 while working on @(ASDF2);
 the code was partially fixed, but
 support for the selective syntax was guarded by a continuable error message
 inviting users to contact the maintainer.@note{
-  @(CL) possesses a mechanism for continuable errors, @cl{cerror},
+  @(CL) possesses a mechanism for continuable errors, @(cerror),
   whereby users can interactively or programmatically
   tell the system to continue despite the error.
 }
@@ -1063,7 +1071,7 @@ his relatively lack of interest in developing @(ASDF)
 beyond the point where it got the rest of his software off the ground;
 and by contrast the obsession to detail of his successor.
 
-@subsubsection{Hooking into @cl{require}}
+@subsection{Hooking into @cl{require}}
 
 Imitating the example set by Dan Barlow on SBCL in @(ASDF1),
 @(ASDF2) was made to hook into the @cl{require} mechanism
@@ -1114,7 +1122,7 @@ However, users ended up mostly not using it, we presume for the following reason
     @; https://bugs.launchpad.net/asdf/+bug/1184002
   } } ]
 
-@subsubsection{Encoding support}
+@subsection{Encoding support}
 
 Back in 2002, most programmers were still using 8-bit characters in various encodings
 (latin1, koi8-r, etc.), and Emacs did not support unicode very well, if at all.
@@ -1203,7 +1211,7 @@ at the beginning of every file,
 then carefully disable it at the end of the file,
 least they cause havoc in other files and/or in the user's environment.
 
-@subsubsection{Hooks around compilation}
+@subsection{Hooks around compilation}
 
 A recurrent question to @(ASDF) developers was about how to properly
 modify the @(CL) syntax for some files,
@@ -1245,7 +1253,7 @@ use @cl{:around-compile "iolib/asdf:compile-wrapper"},
 except for the system @cl{iolib/asdf} itself,
 that defines these package and function.
 
-@subsubsection{Enforcing user-defined invariants}
+@subsection{Enforcing user-defined invariants}
 
 Another related feature, added in @(ASDF 2.23) (July 2012),
 was the ability for users to define invariants to be enforced by @(ASDF)
@@ -1322,7 +1330,7 @@ A good programming language will let you define new invariants,
 and a good build system will enforce them.
 In @(CL), this can all happen without leaving the language.
 
-@subsection{@(ASDF) 3: A Mature Build}
+@section[#:tag "asdf3"]{@(ASDF) 3: A Mature Build}
 
 @(ASDF3) was a complete rewrite of @(ASDF), several times over,
 to correctly deal with its core issues.
@@ -1335,6 +1343,11 @@ and integration both ways with the Unix command line.
 @(ASDF3) was pre-released as 2.27 in February 2013,
 then officially released as 3.0.0 on May 15th 2013.
 
+@subsection{A Consistent, Extensible, Model}
+
+There was an essential bug at the heart of the @(ASDF) design,
+present from day 1.
+to fix this bug required a complete rewrite of the core of @(ASDF)
 See @secref{traverse}.
 
 
@@ -1344,17 +1357,16 @@ across an arbitrary action graph;
 users may specify how operations do or don't propagate
 along the component hierarchy.
 
-@subsubsection{A Consistent, Extensible, Model}
 
 
-@subsubsection{Understandable Internals}
+@subsection{Understandable Internals}
 
 Before a deep refactoring changing how things were done was possible,
 a more shallow refactoring was needed:
 reorganizing the source code so that it becomes understandable,
 by cutting it in smaller chunks, each with clear dependencies to other chunks.
 
-@subsubsection{Portability Layer}
+@subsection{Portability Layer}
 
 Running an external program and getting its output,
 or even manipulating pathnames and accessing the filesystem,
@@ -1374,20 +1386,20 @@ but also run-program, Lisp image lifecycle, and many other everyday concerns.
               (sort -r -k5)))
 }
 
-@subsubsection{extensibility}
+@subsection{extensibility}
 
 Better operations.
 
 @(POIU) didn't need to override a lot of @(ASDF)'s key infrastructure anymore.
 
 
-@subsubsection{configurability}
+@subsection{configurability}
 
 better supported are conditional compilation, versioning, and more.
 
-@subsubsection{internal consistency}
+@subsection{internal consistency}
 
-@subsubsection[#:tag "bundle_operations"]{Bundle Operations}
+@subsection[#:tag "bundle_operations"]{Bundle Operations}
 
 Bundle operations allow to create a single output file
 for an entire system or collection of systems.
@@ -1440,13 +1452,13 @@ In @(ASDF3.1), using @cl{deliver-asd-op} (previously misnamed @cl{binary-op})
 you can create both the bundle fasl from @(fasl-op) and a @tt{.asd} file
 to use to deliver the system in binary format only.
 
-@subsubsection{creating standalone executables}
+@subsection{creating standalone executables}
 
 there are several ways to deliver software in a single-file "bundle",
 including a single FASL for a system and/or its dependencies, or
 (on supported implementations) a standalone executable programs;
 
-@subsubsection{cl-launch}
+@subsection{cl-launch}
 
 Running Lisp code to portably create executable commands from Lisp is great,
 but there is a bootstrapping problem: when all you have is the command line,
@@ -1564,17 +1576,34 @@ This is in sharp contrast with other "scripting" languages,
 that have to slowly interpret or recompile everytime.
 For security reasons, the cache is not shared between users.
 
-@subsection{@(ASDF) 3.1: Lifting Lisp}
+@section[#:tag "asdf3.1"]{@(ASDF) 3.1: Lifting Lisp}
 
 @(ASDF 3.1) (March 2014) builds on top of @(ASDF3) to provide new features.
 
-@subsubsection[#:tag "asdf-package-system"]{@cl{asdf/package-system}}
+@subsection[#:tag "asdf-package-system"]{@cl{asdf/package-system}}
 
 The @cl{asdf/package-system} extension supports
-a one-file, one-package, one-system style of programming
-with maintainability benefits.
+a one-file, one-package, one-system style of programming.
+This style was pioneered by Peter Etter's @cl{faslpath},
+and more recently by Alastair Bridgewater's @cl{quick-build}.
+@cl{asdf/package-system} is compatible with the latter, not with the former.
 
-@subsubsection[#:tag "uiop_improvements"]{@(UIOP) improvements}
+Maintainability benefits.
+@(ASDF) was re-written in this style as part of @(ASDF 2.27), the initial @(ASDF3) pre-release.
+By forcing the user to make dependencies explicit, and forward dependencies especially so,
+it encourages good factoring of the code.
+
+@cl{asdf/package-system} is not light weight build like @cl{quick-build},
+but portability and robustness of ASDF3.
+
+@XXX{EXAMPLES NEEDED!}
+
+Users who desire compatibility with @(ASDF 3.0) can use the @cl{asdf-package-system} extension,
+which is part of @(Quicklisp), with
+@verbatim|{:defsystem-depends-on (#-asdf3.1 :asdf-package-system)}|
+The @verbatim|{#-asdf3.1}| may be omitted.
+
+@subsection[#:tag "uiop_improvements"]{@(UIOP) improvements}
 
 @(UIOP)'s @cl{run-program} was generalized
 to accept redirection of input and error-output as well as of output.
@@ -1584,11 +1613,61 @@ A debugged and extended @cl{with-temporary-file}
 makes it easy to work with temporary files,
 automatically cleaning them up afterwards.
 
+dump-image / restore-image improvements,
+ensure-pathname, compile-file*, with-saved-deferred-warnings.
+
+Tested with Google's build system, short circuiting @(ASDF)'s @(defsystem),
+but taking advantage of the abstractions in @(UIOP).
+
 The @cl{nest} macro allows to nest arbitrarily many forms
 without indentation drifting ever to the right.
 This can make for more readable code.
 
-@subsubsection{The Future}
+@subsection[#:tag "backwarder_compatibility"]{Backwarder compatibility}
+
+Improved compatibility with extensions written for @(ASDF1) and @(ASDF2).
+@(non-propagating-operation) is a mixin to signal to @(ASDF)
+that your operation class is not backward.
+
+@(operation) as a base class to inherit from.
+Operations that do not propagate, should inherit from the @(non-propagating-operation) mixin.
+Disables the backward compatibility mechanism.
+Negative inheritance!
+
+For backward compatibility with ASDF 1 and 2,
+subclasses of @(operation) implicitly propagate @emph{downward} and @emph{sideways}.
+Failure to explicitly inherit from own of the explicitly propagating
+or non-propagating classes will result in a @(warning) for now.
+
+  * force-not now takes precedence over force, and systems named in the
+    set (represented as an equal hash-table) *immutable-systems* are always
+    forced-not, and even their .asd is not refreshed from the filesystem.
+
+  * portability is much improved, with support for the latest GCL, and
+    fixes for ABCL, CLISP, ECL, LispWorks, SBCL, XCL, etc.
+
+  * bundle support was refactored; ECL support is fixed;
+    image-op added to create heap images for use with e.g. cl-launch.
+
+  * robustness: Test improvements. Added missing dependencies in asdf.asd(!).
+    Fixes to version-satisfies (thanks to stassats), to the file-stamp cache.
+    Fixes regression from 3.0.2.12 whereby ASDF failed to avoid downgrading.
+    Many cleanups. Many explanatory updates to source code comments.
+
+  * run-program tweaked again, notably on Windows, on CLISP, and
+    on implementations without a native run-program. On Windows, we
+    punt on trying to ensure no final space is ever echo'ed by CMD.EXE " ".
+
+  * provide both "asdf" and "ASDF" to play nicer with various Lisps.
+
+  * upgrading from a sufficiently forward-compatible version (currently: 2.33)
+    will be less disruptive of ASDF uses and enhancements in the current image:
+    previously loaded systems will not be cleared anymore,
+    variables defined with defparameter* will not be reset.
+    Punting on upgrades from ASDF 1 for more robust behavior.
+
+
+@subsection{The Future}
 
 Robert Goldman assumed maintainership in July 2013,
 a few months after the release of @(ASDF3).
@@ -1737,8 +1816,7 @@ With @(ASDF3), we tried to impose stricter rules on syntax modifications,
 but that broke too many systems, and
 
 
-
-@section{Conclusion: Lessons for Language Growers}
+@section[#:tag "conclusion"]{Conclusion: Lessons for Language Growers}
 
 The CL standard leaves many things underspecified about pathnames,
 in an effort to define a useful subset common to many existing implementations.
@@ -2175,6 +2253,26 @@ The code was then refactored by introducing an explicit plan object (2.26.47),
 to hold this action status information during the planning phase,
 as distinguished from the execution phase
 during which action status refers to what is actually done.
+
+@subsection{Why Oh Why?}
+
+How did @(ASDF) survive for 11 years with such an essential birth defect?
+Worse: very same the bug was present in @(mk-defsystem), since 1990.
+It might have been as old as the original @(DEFSYSTEM) from the 1970s.
+The proprietary variants of Genera, Franz, and LispWorks have fixes;
+however, on Genera, the fix requires
+@emph{using a non-default variant} @cl{:definitions} of @cl{:depends-on};
+on LispWorks, it still has bugs in a corner case.
+
+Why didn't most people notice?
+Why didn't the few who noticed something care enough to bother fixing it?
+
+Because...
+Genera: one machine.
+Lisp style: significant macro changes usually require client changes, too...
+Interactive style: user is there to restart.
+Programming in the small: fewer big system dependencies.
+@(XXX)
 
 @subsection{The Aftermath}
 

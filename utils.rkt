@@ -67,9 +67,9 @@
 
 (defpretty cl
   ASDF-Install UIOP POIU XCVB DEFSYSTEM defsystem mk-defsystem
-  nil
+  nil error cerror warning
   operation load-op compile-op prepare-op load-fasl-op fasl-op
-  upward-operation downward-operation sideway-operation selfward-operation
+  upward-operation downward-operation sideway-operation selfward-operation non-propagating-operation
   component system module file cl-source-file component-children
   operate load-system
   traverse traverse-action compute-action-stamp operation-done-p needed-in-image-p

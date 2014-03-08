@@ -68,12 +68,13 @@
 (defpretty cl
   ASDF-Install UIOP POIU XCVB DEFSYSTEM defsystem mk-defsystem
   nil
-  operation load-op compile-op prepare-op
+  operation load-op compile-op prepare-op load-fasl-op fasl-op
   component system module file cl-source-file component-children
-  operate traverse load-system compute-action-stamp operation-done-p
+  operate load-system
+  traverse traverse-action compute-action-stamp operation-done-p needed-in-image-p
   component-depends-on upward-operation downward-operation sideway-operation selfward-operation)
 (defpretty emph depends-on in-order-to do-first force)
-(defpretty tt Make)
+(defpretty tt Make make)
 (define (Quicklisp) "Quicklisp")
 
 (define-cite ~cite cite-noun generate-bib)

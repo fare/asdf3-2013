@@ -21,11 +21,11 @@ has been vastly improved between 2010 and 2014.
 These and other improvements finally bring @(CL) up to par
 with "scripting languages"
 in terms of ease of writing and deploying portable code
-that may access and "glue" together
+that can access and "glue" together
 functionality from the underlying system or external programs —
 except this time in a language with reasonable semantics,
-efficient implementations and extensible syntax.
-We describe the most salient improvements in @(ASDF),
+efficient implementations, and extensible syntax.
+We describe the most salient improvements in @(ASDF)
 and how they enable previously difficult and portably impossible
 uses of the programming language.
 We discuss past and future challenges
@@ -34,37 +34,39 @@ and what approaches did or didn't work
 in bringing change to the @(CL) community.
 }
 
-@section{Introduction}
+@section[#:style (make-style 'appendix '(unnumbered))]{Introduction}
 
 Better late than never,
 with the release of @(ASDF3) in May 2013,
 all the programs for which one uses so-called "scripting" languages
 may now be written @emph{portably} in @(CL):@note{
   @(CL) is a language defined in the ANSI standard X3.226-1994.
-  It is a multi-paradigm dynamically-typed high-level language:
-  though it is still known for its decent support for functional programming,
-  its support for Object-Oriented Programming is what remains unsurpassed in many ways,
+  It is a multi-paradigm, dynamically-typed high-level language.
+  Though it is known for its decent support for functional programming,
+  its support for Object-Oriented Programming
+  is what remains unsurpassed still in many ways,
   and sadly few languages even attempt to match its syntactic extensibility
   or support for interactive development.
   It was explicitly designed to allow for high-performance implementations;
   some of them, depending on the application,
   may rival with compiled C programs in terms of speed,
-  or at least be in the same ball park for performance,
   usually far ahead of "scripting" languages and their implementations.
-
+}
+@XXX{
   Over a dozen actively maintained implementations
   purport to conform to the ANSI @(CL) standard, plus a few unmaintained ones.
   No single implementation is the best, shiniest, smallest and fastest,
-  cheapest, and ported to most platforms.
+  cheapest, and ported to the most platforms.
   While it is possible to write useful programs
   using only the standardized parts of the language,
-  to fully take advantage of extant libraries
+  fully taking advantage of extant libraries
   that harness modern hardware and software techniques
   requires the use of various extensions.
-  Happily, each implementation provides its own extensions,
+  Happily, each implementation provides its own extensions
   and there exist libraries to abstract over
-  the discrepancies these implementations, and provide portable access to
-  threads (@cl{bordeaux-threads}), unicode support (@cl{cl-unicode}),
+  the discrepancies between these implementations
+  and provide portable access to threads (@cl{bordeaux-threads}),
+  unicode support (@cl{cl-unicode}),
   a "foreign function interface" to libraries written in C (@cl{cffi}),
   ML-style pattern-matching (@cl{optima}), etc.
   A software distribution system, @(Quicklisp),
@@ -83,90 +85,96 @@ for portable @(CL) software since shortly after its release
 by Dan Barlow in 2002 @~cite[ASDF-Manual].
 @moneyquote{The purpose of a build system is
                 to enable division of labor in software development}:
-source code is organized in separately developed components
-that can depend on other components,
+source code is organized in separately-developed components
+that depend on other components,
 and the build system transforms the transitive closure of these components
 into a working program.
 
-@(ASDF3), latest rewrite of the system,
-beside fixing numerous bugs deep and shallow
-somewhat faster than were introduced,
+@(ASDF3), the latest rewrite of the system,
+beside fixing numerous bugs,
 sports a portability layer, @(UIOP),
-that makes this portable scripting possible:
-it enables the writing of Lisp programs
-that may be invoked from the command line,
-or may spawn external programs and capture their output;
-it allows to deliver these programs as standalone executable files,
+that makes portable scripting possible.
+It enables the writing of Lisp programs
+that may be invoked from the command line
+or may spawn external programs and capture their output.
+It allows delivering these programs as standalone executable files,
 or, with the companion script @cl{cl-launch} (see @secref{cl-launch})
 as light-weight scripts that can be run unmodified
 on many different kinds of machines each differently configured.
 Previously, key parts of a program had to be configured to match
 one's specific @(CL) implementation and specific software installation paths.
 Now, all of one's usual Unix scripting needs can be entirely fulfilled by @(CL),
-while benefitting from its efficient implementations, hundreds of software libraries, etc.
+benefitting from its efficient implementations, hundreds of software libraries, etc.
 
-In a first part, we will give some context about what @(ASDF) is,
+In this article, we will describe
+the various achievements and failures of @(ASDF) development,
+and try to extract lessons from the adventure.
+To make things easier to programmers
+who may or may not have used the tool at some point,
+we break down improvements by major milestones.
+For each improvement, we provide a rationale for the change and
+a simple example of how it enables
+better programming practices or more powerful programs.
+
+In part one @secref{what_it_is}, we will give some context about what @(ASDF) is,
 how it compares to what is done in the C world,
 and what is the historical context in which it was designed.
 
-In a second part, we will describe the major changes in @(ASDF)
-since the original version 1 series.
-To make things easier to @(CL) programmers who have used the tool at some point,
-we break down improvements by major milestones.
-For each improvement, we provide a rationale for the change,
-and a simple example of how it enables better programming practices
-or more powerful programs that were not possible or not portable before.
+In part two @secref{asdf_innovations},
+we will describe in chronological order
+the major innovations of the successive incarnations of @(ASDF).
 
-In a third part, we will discuss the challenges of making acceptable changes
-to a piece of community software that is not only used by hundreds of developers,
+In part three @secref{evolving}, we will discuss the challenges
+of making acceptable changes to a piece of community software
+that is not only used by hundreds of developers,
 but also extended in various ways by tens of them.
 What it means to be backward compatible is not
 keeping all the old bugs that people have come to rely on;
 it is providing a smooth upgrade path to better software
 despite weak synchronization.
 
-In our conclusion, we explore how the improvements we had to make,
+In our conclusion, we explore the improvements we had to make
 and the way we could make them,
-illustrate what was wrong, and was right, about @(CL),
-so that growers of other programming languages may learn from the experience.
+illustrating what is wrong and is right about @(CL),
+so that growers of other programming languages can learn from the experience.
 
-@section{What @(ASDF) is}
+@section[#:tag "what_it_is"]{What @(ASDF) is}
 
 @subsection{@(ASDF): Basic Concepts}
 
 @subsubsection{Components}
 
 @(ASDF) is a build system for @(CL):
-it helps developers divide software into a hierarchy of @bydef{component}s,
-and automatically generate a working program from all the source code.
+it helps developers divide software into a hierarchy of @bydef{component}s
+and automatically generates a working program from all the source code.
 
 Top components are called @bydef{system}s in an age-old Lisp tradition,
 while the bottom ones are source files, typically written in @(CL).
 Users may then @(operate) on these components with various build @bydef{operation}s,
 most prominently compiling the source code (operation @(compile-op)) and
-loading the result in the current Lisp image (operation @(load-op)).
+loading the result into the current Lisp image (operation @(load-op)).
 
 Several related systems may be developed together
 in a same source code @bydef{repository}.
 Each system may depend on code from other systems,
-that may come from the same repository, or from a different repository.
+either from the same repository or from a different repository.
 @(ASDF) itself has no notion of repositories,
-but other tools, on top of @(ASDF), do:
-@(Quicklisp) @~cite[quicklisp] will provide together
-systems from a same repository as a @bydef{release},
-and provide hundreds of releases as a @bydef{distribution},
-and automatically download on demand
+but other tools on top of @(ASDF) do:
+@(Quicklisp) @~cite[quicklisp] packages together
+systems from a repository into a @bydef{release},
+and provides hundreds of releases as a @bydef{distribution},
+automatically downloading on demand
 required systems and all their transitive dependencies.
 
-A system is itself organized in a hierarchy of components,
+A system is itself organized into a hierarchy of components,
 where each component may be either an individual @bydef{file}
 (usually, a @(CL) source file),
 or a @bydef{module} that may recursively contain other components.
 Modules may or may not directly fit the filesystem directory hierarchy.
 
 Further, each component may explicitly declare
-a @bydef{dependency} on other components.
-A component @(depends-on) other components
+a @bydef{dependency} on other components:
+a component @(depends-on) other components
 that contain definitions for
 packages, macros, variables, classes, generic functions,
 and any functions that it uses at compile-time,
@@ -200,14 +208,14 @@ in a file @tt{fare-quasiquote.asd}:@note{
 Notice how it @(depends-on) another system, @cl{fare-utils},
 a collection of utility functions and macros from another repository,
 whereas testing is specified to be done by @cl{fare-quasiquote-test},
-a system defined in a different file @cl{fare-quasiquote-test.asd}
+a system defined in a different file, @cl{fare-quasiquote-test.asd},
 within the same repository.
 It otherwise contains three files, @tt{packages.lisp},
 @tt{quasiquote.lisp} and @tt{pp-quasiquote.lisp}
-(the pathname type is automatically added based on the component class;
-here, the default @tt{.lisp}; see @secref{pathnames}).
-The latter files two each depend on the first,
-that defines the @(CL) packages@note{
+(the @tt{.lisp} suffix is automatically added based on the component class;
+see @secref{pathnames}).
+The latter files each depend on the first,
+that which the @(CL) packages@note{
   Each @(CL) image has a global flat two-level namespace of symbols in packages:
   packages are identified by their name, a string;
   in each package, symbols are identified by their name, a string.
@@ -238,12 +246,13 @@ looks like this (with a lot of elisions):
    ...))
 }
 
-This illustrates the use of modules,
-with a file @tt{package.lisp},
-a module @cl{base},
-that, in absence of contrary declaration,
-corresponds directory @tt{base/},
-and itself contains files
+This illustrates the use of modules:
+The first component is a file @tt{package.lisp},
+that all other components depend on.
+Then, there is a module @cl{base};
+in absence of contrary declaration,
+it corresponds to directory @tt{base/};
+and it itself contains files
 @tt{utils.lisp}, @tt{strings.lisp}, etc.
 As you can see, dependencies name @bydef{sibling} components
 under the same @bydef{parent} system or module,
@@ -252,39 +261,39 @@ that can themselves be files or modules.
 @subsubsection{Action Graph}
 @; TODO: add a graph!
 
-Building software is modeled as a Direct Acyclic Graph (DAG) of @bydef{action}s,
-that defines a partial order:
-each action is a pair of an operation and a component,
-and must be @bydef{perform}ed but only after
+Building software is modeled as a Direct Acyclic Graph (DAG) of @bydef{action}s.
+Each action is a pair of an operation and a component.
+The DAG defines a partial order, whereby
+each action must be @bydef{perform}ed but only after
 all the actions it (transitively) depends on have already been performed.
 
 For instance, in @cl{fare-quasiquote} above,
 the @emph{loading} of (the compilation output of) @tt{quasiquote.lisp}
-depends-on the @emph{compiling} of @tt{quasiquote.lisp},
+@(depends-on) the @emph{compiling} of @tt{quasiquote.lisp},
 which itself depends-on
 the @emph{loading} of (the compilation output of) @tt{package.lisp}, etc.
 
 Importantly, though, this graph is distinct
 from the preceding graph of components:
-the graph of actions is not a mere refinement of the graph of components,
+the graph of actions is not a mere refinement of the graph of components
 but a transformation of it that also incorporates
 crucial information about the structure of operations.
 
 Unlike its immediate predecessor @(mk-defsystem),
 @(ASDF) makes a @bydef{plan} of all actions needed
-to obtain an up-to-date version of the build output,
+to obtain an up-to-date version of the build output
 before it @bydef{performs} these actions.
 In @(ASDF) itself, this plan is a list of actions to be performed sequentially:
 a total order that is a linear extension of the partial order of dependencies,
-ensuring that before the action that compiles or loads component is performed,
+ensuring that before the action that compiles or loads a component is performed,
 all the actions that compile and load its declared dependencies have themselves been performed,
 including all their own transitive dependencies.
 
 It is of course possible to reify the complete direct acyclic graph of actions
 rather than a linear extension of it.
 Indeed, Andreas Fuchs in 2006 wrote a very small but quite brilliant @(ASDF) extension
-called @(POIU), the Parallel Operator on Independent Units,
-that compiles files in parallel on Unix multiprocessors using @tt{fork},
+called @(POIU), the "Parallel Operator on Independent Units".
+@(POIU) compiles files in parallel on Unix multiprocessors using @tt{fork},
 while still loading them sequentially into a main image, minimizing latency.
 François-René Rideau later rewrote @(POIU), making it
 both more portable and simpler by, co-developing it with @(ASDF).
@@ -300,7 +309,7 @@ led to many aha moments, instrumental when fixing @(ASDF2) into @(ASDF3)
 Finally, it is important to note that
 @moneyquote{@(ASDF) is an @q{in-image} build system},
 just like the build systems that preceded it in the Lisp @(defsystem) tradition:
-it compiles (if necessary) and loads software in the current @(CL) image.
+it compiles (if necessary) and loads software into the current @(CL) image.
 For better or worse, this notably differs from the practice in most other languages,
 where the build system is a completely different piece of software running in a separate process:@note{
   Of course, it is possible to write build system for @(CL) that compile in other processes;
@@ -308,26 +317,27 @@ where the build system is a completely different piece of software running in a 
   As of the wide variety of Lisp dialects beside @(CL),
   they have as many different build systems, often integrated with a module system.
 }
-on the one hand, it makes it somewhat easier to extend the build system;
-on the other hand, it puts great pressure on @(ASDF) to remain minimal.
+On the one hand, it makes it somewhat easier to extend the build system.
+But on the other hand, it puts great pressure on @(ASDF) to remain minimal.
 
-Qualitatively, it must be delivered as a single source file
+Qualitatively, @(ASDF) must be delivered as a single source file
 and cannot use any external library,
 since it itself defines the code that may load other files and libraries.
 Quantitatively, @(ASDF) has to be present in all programs being built
-and any memory it occupies is consumed for all —
-though this mattered more in 2002 when @(ASDF) was first released
-and was about a thousand line long,
-than in 2014 when it has grown over ten times the size,
+and any memory it occupies is consumed for all.
+This arguably mattered more in 2002 when @(ASDF) was first released
+and was about a thousand line long:
+In 2014, it has grown over ten times in size,
 but memory sizes have increased even faster.
 
 Still, for all these reasons, @(ASDF) follows the minimalist principle that
 @moneyquote{anything that can be provided as an extension
             should be provided as an extension and left out of the core}.
 @(ASDF) thus cannot afford to include, say,
-management of an advanced persistence cache indexed by cryptographic digest of the contents,
-or control of distributed network of cross-compiling workers, etc. —
-but these features are conceivable as @(ASDF) extensions.
+management of an advanced persistence cache
+indexed by a cryptographic digest of the contents,
+or control a distributed network of cross-compiling workers, etc.
+However, these features are conceivable as @(ASDF) extensions.
 
 @subsection{Comparison to C programming practice}
 
@@ -335,40 +345,42 @@ Most programmers are familiar with C, but not with @(CL).
 It is therefore worth constrasting @(ASDF) to the tools used by C programmers
 to provide similar services.
 
-To build build and load software, C programmers typically use
-@(Make) to build the software, and @tt{ld.so} to load it;
-additionally, they use a tool like @tt{autoconf}
+To build and load software, C programmers typically use
+@(make) to build the software and @tt{ld.so} to load it.
+Additionally, they use a tool like @tt{autoconf}
 to locate available libraries and identify their features.
-In many ways is these C solutions are vastly more engineered than @(ASDF),
-that indeed is vastly more primitive.
-But in other important ways, @(ASDF) demonstrates how
+In many ways is these C solutions are
+vastly more and better engineered than @(ASDF).
+But in other important ways @(ASDF) demonstrates how
 a lot of the complexity present in these C systems
-is extrinsic make work that is drastically simplified away
+is extrinsic make-work that is drastically simplified away
 by Lisp's vastly better architecture.
 
 @itemlist[
   @item{
     Lisp makes the full power of runtime available at compile-time,
-    so it's easy write domain-specific languages as extensions
+    so it's easy to write a Domain-Specific Language (DSL) as an extension,
     where only the new functionality needs be defined
     (such as support for defining systems)
     while the rest of the language remains available for the user.
     In C, instead, every utility needs to onerously grow
-    an entire domain-specific language from scratch,
-    which, since the domain expert is seldom also language expert
+    an entire domain-specific language from scratch;
+    since the domain expert is seldom also language expert ,(XXX "FIX")
     with resources to do that right,
-    means plenty of mutually incompatible misdesigned
+    this means plenty of mutually incompatible misdesigned
     power-starved misimplemented languages that have to be combined
     through expensive and restricted interprocess communication.
   }
   @item{
-    Lisp provides full introspection at runtime and compile-time alike,
+    Lisp provides full introspection at run time and compile time alike,
     as well as a protocol to declare @bydef{features}
-    and conditionally read code and data based on them,
-    so you don't need dark magic at compile-time to detect features available.
-    In C, instead, people resort to horribly unmaintainable configuration scripts
+    and conditionally read code and data based on them;
+    therefore you don't need dark magic at compile time
+    to detect the features available.
+    In C, instead, people resort to
+    horribly unmaintainable configuration scripts
     in a hodge podge of shell script, m4 macros, C preprocessing and C code,
-    plus often bits of python, perl or sed, etc.
+    plus often bits of python, perl, sed, etc.
   }
   @item{
     @(ASDF) possesses a standard and standardly extensible way to configure
@@ -381,11 +393,12 @@ by Lisp's vastly better architecture.
     making it an expensive endeavour to use and/or distribute libraries.
   }
   @item{
-    @(ASDF) uses the very same mechanism to configure both runtime and compile-time,
+    @(ASDF) uses the very same mechanism
+    to configure both run time and compile time,
     so there is only one configuration mechanism to learn and to use,
     and no risk of discrepancy between the two.
     In C, completely different and incompatible mechanisms are used
-    at runtime (@tt{ld.so}) and compile-time (an unspecified mess),
+    at run time (@tt{ld.so}) and compile time (an unspecified mess),
     which further makes it hard to match
     source code, compilation headers, static and dynamic libraries,
     requiring huge complex "software distribution" infrastructure
@@ -404,7 +417,7 @@ to other build systems for @(CL), C, Java, or other systems:
     to build @(CL) software only.
     Seen one a way, it's a sign of how little you can get away with
     if you have a good basic architecture,
-    the way that is not available in lesser programming languages,
+    the way that is not available in lesser programming languages
     that require much more complex tools to achieve a similar purpose.
     Seen another way, it's also the @(CL) community failing to embrace
     the outside world and provide solutions with enough generality
@@ -427,8 +440,8 @@ to other build systems for @(CL), C, Java, or other systems:
     a constructive proof of that is Alastair Bridgewater's @cl{quick-build}
     (or the similar and earlier @cl{faslpath} by Peter Etter),
     being a fraction of the size of the original @(ASDF), which is a fraction of @(ASDF3)'s,
-    and with a fraction of the bugs — but none of the generality and extensibility.
-    @; See below @secref{asdf-package-system}. XXX
+    and with a fraction of the bugs — but none of the generality and extensibility
+    (See below @secref{asdf-package-system}).
   }
   @item{
     Because of its age-old model of building software in-memory, what more
@@ -500,7 +513,7 @@ adding new features needed in 2001 would have required modifying the carefully c
 which would require a lot of work, yet eventually would probably still break
 the support for now obsolete implementations that couldn't be tested anymore.
 
-@section{@(ASDF) Innovations}
+@section[#:tag "asdf_innovations"]{@(ASDF) Innovations}
 
 @subsection{@(ASDF1): A Successful Experiment}
 
@@ -1343,6 +1356,13 @@ by cutting it in smaller chunks, each with clear dependencies to other chunks.
 
 @subsubsection{Portability Layer}
 
+Running an external program and getting its output,
+or even manipulating pathnames and accessing the filesystem,
+were notably hard;
+even more complexity was involved to
+@emph{robustly} deal with countless corner cases.
+@(ASDF3) provides solutions to these issues, and many more.
+
 @(ASDF3) notably brought a user-visible portability layer UIOP.
 Abstracting over pathnames, filesystem access;
 but also run-program, Lisp image lifecycle, and many other everyday concerns.
@@ -1358,11 +1378,67 @@ but also run-program, Lisp image lifecycle, and many other everyday concerns.
 
 Better operations.
 
+@(POIU) didn't need to override a lot of @(ASDF)'s key infrastructure anymore.
+
+
 @subsubsection{configurability}
 
 better supported are conditional compilation, versioning, and more.
 
 @subsubsection{internal consistency}
+
+@subsubsection[#:tag "bundle_operations"]{Bundle Operations}
+
+Bundle operations allow to create a single output file
+for an entire system or collection of systems.
+The most directly user-facing bundle operation is @(fasl-op),
+that bundles into a single fasl
+all the individual fasls from the @(compile-op) outputs
+of each file in a system.
+This bundle fasl may then be loaded by operation @(load-fasl-op).@note{
+  @(fasl-op) is not a good name, since every individual @(compile-op) also outputs a fasl.
+  This operation should have been called @cl{compile-bundle-op}
+  and the corresponding loader @cl{load-bundle-op}.
+  But backward compatibility makes it hard to change the name.
+}
+Also @cl{lib-op} links into a library all the object files in a system;
+@cl{dll-op} creates a dynamically loadable libary out of these files.
+The above bundle operations also have so-called "monolithic" variants,
+that bundle all the files in a system @emph{and all its transitive dependencies}.
+Bundle operations make delivery of code much easier.
+On linker-based implementations such as ECL,
+loading bundle fasls also consumes much fewer resources
+than loading a lot of small fasls.@note{
+  Most @(CL) implementations maintain their own heap with their own garbage collector,
+  and then are able to dump an image of the heap on disk,
+  that can be loaded back in a new process with all the state of the former process;
+  to build an application, you start an small initial image, load plenty of code, dump an image,
+  and there you are.
+  ECL, instead, is designed to be easily embeddable in a C program;
+  it uses the popular C garbage collector by Hans Boehm & al.,
+  and relies on linking and initializer functions rather than on dumping;
+  to build an application, you link all the libraries and object files together,
+  and call the proper initialization functions in the correct order.
+  Because of the overhead of dynamic linking, loading a single fasl
+  is much preferrable to a lot of fasls.
+}
+
+The latter point is why bundle operations were initially introduced as @cl{asdf-ecl},
+an extension to @(ASDF) specific to ECL, back in the day of @(ASDF1).
+It was distributed with @(ASDF2), though in a way
+that made upgrade slightly awkward to ECL users,
+who had to reload @cl{asdf-ecl} after upgrading @(ASDF),
+even though it was loaded automatically when they used @cl{(require "asdf")}.
+In May 2012, it was generalized to other implementations as @cl{asdf-bundle}.
+When came @(ASDF3), it was merged into @(ASDF) itself:
+not only did it provide useful new operations,
+the way that @(ASDF3) was automatically upgrading itself for safety purposes
+would otherwise have broken things badly for ECL users
+if the bundle operations weren't bundled with @(ASDF).
+
+In @(ASDF3.1), using @cl{deliver-asd-op} (previously misnamed @cl{binary-op})
+you can create both the bundle fasl from @(fasl-op) and a @tt{.asd} file
+to use to deliver the system in binary format only.
 
 @subsubsection{creating standalone executables}
 
@@ -1492,30 +1568,38 @@ For security reasons, the cache is not shared between users.
 
 @(ASDF 3.1) (March 2014) builds on top of @(ASDF3) to provide new features.
 
+@subsubection[#:tag "asdf-package-system"]{@cl{asdf/package-system}}
+
 The @cl{asdf/package-system} extension supports
 a one-file, one-package, one-system style of programming
 with maintainability benefits.
 
-UIOP's @cl{run-program} was generalized
+@subsubection[#:tag "asdf-package-system"]{@(UIOP) improvements}
+
+@(UIOP)'s @cl{run-program} was generalized
 to accept redirection of input and error-output as well as of output.
+The @cl{inferior-shell} extension knows how to take advantage of it.
 
-New macros include a debugged and extended @cl{with-temporary-file}
-or the @cl{nest} macro.
+A debugged and extended @cl{with-temporary-file}
+makes it easy to work with temporary files,
+automatically cleaning them up afterwards.
 
-Running an external program and getting its output,
-or even manipulating pathnames and accessing the filesystem,
-were notably hard;
-even more complexity was involved to
-@emph{robustly} deal with countless corner cases.
-@(ASDF) 3.1 provides solutions to these issues, and many more.
+The @cl{nest} macro allows to nest arbitrarily many forms
+without indentation drifting ever to the right.
+This can make for more readable code.
 
-Future: Robert Goldman assumed maintainership in July 2013,
-a few months after the release of @(ASDF3),
-and but François-René Rideau remained main developer until
-release of 3.1.1 in February 2014.
+@subsubsection{The Future}
 
+Robert Goldman assumed maintainership in July 2013,
+a few months after the release of @(ASDF3).
+François-René Rideau remained main developer until release of 3.1.1 in March 2014.
 
-@section{Evolving Code in an Immutable Community}
+All the known bugs have been fixed, and the regression test suite has swollen,
+but there will always be portability issues to fix,
+and there is a big TODO file for suggested ways to improve @(ASDF).
+It is uncertain whether a new maintainer will take over development.
+
+@section[#:tag "evolving"]{Evolving Code in an Immutable Community}
 
 In a second part, we will discuss the challenges of making acceptable change
 to a piece of community software that is not only used by hundreds of developers,
@@ -1585,7 +1669,7 @@ to define your own sub-class @tt{foo-file} of @(cl-source-file), and use:
 @cl{(defmethod source-file-type ((c foo-file) (s module)) "foo")}.
 This caused much grief when we tried to make @(system)
 not a subclass of @(module) anymore,
-but both be subclasses of @cl{parent-component} instead.
+but both be subclasses of new abstract class @cl{parent-component} instead.
 
 In @(ASDF) 2.015, two new subclasses of @(cl-source-file) were introduced,
 @cl{cl-source-file.cl} and @cl{cl-source-file.lsp},
@@ -1598,9 +1682,20 @@ Individual modules or files can be overridden, too,
 either by changing their class from @cl{:file} to @cl{:cl-source-file.cl},
 or more directly by specifying a @cl{:pathname} parameter.
 
+If needed, users can define their own subclass of @(cl-source-file)
+and override its default @cl{type}, as in:
+@clcode{
+(defclass my-source-file (cl-source-file)
+  ((type :initform "l")))
+}
+Or they can directly override the type while defining a component, as in:
+@clcode{
+(:file "foo" :type "l")
+}
+
 In any case, the protocol was roundabout both for users and implementers,
-and a new protocol was invented.
-Verbosity is a bad smell.
+and a new protocol was invented that is both simpler to use and easier to extend.
+@moneyquote{Verbosity is a bad smell, it suggests lack of abstraction, or bad abstractions}.
 
 @subsection{Syntax Control}
 
@@ -1886,11 +1981,16 @@ to support timestamps rather than a flag.
 As for @(do-first) dependencies such as loading a file,
 we would stamp a @(load-op) not with the time at which the file was loaded,
 but with the timestamp of the file being loaded.
-This wholly eliminated the previous need for kludges to avoid clock skew
-between the processor clock and the fileserver clock.
-Then we could get rid of @(do-first) itself, this ugly wart,
-by separating the propagated timestamp from a non-propagated flag
-telling whether the action needs to be done in the current image or not.
+As a side benefit, this wholly eliminated the previous need for kludges
+to avoid clock skew between the processor clock and the fileserver clock
+(though not clock skew between multiple file servers used during the build).
+
+This wasn't enough, though. To wholly get rid of @(do-first),
+we had to distinguish between actions that were done in the current image,
+versus actions that weren't done in the current image,
+but that might still be up-to-date, because their effects were all in the filesystem.
+Therefore, when examining an action, we must separate the propagated timestamp
+from a non-propagated flag telling whether the action needs to be done in the current image or not.
 The generic function @(compute-action-stamp) looks at the dependencies of an action,
 its inputs and outputs on disk, and possible stamps from it being done earlier in the current image,
 and returns a stamp for it and a flag for whether it needs to be done (or redone) in the current image.
@@ -1903,14 +2003,14 @@ and @(compute-action-stamp) will return an infinity marker and @(nil).
 The infinity marker (implemented as boolean @cl{t}) is so that no timestamp is up-to-date in comparison,
 and corresponds to the force flag of @(ASDF1).
 A negative infinity marker (implemented as boolean @(nil)) also serves to mark as no dependency.@note{
-  Interestingly, because this @(compute-action-stamp) is a generic function
-  that takes a plan class as parameter,
-  the default method could easily be overridden with a new plan class,
-  such that instead of using timestamps,
-  it would use cryptographic digests of the various files;
-  a trivial change or override would need to be made to the 7-line function @cl{visit-dependencies}
-  to generalize the way stamps are combined rather than take the latest,
-  and there you'd go.
+  Interestingly, this @(compute-action-stamp) could be very easily updated
+  to use cryptographic digests of the various files instead of timestamps,
+  or any other kind of stamp.
+  Because it is the only function for which the contents of stamps is not opaque,
+  and is a generic function that takes a plan class as parameter,
+  it might be possible to override this function either for a new plan class
+  and make that the @cl{*default-plan-class*}), without destructively modifying any code.
+  However, this hasn't been tested, so there's probably a bug lurking somewhere.
   Of course, such a modification cannot be part of the standard @(ASDF) core,
   because it has to be minimal and ubiquitous and can't afford to pull a cryptographic library (for now),
   but an extension to @(ASDF), particularly one that who try to bring determinism and scalability,
@@ -2002,7 +2102,7 @@ which at that point had been broken down in neat small functions,
 none more than fifteen lines long.
 If anything, some complexity had been moved to the function @(compute-action-stamp)
 that computes timestamps and deals with corner cases of missing inputs or missing outputs,
-which was 48 heavily commented lines of code,
+which was 48 heavily commented lines of code (67 as of 3.1.1),
 just slightly more than the misdesigned function @(operation-done-p)
 it was superseding.
 
@@ -2013,8 +2113,102 @@ provided a weapon to successfully defend against the undead.
 
 @subsection{Needed In Image}
 
-And the kluge in @(POIU) could be removed by making that an explicit dependency on a new kind of action
-, adding a
+Former @(do-first) dependencies of an action used to not partake in the forcing,
+but were nevertheless to be done before the action.
+Reminder: in practice, they were the loading of dependencies before compiling a file.
+With the new, saner, action graph, they were now regular dependencies;
+the only difference was that they don't contribute anything to the action stamp (and thus forcing)
+that wasn't already contributed by the action creating the file they loaded.
+Still, they must be done, in order, in the current image.
 
+Now, this last constraint was utterly defeating the purpose of some bundle operations,
+where the whole point of using a bundle fasl was to not have to load the individual fasls
+(see @secref{bundle_operations}).
+In the old @(ASDF1) model, the @(load-fasl-op) @(depends-on) @(fasl-op)
+which @(depends-on) a lot of individual @(compile-op),
+which only @(do-first) the @(load-op) of their dependencies.
+Therefore, if the individual files look up to date, no individual loading takes place.
+Except of course @(ASDF1) is incapable of detecting that files are out of date
+when the system's dependencies have changed.
+In the new @(ASDF3) model, the fact that the @(compile-op) actions are out of date
+is detected thanks to recursing through their @(prepare-op) and @(load-op) dependencies;
+but with the naïve approach to building a plan that always load dependencies,
+this causes all those individual @(load-op) to be issued.
+
+The solution was again suggested by @(POIU).
+For the sake of determining whether an action could be performed in parallel in a fork,
+or had to be done in the image of the main process,
+@(POIU) had introduced a predicate @(needed-in-image-p);
+the notion was actually suggested by the old method @(operation-done-p)
+from Dan Barlow's original @(ASDF1).
+If an action has any @(output-files), then
+@(ASDF) considers that the operation is worth it for its output,
+and should have no meaningful or reliable side-effects in the current image;
+it thus counts as @emph{not} @(needed-in-image-p).
+If on the other hand, an action has no @(output-files), then
+@(ASDF) considers that the operation is worth its side-effects in the current image;
+it thus counts as @(needed-in-image-p).
+
+What the new @(traverse-action) action had to do (2.26.46),
+was to associate to each visited node a status depending on whether or not
+the action was needed in the current image.
+When visiting an action in a context where the goal is not (known to be) needed in image,
+or where the action is intrinsically not @(needed-in-image-p)
+because its value resides in filesystem side-effects,
+then all the action's dependencies would themselves visited
+in a mode where the goal is not (known to be) needed in image.
+In that mode, the action is consulted for its timestamp,
+but won't be included in the plan as long as it is up-to-date.
+However, if the action is found to be out of date,
+before it would be planned, all its dependencies will be visited a second time,
+in a mode where the goal is known to be needed in image.
+The top level action is initially requested with a goal of being needed in image,
+which only applies of course if it's itself a @(needed-in-image) action.@note{
+  The principle of visiting the action graph multiple time
+  would be generalizable to other situations, and the maximum number of visits of a given node
+  is the height of the semi-lattice of states in which the traversal is considered.
+  For instance, in a @tt{blaze} extension I wrote to support @(CL),
+  visited files would be upgraded between being not needed in image, needed loaded as cfasl,
+  needed loaded from source, or needed loaded from fasl.
+  The same technique could be used to improve XCVB.
+}
+
+The code was then refactored by introducing an explicit plan object (2.26.47),
+to hold this action status information during the planning phase,
+as distinguished from the execution phase
+during which action status refers to what is actually done.
+
+@subsection{The Aftermath}
+
+At the end of this epic battle against an tiny old bug,
+@(ASDF) was found completely transformed,
+and both much more sophisticated, yet its code much simpler.
+For instance, the commented @(traverse-action) function is 43 lines long,
+which is still significantly less than the original @(traverse) function.
+Reading the @(ASDF3) source code requires much less figuring out what is going on,
+but much more understanding the abstract concepts
+— but the abstract concepts are also well documented,
+when they were previously implicit.
+
+Interestingly, this new @(ASDF3) can still meaningfully be said to be "but"
+a debugged version of Dan Barlow's original @(ASDF1).
+Dan probably had no idea of all the sophistication
+required to make his @tt{defsystem} work @emph{correctly};
+if he had, he might have been scared and not tried.
+Instead, he was daringly experimenting many ideas;
+many of them didn't pan out in the end,
+but most were clear improvement on what preceded,
+and he had quite a knack for finding interesting designs.
+
+In the end, we find that @moneyquote{software designs are discovered},
+not created @emph{ab nihilo}.
+Dan extracted a raw design from the mud of conceptual chaos,
+and gave birth to @(ASDF).
+Tasked with maintaining the software, I refined the design,
+removing the mud, until what was left was a polished tool.
+I certainly won't claim that my task was harder or more worthwhile than his,
+or that @(ASDF3) is a jewel across build systems.
+But it certainly has a clean and original design worth explaining, and
+neither Dan Barlow nor I can be said to have invented it.
 
 @(generate-bib)

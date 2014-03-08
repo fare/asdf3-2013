@@ -66,9 +66,11 @@
              (define (name) (pretty string)) ...))])))
 
 (defpretty cl
-  ASDF-Install UIOP POIU XCVB DEFSYSTEM defsystem mk-defsystem
-  nil error cerror warning
-  operation load-op compile-op prepare-op load-fasl-op fasl-op
+  ASDF-Install UIOP POIU XCVB DEFSYSTEM defsystem mk-defsystem quick-build faslpath
+  run-program inferior-shell run run/nil run/string run/ss
+  asdf/package-system
+  nil error cerror warning defpackage define-package
+  operation load-op compile-op prepare-op load-fasl-op fasl-op concatenate-source-op program-op image-op
   upward-operation downward-operation sideway-operation selfward-operation non-propagating-operation
   component system module file cl-source-file component-children
   operate load-system
@@ -78,6 +80,7 @@
 (defpretty emph depends-on in-order-to do-first force)
 (defpretty tt Make make)
 (define (Quicklisp) "Quicklisp")
+(define (asd) @tt{.asd})
 
 (define-cite ~cite cite-noun generate-bib)
 

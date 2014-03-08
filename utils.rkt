@@ -69,10 +69,12 @@
   ASDF-Install UIOP POIU XCVB DEFSYSTEM defsystem mk-defsystem
   nil
   operation load-op compile-op prepare-op load-fasl-op fasl-op
+  upward-operation downward-operation sideway-operation selfward-operation
   component system module file cl-source-file component-children
   operate load-system
   traverse traverse-action compute-action-stamp operation-done-p needed-in-image-p
-  component-depends-on upward-operation downward-operation sideway-operation selfward-operation)
+  component-depends-on output-files input-files perform)
+
 (defpretty emph depends-on in-order-to do-first force)
 (defpretty tt Make make)
 (define (Quicklisp) "Quicklisp")

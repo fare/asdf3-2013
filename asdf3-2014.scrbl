@@ -1568,13 +1568,13 @@ For security reasons, the cache is not shared between users.
 
 @(ASDF 3.1) (March 2014) builds on top of @(ASDF3) to provide new features.
 
-@subsubection[#:tag "asdf-package-system"]{@cl{asdf/package-system}}
+@subsubsection[#:tag "asdf-package-system"]{@cl{asdf/package-system}}
 
 The @cl{asdf/package-system} extension supports
 a one-file, one-package, one-system style of programming
 with maintainability benefits.
 
-@subsubection[#:tag "asdf-package-system"]{@(UIOP) improvements}
+@subsubsection[#:tag "uiop_improvements"]{@(UIOP) improvements}
 
 @(UIOP)'s @cl{run-program} was generalized
 to accept redirection of input and error-output as well as of output.
@@ -1768,13 +1768,11 @@ This illustrates the principle that you should always
 @moneyquote{explain your programs}:
 having to intelligibly verbalize the concepts will make @emph{you} understand them better.
 
-@section[#:tag "pathnames" #:style (make-style 'appendix '(unnumbered))]
-  {Appendix A: Pathnames}
+@section[#:tag "pathnames" #:style (make-style 'appendix '(unnumbered))]{Appendix A: Pathnames}
 
 Abandon all hopes, ye who enter here!
 
-@section[#:tag "traverse" #:style (make-style 'appendix '(unnumbered))]
-  {Appendix B: A @(traverse) across the build}
+@section[#:tag "traverse" #:style (make-style 'appendix '(unnumbered))]{Appendix B: A @(traverse) across the build}
 
 @subsection{The end of @(ASDF2)}
 
@@ -2163,7 +2161,7 @@ However, if the action is found to be out of date,
 before it would be planned, all its dependencies will be visited a second time,
 in a mode where the goal is known to be needed in image.
 The top level action is initially requested with a goal of being needed in image,
-which only applies of course if it's itself a @(needed-in-image) action.@note{
+which only applies of course if it's itself a @(needed-in-image-p) action.@note{
   The principle of visiting the action graph multiple time
   would be generalizable to other situations, and the maximum number of visits of a given node
   is the height of the semi-lattice of states in which the traversal is considered.
@@ -2200,15 +2198,30 @@ many of them didn't pan out in the end,
 but most were clear improvement on what preceded,
 and he had quite a knack for finding interesting designs.
 
+And the design of @(ASDF) is undoubtly interesting.
+It masterfully takes advantage of the multiple inheritance and multiple dispatch
+provided by CLOS to deliver in a thousand lines or so
+a piece of software that is extremely extensible,
+and unlike anything written in languages missing these features.
+@(ASDF3) is ten times this thousand lines,
+because of all the infrastructure for robustness and portability,
+because of all the burden of hot upgrade and backward compatibility,
+because of all the builtin documentation and comments,
+and because of all the several extensions that it bundles.
+But the core is still a thousand lines of code or so,
+and these extensions, built on top of this core,
+illustrate its expressive power,
+as well as provide essential services to Lisp programmers.
+
 In the end, we find that @moneyquote{software designs are discovered},
-not created @emph{ab nihilo}.
+not created @emph{ex nihilo}.
 Dan extracted a raw design from the mud of conceptual chaos,
 and gave birth to @(ASDF).
 Tasked with maintaining the software, I refined the design,
 removing the mud, until what was left was a polished tool.
 I certainly won't claim that my task was harder or more worthwhile than his,
-or that @(ASDF3) is a jewel across build systems.
-But it certainly has a clean and original design worth explaining, and
-neither Dan Barlow nor I can be said to have invented it.
+or that @(ASDF3) is a jewel among build systems.
+But I believe that it has a clean and original design worth explaining, and
+that neither Dan Barlow nor I can honestly be said to have invented it.
 
 @(generate-bib)

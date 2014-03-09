@@ -66,9 +66,9 @@
              (define (name) (pretty string)) ...))])))
 
 (defpretty cl
-  ASDF-Install UIOP POIU XCVB DEFSYSTEM defsystem mk-defsystem quick-build faslpath
+  ASDF-Install UIOP POIU XCVB DEFSYSTEM defsystem mk-defsystem
+  quick-build faslpath asdf/package-system
   run-program inferior-shell run run/nil run/string run/ss
-  asdf/package-system
   nil error cerror warning defpackage define-package
   operation load-op compile-op prepare-op load-fasl-op fasl-op concatenate-source-op
   program-op image-op build-op
@@ -76,7 +76,8 @@
   component system module file cl-source-file component-children
   operate load-system
   traverse traverse-action compute-action-stamp operation-done-p needed-in-image-p
-  component-depends-on output-files input-files perform)
+  component-depends-on output-files input-files perform
+  action-depends-on)
 
 (defpretty emph depends-on in-order-to do-first force)
 (defpretty tt Make make)

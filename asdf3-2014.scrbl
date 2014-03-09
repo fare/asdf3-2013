@@ -1883,14 +1883,15 @@ refers to the file @tt{interface/all.lisp},
 under the package-system hierarchy registered by system @cl{lil},
 defined as follows in @cl{lil.asd}:
 @clcode{
-(defsystem "lil"
-  :description "LIL: Lisp Interface Library" ...
+(defsystem "lil" ...
+  :description "LIL: Lisp Interface Library"
   :class :package-system
   :defsystem-depends-on ("asdf-package-system")
-  :depends-on ("lil/interface/all" "lil/pure/all" ...)
+  :depends-on ("lil/interface/all"
+               "lil/pure/all" ...)
   ...)
 }
-The @cl{:defsystem-depends-on (:asdf-package-system)}
+The @cl{:defsystem-depends-on ("asdf-package-system")}
 is an external extension that provides backward compatibility with @(ASDF 3.0),
 and is part of @(Quicklisp).
 Because not all package names can be directly mapped back to a system name,
@@ -1906,7 +1907,8 @@ starts with the following form:
 @clcode{
 (uiop:define-package :lil/interface/order
   (:use :closer-common-lisp
-   :lil/interface/definition :lil/interface/base
+   :lil/interface/definition
+   :lil/interface/base
    :lil/interface/eq :lil/interface/group)
   (:mix :fare-utils :uiop :alexandria)
   (:export ...))
@@ -2154,7 +2156,7 @@ their symbol became unreachable and the definitions impossible to debug.
 In the end, to solve the namespace issues of @(CL) would have required
 a complete intrusive change of the package system,
 and that was not a task for @(ASDF).
-If anything, @(faslpath), @(quick-build) and @(asdf-package-system)
+If anything, @(faslpath), @(quick-build) and @(asdf/package-system)
 seem to have a better approach at enforcing namespace discipline.
 
 There were other namespace fiascos.
@@ -2194,7 +2196,7 @@ abstraction and extension of @(CL)'s standard @cl{compile-file} function,
 was wholly rejected as only being one more way users would call the wrong function,
 in favor of making @cl{compile-file*} itself more clever and aware of the peculiarities of ECL.
 
-@subsection{API Rigidity}
+@subsection{Interface Rigidity}
 
 There were many cases during @(ASDF) development
 where we wanted to rename a function or change the behavior of a class.
@@ -2715,7 +2717,7 @@ depends on the same operation @cl{,o}
 on each of the component's children,
 followed by other dependencies from other aspects of the action.
 Had backward-compatibility not been required,
-the function would have been called @cl{action-depends-on},
+the function would have been called @(action-depends-on),
 and its @cl{method-combination} would have been @cl{append},
 so that it wouldn't be necessary to write that @cl|{,@(call-next-method)}|
 in each and every method definition.

@@ -70,7 +70,8 @@
   run-program inferior-shell run run/nil run/string run/ss
   asdf/package-system
   nil error cerror warning defpackage define-package
-  operation load-op compile-op prepare-op load-fasl-op fasl-op concatenate-source-op program-op image-op
+  operation load-op compile-op prepare-op load-fasl-op fasl-op concatenate-source-op
+  program-op image-op build-op
   upward-operation downward-operation sideway-operation selfward-operation non-propagating-operation
   component system module file cl-source-file component-children
   operate load-system

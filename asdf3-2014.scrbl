@@ -39,8 +39,8 @@ in bringing change to the @(CL) community.
 Better late than never,
 with the release of @(ASDF3) in May 2013,
 all the programs for which one uses so-called "scripting" languages
-may now be written @emph{portably} in @(CL):@note{
-  @(CL) is a language defined in the ANSI standard X3.226-1994.
+may now be written @emph{portably} in @(CL) (CL):@note{
+  CL is a language defined in the ANSI standard X3.226-1994.
   It is a multi-paradigm, dynamically-typed high-level language.
   Though it is known for its decent support for functional programming,
   its support for Object-Oriented Programming
@@ -49,11 +49,11 @@ may now be written @emph{portably} in @(CL):@note{
   or support for interactive development.
   It was explicitly designed to allow for high-performance implementations;
   some of them, depending on the application,
-  may rival with compiled C programs in terms of speed,
+  may rival compiled C programs in terms of speed,
   usually far ahead of "scripting" languages and their implementations.
 @XXX{
   Over a dozen actively maintained implementations
-  purport to conform to the ANSI @(CL) standard, plus a few unmaintained ones.
+  purport to conform to the ANSI CL standard, plus a few unmaintained ones.
   No single implementation is at the same time
   the best, shiniest, leanest, fastest, cheapest,
   and the one ported to the most platforms.
@@ -81,7 +81,7 @@ and one can make those new services available to other programs via the command-
 as well as via network protocols, etc.
 
 @(ASDF) has been the @(de_facto) standard build system
-for portable @(CL) software since shortly after its release
+for portable CL software since shortly after its release
 by Dan Barlow in 2002 @~cite[ASDF-Manual].
 @moneyquote{The purpose of a build system is
                 to enable division of labor in software development}:
@@ -102,8 +102,8 @@ moreover the companion script @cl{cl-launch} (see @secref{cl-launch})
 can create light-weight scripts that can be run unmodified
 on many different kinds of machines, each differently configured.
 Previously, key parts of a program had to be configured to match
-one's specific @(CL) implementation and specific software installation paths.
-Now, all of one's usual Unix scripting needs can be entirely fulfilled by @(CL),
+one's specific CL implementation and specific software installation paths.
+Now, all of one's usual Unix scripting needs can be entirely fulfilled by CL,
 benefitting from its efficient implementations, hundreds of software libraries, etc.
 
 In this article, we will describe
@@ -119,24 +119,24 @@ better programming practices or more powerful programs.
 In @secref{what_it_is}, we explain what @(ASDF) is about;
 we will compare it to what is done in the C world;
 we will lay down the historical context in which it was designed;
-we will tell what it initially brought to the @(CL) community.
+we will tell what it initially brought to the CL community.
 
 In @secref{asdf2},
 we will describe the innovations introduced with @(ASDF "2.000"),
 and how they made @(ASDF) reliable.
 
 In @secref{asdf2.26},
-we will describe the innovations during the days of @(ASDF2),
-until @(ASDF 2.26).
+we will describe the features added during the days of @(ASDF2),
+until version 2.26, to make it more usable.
 
 In @secref{asdf3},
 we will describe the innovations introduced in @(ASDF3)
-and @(ASDF3.1).
+and @(ASDF3.1), to encompass software delivery.
 
 In @secref{evolving}, we will discuss the challenges
 of making acceptable changes to a piece of community software,
 and conclude with lessons that growers of other programming languages
-can learn from our experience with @(CL) and @(ASDF).
+can learn from our experience with CL and @(ASDF).
 
 @section[#:tag "what_it_is"]{What @(ASDF) is}
 
@@ -144,12 +144,12 @@ can learn from our experience with @(CL) and @(ASDF).
 
 @subsubsection{Components}
 
-@(ASDF) is a build system for @(CL):
+@(ASDF) is a build system for CL:
 it helps developers divide software into a hierarchy of @bydef{component}s
 and automatically generates a working program from all the source code.
 
 Top components are called @bydef{system}s in an age-old Lisp tradition,
-while the bottom ones are source files, typically written in @(CL).
+while the bottom ones are source files, typically written in CL.
 Users may then @(operate) on these components with various build @bydef{operation}s,
 most prominently compiling the source code (operation @(compile-op)) and
 loading the result into the current Lisp image (operation @(load-op)).
@@ -168,7 +168,7 @@ required systems and all their transitive dependencies.
 
 A system is itself organized into a hierarchy of components,
 where each component may be either an individual @bydef{file}
-(usually, a @(CL) source file),
+(usually, a CL source file),
 or a @bydef{module} that may recursively contain other components.
 Modules may or may not directly fit the filesystem directory hierarchy.
 
@@ -179,7 +179,7 @@ on declarations or definitions of packages, macros, variables, classes, function
 present in another component, the programmer must
 declare that the former component @(depends-on) the latter.
 
-@subsubsection{Example system definitions}
+@subsubsection{Example System Definitions}
 
 For instance, here is how the @cl{fare-quasiquote} system is defined
 in a file @tt{fare-quasiquote.asd}:@note{
@@ -214,14 +214,14 @@ It otherwise contains three files, @tt{packages.lisp},
 (the @tt{.lisp} suffix is automatically added based on the component class;
 see @secref{pathnames}).
 The latter files each depend on the first,
-that which the @(CL) packages@note{
-  Each @(CL) image has a global flat two-level namespace of symbols in packages:
+that which the CL packages@note{
+  Each CL image has a global flat two-level namespace of symbols in packages:
   packages are identified by their name, a string;
   in each package, symbols are identified by their name, a string.
   However, this namespace is not global across images,
   because packages can import symbols from other packages,
   but without renaming,
-  and @(CL) between processes running different code bases
+  and CL between processes running different code bases
   will differently intern (or fail to intern) symbols.
 }
 
@@ -306,12 +306,13 @@ led to many aha moments, instrumental when fixing @(ASDF2) into @(ASDF3)
 Finally, it is important to note that
 @moneyquote{@(ASDF) is an @q{in-image} build system},
 just like the build systems that preceded it in the Lisp @(defsystem) tradition:
-it compiles (if necessary) and loads software into the current @(CL) image.
+it compiles (if necessary) and loads software into the current CL image.
 For better or worse, this notably differs from common practice in most other languages,
 where the build system is a completely different piece of software running in a separate process.@note{
-  Of course, it is possible to write build system for @(CL) that compiles in other processes:
-  we did it in the past with XCVB @~cite[XCVB-2009].
-  As of the wide variety of Lisp dialects beside @(CL),
+  Of course, a CL build system can compile in separate processes,
+  for the sake determinism and parallelization:
+  our XCVB did @~cite[XCVB-2009]; so does Google's blaze.
+  As for the wide variety of Lisp dialects beside CL,
   they have as many different build systems, often integrated with a module system.
 }
 On the one hand, it makes it somewhat easier to extend the build system.
@@ -338,20 +339,22 @@ However, these features are conceivable as @(ASDF) extensions.
 
 @subsection{Comparison to C programming practice}
 
-Most programmers are familiar with C, but not with @(CL).
+Most programmers are familiar with C, but not with CL.
 It is therefore worth constrasting @(ASDF) to the tools used by C programmers
 to provide similar services.
 
 To build and load software, C programmers typically use
 @(make) to build the software and @tt{ld.so} to load it.
 Additionally, they use a tool like @tt{autoconf}
-to locate available libraries and identify their features.
+to locate available libraries and identify their features.@note{
+  @(ASDF3) also provides some functionality the analogue of which would be
+  small parts of the @tt{libc} and of the linker @tt{ld}.
+}
 In many ways these C solutions are
 vastly better engineered than @(ASDF).
 But in other important ways @(ASDF) demonstrates how
-a lot of the complexity present in these C systems
-is accidental complexity can be done away with
-thanks to Lisp's vastly better architecture.
+these C systems have a vast amount of accidental complexity
+that CL does away with thanks to better architecture.
 
 @itemlist[
   @item{
@@ -396,7 +399,7 @@ thanks to Lisp's vastly better architecture.
     so there is only one configuration mechanism to learn and to use,
     and no risk of discrepancy between the two.
     In C, completely different and incompatible mechanisms are used
-    at runtime (@tt{ld.so}) and compile-time (an unspecified mess),
+    at runtime (@tt{ld.so}) and compile-time (unspecified),
     which further makes it hard to match
     source code, compilation headers, static and dynamic libraries,
     requiring some huge and complex "software distribution" infrastructure
@@ -406,22 +409,22 @@ thanks to Lisp's vastly better architecture.
 ]
 
 Nevertheless, there are also many ways in which @(ASDF) pales in comparison
-to other build systems for @(CL), C, Java, or other systems:
+to other build systems for CL, C, Java, or other systems:
 
 @itemlist[
   @item{
     @(ASDF) is not a general-purpose build system.
     Its relative simplicity is directly related to it being custom made
-    to build @(CL) software only.
+    to build CL software only.
     Seen one way, it's a sign of how little you can get away with
     if you have a good basic architecture;
-    a similarly simple solution is not available to lesser programming languages,
-    and they require much more complex tools to achieve a similar purpose.
-    Seen another way, it's also the @(CL) community failing to embrace
+    a similarly simple solution is not available to most other programming languages,
+    that require much more complex tools to achieve a similar purpose.
+    Seen another way, it's also the CL community failing to embrace
     the outside world and provide solutions with enough generality
     to solve more complex problems.@note{
       @(ASDF3) could be easily extended to support arbitrary build actions,
-      if there were an according desire; but @(ASDF1) and 2 couldn't:
+      if there were an according desire. But @(ASDF1) and 2 couldn't:
       their action graph was not general enough,
       being simplified and tailored for the common use case
       of compiling and loading Lisp code;
@@ -431,7 +434,7 @@ to other build systems for @(CL), C, Java, or other systems:
     }
   }
   @item{
-    At the other extreme, a build system for @(CL) could have been made
+    At the other extreme, a build system for CL could have been made
     that is much simpler and more elegant than @(ASDF),
     if it could have required software to follow some simple organization constraints,
     without much respect for legacy:
@@ -453,7 +456,7 @@ to other build systems for @(CL), C, Java, or other systems:
     and not the most promising build system to start from —
     though if the alternative were to start from scratch,
     there are many good ideas in @(ASDF), and probably a lot of code to reuse
-    if that alternative is written in @(CL).
+    if that alternative is written in CL.
   }
 ]
 
@@ -474,14 +477,15 @@ between operations on those files, modules and systems,
 such that files providing definitions
 should be compiled and loaded before files using those definitions.
 
-Since 1990, the state of the art in free software @(CL) build systems
+Since 1990, the state of the art in free software CL build systems
 was @(mk-defsystem) @~cite[MK-DEFSYSTEM].@note{
   The variants of @(DEFSYSTEM) available
-  on each of the major proprietary @(CL) implementations
+  on each of the major proprietary CL implementations
   (Allegro, LispWorks, and formerly, Genera),
   seem to have been much better than @(mk-defsystem).
   But they were not portable, not mutually compatible, and not free software,
   and therefore @(mk-defsystem) became @(de_facto) standard for free software.
+  @; XXX what about the ILU defsystem from Xerox Parc?
 }
 Like late 1980s variants of DEFSYSTEM on all Lisp systems,
 it featured a declarative model to define a system in terms of
@@ -494,7 +498,7 @@ instead of having to be manually specified by users.
 However, @(mk-defsystem) suffered from several flaws,
 in addition to a slightly annoying software license.
 These flaws were probably justified at the time it was written,
-several years before the @(CL) standard was adopted,
+several years before the CL standard was adopted,
 but were making it less than ideal in the world of universal personal computing.
 First, installing a system required editing the system's definition files to configure pathnames,
 and/or editing some machine configuration file to define "logical pathname translations"
@@ -513,23 +517,21 @@ the support for now obsolete implementations that couldn't be tested anymore.
 
 @subsection{@(ASDF1): A Successful Experiment}
 
-In 2001, Dan Barlow, a then prolific @(CL) hacker,
-wanted a good @(defsystem) variant suitable for his needs,
-notably regarding extensibility.
-Instead of attempting to modify @(mk-defsystem), at high cost for little expected benefit,
-he wrote a new one, @(ASDF).@note{
-  In a combined reverence to tradition and joke,
+In 2001, Dan Barlow, a then prolific CL hacker,
+dissatisfied @(mk-defsystem),
+wrote a new @(defsystem) variant, @(ASDF).@note{
+  In a combined reverence for tradition and joke,
   @(ASDF) stands for "Another System Definition Facility",
   as well as for consecutive letters on a QWERTY keyboard.
 }
 Thus he could abandon the strictures of supporting long obsolete implementations,
-and instead target modern @(CL) implementations.
+and instead target modern CL implementations.
 In 2002, he published @(ASDF), made it part of SBCL,
-and used it for his popular @(CL) software.
+and used it for his popular CL software.
 It was many times smaller than @(mk-defsystem)
 (under a thousand line of code, instead of five thousand),
-much more usable, actually extensible,
-easy to port to other modern @(CL) implementations,
+much more usable, easy to extend,
+trivial to port to other modern CL implementations,
 and had an uncontroversial MIT-style software license.
 It was an immediate success.
 
@@ -561,7 +563,7 @@ without the need to modify the main source file.@note{
   the idea of a executing a plan reified in a preliminary phase,
   rather than walking the dependencies on the go.
 }
-Using the now standardized @(CLOS),
+Using the now standardized @(CLOS) (CLOS),
 Dan Barlow defined his @(defsystem) in terms of @bydef{generic functions}
 specialized on two arguments, @(operation) and @(component),
 using multiple dispatch, an essential OO feature unhappily not available
@@ -576,6 +578,8 @@ a system to automatically extract low-level details
 of C function and data structure definitions,
 so they may be used by SBCL's foreign function interface.
 
+@subsubsection{Limitations of @(ASDF1)}
+
 @(ASDF) was a great success at the time,
 but after many years, it was also found to have its downsides:
 Dan Barlow was experimenting with new concepts,
@@ -586,37 +590,39 @@ His code had a lot of rough edges:
 while @(ASDF) worked great on the implementation he was using
 for the things he was doing with it,
 it often failed in ugly ways when using other implementations,
-or exercising corner cases he had never tested;
-the naive use of lists as a data structure
-didn't scale to large systems with thousands of files;
-the extensibility API was lacking in many ways
-such that power users took to redefining
-or overriding @(ASDF) internals with modified variants,
-which made maintenance costly.
+or exercising corner cases he had never tested.
+The naive use of lists as a data structure
+didn't scale to large systems with thousands of files.
+The extensibility API while basically sane was missing many hooks,
+so that power users had to redefine or override @(ASDF) internals
+with modified variants, which made maintenance costly.
 
 What more, there was a vicious circle preventing
 @(ASDF) bugs from being fixed or features from being added @~cite[Software-Irresponsibility]:
-Every implementation had its own version,
+Every implementation or software distribution (e.g. Debian) had its own version,
 with its own bug fixes and its own bugs;
 so developers of portable systems could not assume anything
 but the lowest common denominator, which was very buggy.
 On the other hand, because users were not relying on new features,
 but instead wrote kluges and workarounds that institutionalized old bugs,
-there was no pressure for implementations to update;
-indeed there was strong incentive for them not to risk be responsible for breakage,
-and thus not to change anything until everyone else already did.
-Finally it was both impossible
-to build portable libraries into a Lisp image without having @(ASDF) loaded,
-and impossible to upgrade @(ASDF) once it was loaded.
-Thus, one couldn't reliably assume bugs to ever be fixed,
-unless one maintained one's own copy of @(ASDF),
-and closely managed the entire build chain:
-starting from a naked Lisp, then
-getting this copy of @(ASDF) compiled and loaded,
-before any system could be loaded.
-Software distributions such as Debian couldn't really help.
-Finally, since there was little demand for bug fixes,
-supply followed by not being active fixing bugs.
+there was no pressure for providers to update;
+indeed the pressure was to not update and risk be responsible for breakage,
+unless and until the users would demand it.
+Thus, one had to assume that no bug would ever be fixed everywhere;
+and for reliability one had to maintain one's own copy of @(ASDF),
+and closely manage the entire build chain:
+start from a naked Lisp, then
+get one's fixed copy of @(ASDF) compiled and loaded
+before any system could be loaded.@note{
+  It was also impossible to provide a well configured @(ASDF)
+  without pre-loading it in the image;
+  and it was impossible to upgrade @(ASDF) once it was loaded.
+  Thus Debian couldn't reliably provide "ready to go" images
+  that would work for everyone who may or may not need an updated @(ASDF),
+  especially not with stability several years forward.
+}
+In the end, there was little demand for bug fixes,
+and supply followed by not being active fixing bugs.
 And so @(ASDF) development stagnated for many years.
 
 @section[#:tag "asdf2"]{@(ASDF2): Productizing @(ASDF)}
@@ -633,13 +639,13 @@ our ILC 2010 article @~cite[Evolving-ASDF].
 
 The first bug fix was to break the vicious circle
 preventing bug fixes from being relevant.
-The solution found was to enable hot upgrade of @(ASDF),
+We enabled hot upgrade of @(ASDF),
 so that users could always load a fixed version
 on top of whatever the implementation or distribution did or didn't provide.
 @note{
   In @(ASDF3),
   some of the upgrade complexity described in our 2010 paper was done away with:
-  even though @moneyquote{@(CL) makes dynamic data upgrade extraordinarily easy}
+  even though @moneyquote{CL makes dynamic data upgrade extraordinarily easy}
   as compared to other languages, we found that it's not easy enough to maintain;
   therefore instead of trying hard to maintain that code,
   we "punt" and drop in-memory data if the schema has changed in incompatible ways;
@@ -657,7 +663,7 @@ on top of whatever the implementation or distribution did or didn't provide.
   or much worse, being caught upgrading @(ASDF) in midflight.
   In turn, such special upgrading of @(ASDF) itself makes code upgrade easier.
   Indeed, we had found that
-  @moneyquote{@(CL) support for hot upgrade of code may exist
+  @moneyquote{CL support for hot upgrade of code may exist
                     but is anything but seamless}.
   These simpler upgrades allow us to simply use @cl{fmakunbound} everywhere,
   instead of having to @cl{unintern} some functions before redefinition.
@@ -665,13 +671,13 @@ on top of whatever the implementation or distribution did or didn't provide.
 Soon enough, users felt confident relying on bug fixes and new features,
 and all implementations started providing @(ASDF2).
 
-These days, you can @cl{(require "asdf")} on pretty much any @(CL) implementation,
+These days, you can @cl{(require "asdf")} on pretty much any CL implementation,
 and start building systems using @(ASDF).
 Most implementations already provide @(ASDF3).
 A few still lag with @(ASDF2), or fail to provide @(ASDF);
-the former can be upgraded with @cl{(asdf:upgrade-asdf)},
-we provide a script to automatically install @(ASDF3),
-that works on all those implementations that are not too completely obsolete.
+the former can be upgraded with @cl{(asdf:upgrade-asdf)};
+all but the most obsolete ones can be fixed
+by a script we provide to install @(ASDF3).
 
 Upgradability crucially decoupled what @(ASDF) users could rely on
 from implementations provided, enabling a virtuous circle of universal upgrades,
@@ -725,7 +731,7 @@ the standard specification of their behavior is so lacking,
 and the implementations so differ in their often questionable behavior,
 that instead of the problem being an abundance of corner cases,
 the problem was a dirth of common case.
-So great is the disaster of @(CL) pathnames,
+So great is the disaster of CL pathnames,
 that they deserve their own appendix to this article.
 
 Lisp programmers can now "write once, run anywhere",
@@ -733,7 +739,7 @@ as far as defining systems go;
 but they still have to otherwise avoid non-standardized behavior
 and implementation-specific extensions (unless hidden behind a portability layer)
 if they want their programs to be portable
-— @(ASDF) cannot solve these issues intrinsic to @(CL).
+— @(ASDF) cannot solve these issues intrinsic to CL.
 
 Portability decoupled which implementation and operating system
 were used to develop a system from which it could be compiled with,
@@ -803,12 +809,13 @@ namely @cl{asdf-binary-locations} itself;
 it thus required special purpose loading and configuration
 in whichever file did load @(ASDF), making it not modular at all.
 This was resolved by moving the functionality into @(ASDF) itself,
-illustrating the design principle followed by @(ASDF2):
-@bold{make it as simple as possible, but no simpler}.
-This is in contrast with the principle apparently followed for @(ASDF1):
-"make it as simple as possible while handling the common case correctly"
-— which might have been a great principle for experimenting with new concepts,
-as Dan Barlow was doing, but was not a good one for a robust product.
+illustrating the design principle:
+@bold{make it as simple as possible, but no simpler}
+— but whereas @(ASDF1) followed this principle under the constraint
+that the simple case should be handled correctly,
+@(ASDF2) updated the constraint to include handling all cases correctly.
+Dan Barlow's weaker constraint may have been great for experimenting,
+it was not a good one for a robust product.
 
 Configurability decoupled use and installation of software:
 multiple parties could now each modularly contribute some software,
@@ -836,7 +843,7 @@ and then having to debug an incomplete system.
 The problem could be even more aggravating,
 since a bug in the program itself
 could be causing a fatal error during compilation
-(especially since in @(CL), developers can run arbitrary code during compilation).
+(especially since in CL, developers can run arbitrary code during compilation).
 The developer, after restarting compilation, might not see the issue;
 he would then commit a change that others had to track down and painfully debug.
 This was fixed by having @(ASDF) compile into a temporary file,
@@ -864,7 +871,7 @@ and in the latter case,
 @moneyquote{fail early for everyone rather than pass as working for some}
 and fail mysteriously for others.
 These two policies led to very robust code,
-at least compared to previous @(CL) build systems including @(ASDF1).
+at least compared to previous CL build systems including @(ASDF1).
 
 Robustness decoupled the testing of systems that use @(ASDF)
 from testing of @(ASDF) itself:
@@ -877,9 +884,9 @@ using various combinations of features,
 after some kind of hot software upgrade, etc.
 As for the code in the system itself —
 it might still require testing on all supported implementations
-in case it doesn't strictly adhere to a portable subset of @(CL)
+in case it doesn't strictly adhere to a portable subset of CL
 (which is not automatically enforceable so far),
-since the semantics of @(CL) are not fully specified
+since the semantics of CL are not fully specified
 but leave a lot of leeway to implementors, unlike e.g. ML or Java.
 
 @subsection{Performance}
@@ -936,7 +943,7 @@ With @(ASDF2), that would be the more obvious
 
 @(ASDF2) provided a portable way to specify pathnames
 by adopting Unix pathname syntax as an abstraction,
-while using standard @(CL) semantics underneath.
+while using standard CL semantics underneath.
 It became easy to specify hierarchical relative pathnames,
 where previously doing it portably was extremely tricky.
 @(ASDF2) similarly provided sensible rules for pathname types and type overrides.
@@ -945,8 +952,8 @@ where previously doing it portably was extremely tricky.
 @(ASDF2) @moneyquote{made it hard to get it wrong} or make it non-portable.
 
 Usability decoupled the knowledge of how to use @(ASDF)
-from both the knowledge of @(ASDF) internals and @(CL) pathname idiosyncrasies.
-Any beginner with a basic understanding of @(CL) and Unix pathnames
+from both the knowledge of @(ASDF) internals and CL pathname idiosyncrasies.
+Any beginner with a basic understanding of CL and Unix pathnames
 could now use @(ASDF) to portably define non-trivial systems,
 a task previously reserved to experts and/or
 involving copy-pasting magical incantations.
@@ -1026,7 +1033,7 @@ Instead, the bugs were found in 2010 while working on @(ASDF2);
 the code was partially fixed, but
 support for the selective syntax was guarded by a continuable error message
 inviting users to contact the maintainer.@note{
-  @(CL) possesses a mechanism for continuable errors, @(cerror),
+  CL possesses a mechanism for continuable errors, @(cerror),
   whereby users can interactively or programmatically
   tell the system to continue despite the error.
 }
@@ -1061,6 +1068,8 @@ and by contrast the obsession to detail of his successor.
 
 @subsection{Hooking into @cl{require}}
 
+@; TODO: move to concluding section about problems?
+
 Imitating the example set by Dan Barlow on SBCL in @(ASDF1),
 @(ASDF2) was made to hook into the @cl{require} mechanism
 of a growing number of implementations, so far (March 2014), seven:
@@ -1069,7 +1078,7 @@ ABCL, GNU CLISP, Clozure CL, CMUCL, ECL, MKCL, SBCL
 the maintained free software implementations.
 Thus, on all these implementations, users could,
 after they @cl{(require "asdf")},
-use this standard but deliberately underspecified @(CL) mechanism
+use this standard but deliberately underspecified CL mechanism
 for extending the language:
 by evaluating @cl{(require :foo)} they could have it implicitly rely on @(ASDF)
 to load the system if not present yet.
@@ -1155,7 +1164,7 @@ The encoding option of a system or module was inherited by its components,
 unless they overrode it.
 The accepted syntax of the option is a keyword, abstracting over
 the implementation-dependent @cl{:external-format},
-which is not specified by the @(CL) standard.@note{
+which is not specified by the CL standard.@note{
   And indeed, though all other implementations that support unicode
   accept the keyword @cl{:utf-8} as an external format,
   GNU CLISP, always the outlier,
@@ -1212,7 +1221,7 @@ least they cause havoc in other files and/or in the user's environment.
 @subsection{Hooks around compilation}
 
 A recurrent question to @(ASDF) developers was about how to properly
-modify the @(CL) syntax for some files,
+modify the CL syntax for some files,
 without breaking the syntax for other files:
 locally giving short nicknames to packages,
 changing the readtable, or the reader function, etc.
@@ -1240,7 +1249,7 @@ and the package in which the symbol will be interned doesn't exist yet;
 therefore, @(ASDF 2.019) (November 2011) made it possible
 to designate a function by a string that will be @cl{read} later.
 Hence, for instance, systems defined in Stelian Ionescu's IOLib,@note{
-  IOLib is a comprehensive general purpose I/O library for @(CL),
+  IOLib is a comprehensive general purpose I/O library for CL,
   written by Stelian Ionescu, that strives at doing the Right Thing™
   where many other libraries sacrifice code quality,
   feature coverage or portability for the sake of expediency.
@@ -1254,7 +1263,7 @@ that defines the package and the function.
 Another related feature, added in @(ASDF 2.23) (July 2012),
 was the ability for users to define invariants
 that @(ASDF) would enforce when compiling their code:
-a file might be compliant @(CL) code, and compile correctly,
+a file might be compliant CL code, and compile correctly,
 yet fail to satisfy application-specific invariants
 essential to the robustness of the application.
 Without the build system checking after every file's compilation,
@@ -1306,7 +1315,7 @@ such as @cl{(list-of passenger)} of @cl{(ascii-string 3 5)}
 Checking that data verified the proper invariants
 to avoid inserting corrupted data records in the database
 or messaging them to partners was an essential robustness feature.
-But to define the type via the @(CL) @cl{deftype} mechanism,
+But to define the type via the CL @cl{deftype} mechanism,
 these types had to expand to things like
 @cl{(and list (satisfies list-of-passenger-p))},
 where the predicate function @cl{list-of-passenger-p}
@@ -1325,7 +1334,7 @@ This implementation will be extremely fragile
 if it cannot automatically enforce the invariants of the DSL.
 A good programming language will let you define new invariants,
 and a good build system will enforce them.
-In @(CL), this can all happen without leaving the language.
+In CL, this can all happen without leaving the language.
 
 @section[#:tag "asdf3"]{@(ASDF) 3: A Mature Build}
 
@@ -1335,7 +1344,7 @@ In @(CL), this can all happen without leaving the language.
 to correctly deal with its core issues.
 The unintended result of these rewrites was to turn it into
 a much more robust and versatile product than it was:
-not only does it cover the robust building of @(CL) software from @(CL),
+not only does it cover the robust building of CL software from CL,
 it also includes runtime software management functionality
 and integration both ways with the Unix command line.
 
@@ -1356,7 +1365,7 @@ It is uncertain whether a new maintainer will take over development.
 
 @subsection{A Consistent, Extensible, Model}
 
-Surprising as it may be to all @(CL) programmers who used it daily,
+Surprising as it may be to all CL programmers who used it daily,
 there was an essential bug at the heart of the @(ASDF) design,
 present from the very first day in 2001, and before it in @(mk-defsystem) since 1990,
 and that survived to December 2012.
@@ -1373,7 +1382,7 @@ The bundle operations are not a kludge anymore, but well-supported extensions.
 It is easier than before to extend @(ASDF), with fewer limitations and fewer pitfalls:
 users may control how their operations do or don't propagate along the component hierarchy.
 Thus, @(ASDF) can now express an arbitrary action graph,
-and could conceivably be used in the future to build something else than @(CL).
+and could conceivably be used in the future to build something else than CL.
 
 @XXX{EXAMPLES!}
 
@@ -1396,7 +1405,7 @@ that bundles into a single fasl
 all the individual fasls from the @(compile-op) outputs
 of each file in a system.
 This bundle fasl may then be loaded by operation @(load-fasl-op).@note{
-  FASL, for FASt Loading, is the name of @(CL) compilation output files.
+  FASL, for FASt Loading, is the name of CL compilation output files.
   @(fasl-op) is not a good name, since every individual @(compile-op) also outputs a fasl.
   This operation should have been called @cl{compile-bundle-op}
   and the corresponding loader @cl{load-bundle-op}.
@@ -1410,7 +1419,7 @@ Bundle operations make delivery of code much easier.
 On linker-based implementations such as ECL,
 loading bundle fasls also consumes much fewer resources
 than loading a lot of small fasls.@note{
-  Most @(CL) implementations maintain their own heap with their own garbage collector,
+  Most CL implementations maintain their own heap with their own garbage collector,
   and then are able to dump an image of the heap on disk,
   that can be loaded back in a new process with all the state of the former process;
   to build an application, you start a small initial image, load plenty of code, dump an image,
@@ -1484,7 +1493,7 @@ illustrating the principle that
 Preserving the hot upgradability of @(ASDF) was always a strong requirement.
 In the presence of this package refactoring,
 this meant the development of @(define-package),
-a variant of @(CL)'s @(defpackage) that plays nice with hot upgrade.
+a variant of CL's @(defpackage) that plays nice with hot upgrade.
 Instead of a change in a package definition being an error,
 it is a normal condition handled by @(define-package),
 that will make an old package match the new definition,
@@ -1541,7 +1550,7 @@ this did require improvements to @(UIOP) that will be released with @(ASDF3.1).
 
 Most of the utilities deal with providing sane pathname abstractions (see @secref{pathnames}),
 filesystem access, sane input/output, temporary files, basic operating system interaction:
-many things for which the @(CL) standard was lacking.
+many things for which the CL standard was lacking.
 There is also an abstraction layer over the less-compatible legacy implementations,
 a set of general-purpose utilities, a common core for the @(ASDF) configuration DSLs.@note{
   @(ASDF3.1) notably introduces a @cl{nest} macro,
@@ -1574,7 +1583,7 @@ If an error occurs, @tt{cp} will return with an error code,
 which will be converted to a structured Lisp @(error),
 because you didn't specify @cl{:ignore-error-status t}.
 
-Such a utility was essential so that @(CL) programs may be used
+Such a utility was essential so that CL programs may be used
 as a replacement to shell scripts.
 But it was an interesting challenge to write.
 Each implementation had a completely different interface to running external programs,
@@ -1602,7 +1611,7 @@ Thus your previous program could have been:
 }
 Where (UIOP)'s @cl{native-namestring} converts the @cl{pathname} object @cl{destination}
 into a string suitable for use by the operating system,
-as opposed to its standard @(CL) @cl{namestring}, which might be escaped somehow.
+as opposed to its standard CL @cl{namestring}, which might be escaped somehow.
 
 You can also inject input and capture output:
 @clcode{
@@ -1683,7 +1692,7 @@ and so its version is inserted by a management script, written in Lisp of course
 
 Another painful configuration management issue with @(ASDF1) and @(ASDF2)
 was lack of a good way to conditionally include files.
-One could always use @(CL) reader conditionals such as @(cl "#+(or sbcl clozure)")
+One could always use CL reader conditionals such as @(cl "#+(or sbcl clozure)")
 but that means that @(ASDF) could not even see the components being excluded,
 should some operation be invoked that involves printing or packaging the code
 rather than compile it — or should it involve cross-compilation
@@ -1756,7 +1765,7 @@ how are you going to portably invoke the Lisp code that creates a command
 to begin with?
 
 This bootstrapping problem was solved some years ago with @(cl-launch).
-This bilingual program, in a mix of portable shell script and @(CL),
+This bilingual program, in a mix of portable shell script and CL,
 provides a nice shell command interface to
 building shell commands from Lisp code,
 including delivery as either portable shell scripts or
@@ -1796,7 +1805,7 @@ a form that calls specified function with the command-line arguments.@note{
 As for @tt{lisp-stripper}, it's a simple library that counts lines of code
 after removing comments, blank lines, docstrings, and multiple lines in strings.
 
-@(cl-launch) will automatically detect an @(CL) implementation
+@(cl-launch) will automatically detect an CL implementation
 that is installed on your machine, with sensible defaults.
 You can easily override the defaults with a proper command-line option,
 a configuration file, or some installation-time configuration.
@@ -1835,7 +1844,7 @@ likewise nicely segregated by implementation, ABI, version, etc.@note{
   as an obvious extension to @(ASDF)
   without the author explicitly designing the idea into it,
   and without having to modify the source code,
-  is an illustration of how expressive and modular the @(CL) Object System (CLOS) can be.
+  is an illustration of how expressive and modular CLOS can be.
 
   Now, @cl{asdf-binary-locations} and other variants of the same idea
   had a bootstrapping issue: the extension had to be specially loaded
@@ -1845,7 +1854,7 @@ likewise nicely segregated by implementation, ABI, version, etc.@note{
   @cl{common-lisp-controller} was trying to solve the same issue
   by having managed software installations in a controlled way;
   it failed eventually, because these efforts were only available
-  to @(CL) programmers using Debian or a few select other Linux software distributions,
+  to CL programmers using Debian or a few select other Linux software distributions,
   and only for the small number of slowly updated libraries,
   making the maintainers a bottleneck in a narrow distribution process.
   @cl{common-lisp-controller} also attempted to manage a system-wide cache of compiled objects,
@@ -1986,7 +1995,28 @@ and this is too small an issue to make a sizable MOP support part of @(UIOP).
 Therefore, the negative inheritance is implemented
 in an @emph{ad hoc} way at runtime.
 
-@section[#:tag "evolving"]{Evolving Code in an Immutable Community}
+@section[#:tag "evolving"]{Code Evolution in an Conservative Community}
+
+@subsection{Mission Creep is Dangerous}
+
+From @(ASDF1) to @(ASDF2) to @(ASDF3),
+there have been many extensions to the original mission of @(ASDF):
+In the beginning, it was the simplest extensible variant of @(defsystem) that builds CL software.
+With @(ASDF2), it had to be upgradable, portable, configurable, robust, performant, usable.
+Then it had to be more declarative, more reliable, more predictable,
+and capable of supporting language extensions.
+Now, it has to support a cleaner new model for representing dependencies, software delivery,
+one-package-per-file style,
+a documented portability layer including image lifecycle and external program invocation, etc.
+
+The mission creep is tangible.
+It led to an explosion in code size (factor ten);
+along the way, and a lot of changes or attempted changes have led to complaints,
+and sometimes had to be backed out.
+Yet, we'll still argue that @(ASDF) remained minimal within its constraints,
+and that the constraints were extended to cover natural missions for @(ASDF)
+— that make it possible in the end to be use CL portably to write modular programs
+modularly configured, and deliver them as either scripts or binaries.
 
 @subsection{Backward Compatibility is Hard}
 
@@ -2061,7 +2091,7 @@ and you cannot remove the old ones until you have stopped relying on them.
 Within a fast moving company,
 such migration of an entire code base can happen in a single checkin.
 if it's a large company with many teams, it can take many weeks or months.
-When the software is used by a weakly synchronized group like the @(CL) community,
+When the software is used by a weakly synchronized group like the CL community,
 the change can take years.
 
 We discussed the change in default encoding (see @secref{Encoding_support}),
@@ -2163,7 +2193,7 @@ or they were defining their own package @cl{foo-system},
 to hold the definitions.
 Otherwise, when the definitions were left in the default package,
 their symbol became unreachable and the definitions impossible to debug.
-In the end, to solve the namespace issues of @(CL) would have required
+In the end, to solve the namespace issues of CL would have required
 a complete intrusive change of the package system,
 and that was not a task for @(ASDF).
 If anything, @(faslpath), @(quick-build) and @(asdf/package-system)
@@ -2192,7 +2222,7 @@ Trying to homestead the @cl{:dbg} keyword for a debugging macro met the same opp
 
 Some features were not actively rejected, but haven't found their users yet.
 @(ASDF3) introduced @(build-op) as a putative default build operation
-that is not specialized for compiling @(CL) software;
+that is not specialized for compiling CL software;
 but it isn't used yet either. It might be more useful if the associated function
 @cl{asdf:build-system} were renamed to @cl{asdf:build}, or @cl{asdf:build-op},
 or something shorter than @cl{asdf:load-system}, anyway.
@@ -2202,7 +2232,7 @@ but that's still not the case, and won't be until ECL users more actively test i
 which they might not do until it's the default, since they haven't otherwise heard of it.
 The similar variable @cl{*compile-file-function*} on the other hand,
 whereby ECL was overriding @(ASDF)'s @cl{compile-file*}
-abstraction and extension of @(CL)'s standard @cl{compile-file} function,
+abstraction and extension of CL's standard @cl{compile-file} function,
 was wholly rejected as only being one more way users would call the wrong function,
 in favor of making @cl{compile-file*} itself more clever and aware of the peculiarities of ECL.
 
@@ -2317,11 +2347,11 @@ Guy Steele has been quoted
 as vaunting the programmability of Lisp's syntax by saying:
 @emph{If you give someone Fortran, he has Fortran.
 If you give someone Lisp, he has any language he pleases.}
-Unhappily, if he were speaking about @(CL) specifically,
+Unhappily, if he were speaking about CL specifically,
 he would have had to add:
 @emph{but it can't be the same as any one else's}.
 
-Indeed, syntax in @(CL) is controled via
+Indeed, syntax in CL is controled via
 a fuzzy set of global variables,
 and making non-trivial modifications to the content of these variables,
 notably the @cl{*readtable*}, is both possible and frowned upon,
@@ -2361,13 +2391,13 @@ to somehow loosen syntax control around some old systems.
 In any case, until such issues are resolved,
 even though the Lisp ideal is one of ubiquitous syntax extension,
 and indeed extension through macros is ubiquitous,
-extension though reader changes are rare in the @(CL) community.
+extension though reader changes are rare in the CL community.
 This is in contrast with other Lisp dialects, such as Racket,
 that have succeeded at making syntax customization both safe and ubiquitous,
 by having it be strictly scoped to the current file or REPL.
 @moneyquote{any language feature has to be safe before it may become ubiquitous}.
 
-@subsection[#:tag "conclusion"]{Problems with @(CL) itself}
+@subsection[#:tag "conclusion"]{Problems with CL itself}
 
 The CL standard leaves many things underspecified about pathnames,
 in an effort to define a useful subset common to many existing implementations.
@@ -2384,12 +2414,12 @@ and now libraries have to take into account N*M combinations
 of operating systems and implementations.
 
 Interestingly, the aborted proposal for including @(defsystem)
-in the @(CL) standard was also of the kind that would have specified
+in the CL standard was also of the kind that would have specified
 a minimal subset insufficient for large scale use
 while letting the rest underspecified.
-The @(CL) community probably dodged a bullet thanks to the failure of this proposal.
+The CL community probably dodged a bullet thanks to the failure of this proposal.
 
-Another general problem with @(CL) is that
+Another general problem with CL is that
 its semantics are defined in terms of
 @emph{irreversible side-effects to a global environment}.
 A better principle would be to
@@ -2397,7 +2427,7 @@ A better principle would be to
                    pure transformations with local environments}.
 
 There are many lessons to be learned by studying the successes and failures of the Lisp community.
-The @(CL) language and community are probably too rigid to apply these lessons;
+The CL language and community are probably too rigid to apply these lessons;
 but maybe your current or next programming language can.
 
 @subsection{Final Lesson: Explain it}
@@ -2499,7 +2529,7 @@ reusing the vocabulary introduced in @secref{Action_Graph}.
 @(traverse) recursively visits all the nodes in the DAG of actions,
 marking those that are visited, and detecting circularities.
 Each action consists of an operation on a component;
-for a simple @(CL) system with regular Lisp files,
+for a simple CL system with regular Lisp files,
 these actions will be @(compile-op) for compiling the code in the component,
 and @(load-op) for loading this compiled code;
 a component will be a @(system), a recursive @(module), or a @(file)
@@ -2805,7 +2835,7 @@ which only applies of course if it's itself a @(needed-in-image-p) action.@note{
   The principle of visiting the action graph multiple times
   would be generalizable to other situations, and the maximum number of visits of a given node
   is the height of the semi-lattice of states in which the traversal is considered.
-  For instance, in a @tt{blaze} extension I wrote to support @(CL),
+  For instance, in a @tt{blaze} extension I wrote to support CL,
   visited files would be upgraded between being not needed in image, needed loaded as cfasl,
   needed loaded from source, or needed loaded from fasl.
   The same technique could be used to improve XCVB.
@@ -2856,14 +2886,14 @@ many simple projects fail to properly maintain dependency information
 between @tt{.c} and @tt{.h} files, and even those that do
 don't usually account for header files in other libraries,
 unless they bother to use some automated dependency analysis tools.
-Still, the situation is somewhat worse in the @(CL) world,
+Still, the situation is somewhat worse in the CL world,
 first because every file serves the purpose of both @tt{.c} and @tt{.h}
 so these dependencies are ubiquitous;
 second because because software is both much more amenable to modification,
 indeed, dynamic interactive modification,
 so these changes happen more often;
 thirdly because software libraries are indeed often lacking in finish,
-because tinkering with the software is so easy that users are @emph{expected} to do so
+because tinkering with the software is so easy that users are often @emph{expected} to do so
 rather than have all the corner cases painfully taken care of by the original author.
 In C, the development loop is so much longer,
 jumping from one library to the next is so expensive,
@@ -2874,7 +2904,7 @@ instead of the read-only system-provided copy.
 The price usually paid in awkwardness of the development process in C
 is vastly larger than the price paid to cope with this bug in Lisp.
 Users of languages like Python or Java, where installation and modification
-of libraries more streamlined by various tools, do not have this problem.
+of libraries is more streamlined by various tools, do not have this problem.
 But then their programs don't have any kind of macros,
 so they lose, a lot, in expressiveness, as compared to Lisp,
 if admittedly not to C.
@@ -2911,8 +2941,8 @@ only in conjunction with such other bug in their code or in the environment.
 
 Fourth, indeed for the @(defsystem) bug to show
 without the conjunction of an obvious other bug,
-it takes quite non-colloquial use "stateful" macros:
-"stateful" or "impure" macros that take input from the environment
+it takes quite the non-colloquial use of "stateful" or "impure" macros,
+that take input from the environment
 (such as the state of packages or some special variables)
 into account in computing their output expansions.
 Then, a change in a dependency can lead in expecting a change in the macro expansion,

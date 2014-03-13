@@ -4,10 +4,15 @@ src = asdf3.scrbl live-programming.scrbl old-bug.scrbl history.scrbl utils.rkt t
 
 export PLTCOLLECTS:=$(shell pwd):${PLTCOLLECTS}
 
-all: asdf3-2014.html asdf3-2014.PDF # html # slideshow # PDF
+all: asdf asdf3-2014.PDF # html # slideshow # PDF
 html: ${ae}.html
 pdf: ${ae}.pdf
 PDF: pdf ${ae}.PDF
+
+asdf: asdf3-2014.html asdf3-2014.pdf
+	rsync -av $^ *.js *.css ~/files/tmp/asdf/
+	rsync -av ~/files/tmp/asdf/ bespin:files/tmp/asdf/
+
 
 %.W: %.html
 	w3m -T text/html $<

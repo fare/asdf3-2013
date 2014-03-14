@@ -2130,42 +2130,39 @@ Unhappily, if he were speaking about CL specifically,
 he would have had to add:
 @emph{but it can't be the same as any one else's}.
 
-Indeed, syntax in CL is controled via
-a fuzzy set of global variables,
-and making non-trivial modifications to the content of these variables,
-notably the @cl{*readtable*}, is both possible and frowned upon,
-because if such modifications escape their intended scope,
-they can cause unexpected breakage in unrelated parts of the system,
-written by different people.
+Indeed, syntax in CL is controled via a fuzzy set of global variables,
+prominently including the @cl{*readtable*}.
+Now making non-trivial modifications to the variables and/or tables
+is possible, but letting these modifications escape is a serious issue;
+for the author of a system has no control on which systems will or won't
+be loaded before or after his system — this depends on what the user requests;
+therefore in absence of further convention,
+it is always a bug to either rely on the syntax tables
+having non-default values from previous systems,
+or to inflict non-default values upon next systems.
 What is worse, changing syntax is only useful if it also happens
 at the interactive REPL;
-but unless the build system knows to control the syntax
-around the files it compiles and loads,
 these interactive changes can affect files built from the REPL
 — which can cause catastrophic circular dependencies if you
 compile with modified syntax files that in next sessions
 will have to be loaded before the files that support the syntax modification.
+Systems like @cl{named-readtables} or @cl{cl-syntax} help with syntax control,
+but proper hygiene is not currently enforced by either CL or @(ASDF),
+and remains up to the user.
 
 Build support is therefore strongly required for safe syntax modification;
 but this build support is not there yet in @(ASDF3)
-because of backward-compatibility and/or performance reasons.
-Creating a fresh copy of the standard readtable around each action is too expensive.
-Trying to use a read-only copy of the standard readtable is not universally portable,
-but it is possible, and authors of implementations that don't have that feature yet can be convinced.
-We tried to make such a change before the @(ASDF3) release, however
-there was only one catch, and that was Catch-22.
-Some existing libraries in @(Quicklisp) modified the current @cl{*readtable*},
-and had to be fixed before this change happened in @(ASDF);
-the main culprit, though, was @cl{iolib}, the new version of which was fixed in this respect,
-but already required a recent @(ASDF3) pre-release.
-@(Quicklisp), though, couldn't upgrade to @(ASDF3) for other reasons
-(see @secref{backward_compat}),
-and thus couldn't adopt a newer @cl{iolib}.
-This particular roadblock will hopefully go away in 2014,
-but even after it is gone, the new @(ASDF) maintainers will have a lot of work to do
-before they can safely enable syntax control by default in @(ASDF).
-And they might even have to implement some configuration mechanism
-to somehow loosen syntax control around some old systems.
+because of backward-compatibility reasons.
+One option would be to enforce hygiene by binding the syntax tables
+to a read-only copies of the standard tables around each action;
+actions that want to modify syntax then have to explicitly use different tables.
+Another option would be to provide hygiene by binding the syntax tables
+to a fresh writable copies of the standard tables around each action,
+or maybe to have actions share a per-system tables.
+In either case, a change is required in how @(ASDF) behaves and how it is extended;
+doing it in backward-compatible way is technically hard (but not impossible),
+and otherwise the change will break tens of existing systems,
+that have to be fixed beforehand, which is socially hard.
 
 In any case, until such issues are resolved,
 even though the Lisp ideal is one of ubiquitous syntax extension,

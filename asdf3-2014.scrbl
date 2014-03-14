@@ -51,12 +51,22 @@ may now be written @emph{portably} in @(CL) (CL):@note{
   some of them, depending on the application,
   may rival compiled C programs in terms of speed,
   usually far ahead of "scripting" languages and their implementations.
-@XXX{
+
   Over a dozen actively maintained implementations
   purport to conform to the ANSI CL standard, plus a few unmaintained ones.
   No single implementation is at the same time
   the best, shiniest, leanest, fastest, cheapest,
   and the one ported to the most platforms.
+  For instance, SBCL is quite popular for its runtime speed
+  on intel-compatible Linux machines;
+  but since it is slower at compiling and loading,
+  it isn't the best choice for a quick script where fast startup matters;
+  it also won't run on ARM, and doesn't have the best Windows support;
+  and so you might prefer Clozure CL, or, depending on your constraints,
+  ECL, CLISP or ABCL.
+  Or you might desire the technical support or additional libraries
+  from a proprietary implementation.
+
   While it is possible to write useful programs
   using only the standardized parts of the language,
   fully taking advantage of extant libraries
@@ -690,18 +700,7 @@ where previously everyone was waiting for others to upgrade, in a deadlock.
 
 @subsection{Portability}
 
-A lot of work was spent on portability.@note{
-  Portability is important, because depending on which
-  specific task you're performing on which operating system, architecture, etc.,
-  you'll want a different implementation.
-  For instance, SBCL is quite popular for its runtime speed
-  on intel-compatible Linux machines;
-  but since it is slower at compiling and loading,
-  it isn't the best choice for a quick script where fast startup matters;
-  it also won't run on ARM, and doesn't have the best Windows support;
-  and so you might prefer Clozure CL or another implementation,
-  depending on your constraints.
-}
+A lot of work was spent on portability.
 Originally written for @tt{sbcl},
 @(ASDF1) eventually supported 5 more implementations:
 @tt{allegro}, @tt{ccl}, @tt{clisp}, @tt{cmucl}, @tt{ecl}.
@@ -1938,7 +1937,7 @@ in an @emph{ad hoc} way at runtime.
 
 @section[#:tag "evolving"]{Code Evolution in an Conservative Community}
 
-@subsection{Mission Creep, not Feature Creep}
+@subsection{Feature Creep? No, Mission Creep}
 
 Throughout the many features added and decupling in size from @(ASDF1) to @(ASDF3),
 @(ASDF) remained true to its minimalism — but the mission,
@@ -1951,7 +1950,7 @@ Now, it has to support a cleaner new model for representing dependencies,
 software delivery as either scripts or binaries, a cleaner one-package-per-file style,
 a documented portability layer including image lifecycle and external program invocation, etc.
 
-@subsection{Backward Compatibility is Hard}
+@subsection[#:tag "backward_compat"]{Backward Compatibility is a Social, not Technical}
 
 As efforts were made to improve @(ASDF),
 a constant constraint was that of @emph{backward compatibility}:
@@ -2011,7 +2010,7 @@ This doesn't mean matching the previous version on all the mathematically concei
 it means improving the results for users on all the actual inputs they use;
 or providing them with alternate inputs they may use for improved results.
 
-@subsection{Weak Synchronization}
+@subsection{Weak Synchronization requires Incremental Fixes}
 
 Even when some "incompatible" changes are not controversial,
 it is often necessary to provide temporary backward compatible solutions
@@ -2059,6 +2058,36 @@ Until there exists some configuration system that allows
 for those checks to happen on new code without breaking old code,
 the feature will have to remain disabled by default.
 
+@subsection{Underspecification creates Portability Landmines}
+
+The CL standard leaves many things underspecified about pathnames,
+in an effort to define a useful subset common to many existing implementations.
+However, the result is that portable programs can forever only access
+but a small subset of the complete required functionality,
+making its standard less useful than if it had not specified anything,
+and left the job to another standard.
+The lesson is @emph{don't standardize partially specified features}.
+It is better to standardize that some situations to cause an error,
+to reserve any resolution to a later version of the standard (and then follow up on it),
+or to @moneyquote{delegate specification to other standards}, existing or future.
+
+There could have been one pathname protocol per operating system,
+delegated to the underlying OS via a standard FFI.
+Libraries could then have sorted out portability over N operating systems.
+Instead, by standardizing but a common fragment and letting each implementation
+do whatever it can on each operating system,
+libraries now have to take into account N*M combinations
+of operating systems and implementations.
+In case of disagreement, it is much better to let each implementation's variant
+exist in its own, distinct namespace, which avoids any confusion,
+than have incompatible variants in the same namespace, causing clashes.
+
+Interestingly, the aborted proposal for including @(defsystem)
+in the CL standard was also of the kind that would have specified
+a minimal subset insufficient for large scale use
+while letting the rest underspecified.
+The CL community probably dodged a bullet thanks to the failure of this proposal.
+
 @subsection{Ubiquity or Bust!}
 
 CL possesses a standard but underspecified mechanism for extending the language:
@@ -2077,17 +2106,8 @@ However, users ended up mostly not using it, we presume for the following reason
     therefore for portability and reliability,
     you have to know about @(ASDF) and be able to fall back to it explicitly, anyway;
     thus trying to "optimize" the easy case with @cl{require}
-    is just gratuitous cognitive load for no gain;
-    this illustrates once again the principle that
-    @moneyquote{it's counter-productive to standardize underspecified software}.
-    It is better to standardize that some situations to cause an error,
-    to reserve any resolution to a later version of the standard (and then follow up on it),
-    or to delegate it to a different standard;
-    but underspecifying a specification is only inviting
-    a hell of mutually incompatible variants the use of which will bring
-    as many portability landmines.
-    In case of disagreement, it is much better to let each implementation's variant
-    exist in its own, distinct namespace, which avoids any confusion.
+    is just gratuitous cognitive load for no gain.
+    There again, an underspecified standard ended being counter-productive.
   }
   @item{
     The @cl{require} mechanism purposefully avoids loading a module that has already been provided,
@@ -2105,6 +2125,62 @@ However, users ended up mostly not using it, we presume for the following reason
     that should not be refreshed from filesystem once loaded into memory.
     @; https://bugs.launchpad.net/asdf/+bug/1184002
   } } ]
+
+@subsection{Safety before Ubiquity}
+
+Guy Steele has been quoted
+as vaunting the programmability of Lisp's syntax by saying:
+@emph{If you give someone Fortran, he has Fortran.
+If you give someone Lisp, he has any language he pleases.}
+Unhappily, if he were speaking about CL specifically,
+he would have had to add:
+@emph{but it can't be the same as any one else's}.
+
+Indeed, syntax in CL is controled via
+a fuzzy set of global variables,
+and making non-trivial modifications to the content of these variables,
+notably the @cl{*readtable*}, is both possible and frowned upon,
+because if such modifications escape their intended scope,
+they can cause unexpected breakage in unrelated parts of the system,
+written by different people.
+What is worse, changing syntax is only useful if it also happens
+at the interactive REPL;
+but unless the build system knows to control the syntax
+around the files it compiles and loads,
+these interactive changes can affect files built from the REPL
+— which can cause catastrophic circular dependencies if you
+compile with modified syntax files that in next sessions
+will have to be loaded before the files that support the syntax modification.
+
+Build support is therefore strongly required for safe syntax modification,
+and this build support is not there yet in @(ASDF3)
+because of backward-compatibility and/or performance reasons.
+Creating a fresh copy of the standard readtable around each action is too expensive.
+Trying to use a read-only copy of the standard readtable is not universally portable,
+but it is possible, and authors of implementations that don't have that feature yet can be convinced.
+We tried to make such a change before the @(ASDF3) release, however
+there was only one catch, and that was Catch-22.
+Some existing libraries in @(Quicklisp) modified the current @cl{*readtable*},
+and had to be fixed before this change happened in @(ASDF);
+the main culprit, though, was @cl{iolib}, the new version of which was fixed in this respect,
+but already required a recent @(ASDF3) pre-release.
+@(Quicklisp), though, couldn't upgrade to @(ASDF3) for other reasons
+(see @secref{backward_compat}),
+and thus couldn't adopt a newer @cl{iolib}.
+This particular roadblock looks like it will go away in 2014,
+but even after it is gone, the new @(ASDF) maintainers will have a lot of work to do
+before they can safely enable syntax control by default in @(ASDF).
+And they might even have to implement some configuration mechanism
+to somehow loosen syntax control around some old systems.
+
+In any case, until such issues are resolved,
+even though the Lisp ideal is one of ubiquitous syntax extension,
+and indeed extension through macros is ubiquitous,
+extension though reader changes are rare in the CL community.
+This is in contrast with other Lisp dialects, such as Racket,
+that have succeeded at making syntax customization both safe and ubiquitous,
+by having it be strictly scoped to the current file or REPL.
+@moneyquote{any language feature has to be safe before it may become ubiquitous}.
 
 @subsection{Innovation is Hard}
 
@@ -2321,86 +2397,10 @@ In any case, the protocol was roundabout both for users and implementers,
 and a new protocol was invented that is both simpler to use and easier to extend.
 @moneyquote{Verbosity is a bad smell, it suggests lack of abstraction, or bad abstractions}.
 
-@subsection{Syntax Control}
-
-Guy Steele has been quoted
-as vaunting the programmability of Lisp's syntax by saying:
-@emph{If you give someone Fortran, he has Fortran.
-If you give someone Lisp, he has any language he pleases.}
-Unhappily, if he were speaking about CL specifically,
-he would have had to add:
-@emph{but it can't be the same as any one else's}.
-
-Indeed, syntax in CL is controled via
-a fuzzy set of global variables,
-and making non-trivial modifications to the content of these variables,
-notably the @cl{*readtable*}, is both possible and frowned upon,
-because if such modifications escape their intended scope,
-they can cause unexpected breakage in unrelated parts of the system,
-written by different people.
-What is worse, changing syntax is only useful if it also happens
-at the interactive REPL;
-but unless the build system knows to control the syntax
-around the files it compiles and loads,
-these interactive changes can affect files built from the REPL
-— which can cause catastrophic circular dependencies if you
-compile with modified syntax files that in next sessions
-will have to be loaded before the files that support the syntax modification.
-
-Build support is therefore strongly required for safe syntax modification,
-and this build support is not there yet in @(ASDF3)
-because of backward-compatibility and/or performance reasons.
-Creating a fresh copy of the standard readtable around each action is too expensive.
-Trying to use a read-only copy of the standard readtable is not universally portable,
-but it is possible, and authors of implementations that don't have that feature yet can be convinced.
-We tried to make such a change before the @(ASDF3) release, however
-there was only one catch, and that was Catch-22.
-Some existing libraries in @(Quicklisp) modified the current @cl{*readtable*},
-and had to be fixed before this change happened in @(ASDF);
-the main culprit, though, was @cl{iolib}, the new version of which was fixed in this respect,
-but already required a recent @(ASDF3) pre-release.
-@(Quicklisp), though, couldn't upgrade to @(ASDF3) for other reasons
-(see @secref{Backward_Compatibility_is_Hard}),
-and thus couldn't adopt a newer @cl{iolib}.
-This particular roadblock looks like it will go away in 2014,
-but even after it is gone, the new @(ASDF) maintainers will have a lot of work to do
-before they can safely enable syntax control by default in @(ASDF).
-And they might even have to implement some configuration mechanism
-to somehow loosen syntax control around some old systems.
-
-In any case, until such issues are resolved,
-even though the Lisp ideal is one of ubiquitous syntax extension,
-and indeed extension through macros is ubiquitous,
-extension though reader changes are rare in the CL community.
-This is in contrast with other Lisp dialects, such as Racket,
-that have succeeded at making syntax customization both safe and ubiquitous,
-by having it be strictly scoped to the current file or REPL.
-@moneyquote{any language feature has to be safe before it may become ubiquitous}.
-
 @subsection[#:tag "conclusion"]{Problems with CL itself}
 
-The CL standard leaves many things underspecified about pathnames,
-in an effort to define a useful subset common to many existing implementations.
-However, the result is that portable programs can forever only access
-but a small subset of the complete required functionality,
-making its standard less useful than if it had not specified anything,
-and left the job to another standard.
-The lesson is @emph{don't standardize partially specified features}.
-Instead, @moneyquote{do delegate to existing or future standards}.
-Better have pathname protocol per operating system,
-and let libraries sort out a portability layer over N operating systems,
-than have one pathname protocol per implementation per operating system,
-and now libraries have to take into account N*M combinations
-of operating systems and implementations.
-
-Interestingly, the aborted proposal for including @(defsystem)
-in the CL standard was also of the kind that would have specified
-a minimal subset insufficient for large scale use
-while letting the rest underspecified.
-The CL community probably dodged a bullet thanks to the failure of this proposal.
-
-Another general problem with CL is that
-its semantics are defined in terms of
+Besides the issues with standardization,
+another general problem with CL is that its semantics are defined in terms of
 @emph{irreversible side-effects to a global environment}.
 A better principle would be to
 @moneyquote{define a programming language's semantics in terms of

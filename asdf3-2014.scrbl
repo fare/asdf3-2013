@@ -304,11 +304,12 @@ instrumental when writing @(ASDF3) (see @secref{traverse}).
 Last but not least,
 @moneyquote{@(ASDF) is an @q{in-image} build system},
 just like the build systems that preceded it in the Lisp @(defsystem) tradition:
-it compiles (if necessary) and loads software into the current CL image.
+it compiles (if necessary) and loads software into the current CL image,
+and can later update the current by recompiling and reloading the parts that have changed.
 For better or worse, this notably differs from common practice in most other languages,
 where the build system is a completely different piece of software running in a separate process.@note{
   Of course, a build system could compile CL code in separate processes,
-  for the sake determinism and parallelization:
+  for the sake determinism and parallelism:
   our XCVB did @~cite[XCVB-2009]; so does Google's blaze.
   @; As for the wide variety of Lisp dialects beside CL,
   @; they have as many different build systems, often integrated with a module system.
@@ -734,16 +735,18 @@ The greatest source of portability woes was in handling @emph{pathnames}:
 the standard specification of their behavior is so lacking,
 and the implementations so differ in their often questionable behavior,
 that instead of the problem being an abundance of corner cases,
-the problem was a dirth of common case.
+the problem was a dirth of common cases.
 So great is the disaster of CL pathnames,
-that they deserve their own appendix to this article.
+that they deserve their own appendix to this article
+(see @secref{pathnames}).
 
 Lisp programmers can now "write once, run anywhere",
-as far as defining systems go;
-but they still have to otherwise avoid non-standardized behavior
-and implementation-specific extensions (unless hidden behind a portability layer)
-if they want their programs to be portable
-— @(ASDF) cannot solve these issues intrinsic to CL.
+as far as defining systems go.
+They still have to otherwise avoid non-standardized behavior
+and implementation-specific extensions if they want their programs to be portable.
+There are a lot of portability libraries to assist programmers,
+but neither @(ASDF) nor any of them can solve these issues intrinsic to CL,
+short of portably implementing a new language on top of it.
 
 Portability decoupled which implementation and operating system
 were used to develop a system from which it could be compiled with,
@@ -754,7 +757,7 @@ or subprocess invocation was a portability minefield.
 
 @(ASDF1) was much improved over what preceded it,
 but its configuration mechanism was still lacking:
-there was no modular way
+there was no @emph{modular} way
 for whoever installed software systems to register them
 in a way that users could see them;
 and there was no way for program writers to deliver executable scripts
@@ -791,35 +794,66 @@ and always possible to avoid and inhibit any misconfiguration
 that was out of one's control.
 
 A similar mechanism, the @bydef{output-translations},
-also allows to specify where output files are to be stored,
-depending on where the corresponding input files are located.
-By default, @(ASDF) will seggregate these output files by
-implementation, operating system, ABI, version, etc.,
-allowing for sharing source code between several users
-who themselves may use many different versions of many implementations, etc.
+also allows to seggregate the output files away from the source code;
+by default it uses a cache under the user's home directory,
+keyed by implementation, version, OS, ABI, etc.
 Thus, whoever or whichever software manages installation of source code
 does not have to also know which compiler is to be used by which user at what time.
 The configuration remains modular, and code can be shared by all who trust it,
 without affecting those who don't.
+The idea was almost as old as ASDF itself, but previous implementations
+all had configurability issues.@note{
+  Debian's @tt{common-lisp-controller} (CLC) popularized the technique as far back as 2002,
+  and so did the more widely portable @cl{asdf-binary-locations} (ABL) after it:
+  by defining an @cl{:around} method for the @(output-files) function,
+  it was possible for the user to divert where @(ASDF) would store its output.
+  The fact that this technique could be developed
+  as an obvious extension to @(ASDF)
+  without the author explicitly designing the idea into it,
+  and without having to modify the source code,
+  is an illustration of how expressive and modular CLOS can be.
 
-There used to be an extension to @(ASDF1) called @cl{asdf-binary-locations}
-that fulfilled the same functionality;
-but apart from its suffering
-from the same lack of modularity as the @cl{*central-registry*},
-it also had a chicken-and-egg problem:
-you couldn't use @(ASDF) to load it without having at least one
-program compiled without @cl{asdf-binary-locations} enabled,
-namely @cl{asdf-binary-locations} itself;
-it thus required special purpose loading and configuration
-in whichever file did load @(ASDF), making it not modular at all.
-This was resolved by moving the functionality into @(ASDF) itself,
-illustrating the design principle:
-@bold{make it as simple as possible, but no simpler}
-— but whereas @(ASDF1) followed this principle under the constraint
-that the simple case should be handled correctly,
-@(ASDF2) updated the constraint to include handling all cases correctly.
-Dan Barlow's weaker constraint may have been great for experimenting,
-it was not a good one for a robust product.
+  But apart from its suffering
+  from the same lack of modularity as the @cl{*central-registry*},
+  CLC and ABL also had a chicken-and-egg problem:
+  you couldn't use @(ASDF) to load it,
+  or it would itself be compiled and loaded
+  without the output being properly diverted,
+  negating any advantage in avoiding clashes for files of other systems.
+
+  ABL thus required special purpose loading and configuration
+  in whichever file did load @(ASDF), making it not modular at all.
+  CLC tried to solve the issue by managing installation or all CL software;
+  it failed eventually, because these efforts were only available
+  to CL programmers using Debian or a few select other Linux software distributions,
+  and only for the small number of slowly updated libraries,
+  making the maintainers a bottleneck in a narrow distribution process.
+  CLC also attempted to institute a system-wide cache of compiled objects,
+  but this was ultimately abandoned for security issues;
+  a complete solution would have required a robust and portable build service,
+  which was much more work than justified by said narrow distribution process.
+
+  The solution in @(ASDF2) was to merge this functionality in @(ASDF) itself,
+  according to the principle to
+  @bold{make it as simple as possible, but no simpler}.
+  But whereas @(ASDF1) followed this principle under the constraint
+  that the simple case should be handled correctly,
+  @(ASDF2) updated the constraint to include handling all cases correctly.
+  Dan Barlow's weaker constraint may have been great for experimenting,
+  it was not a good one for a robust product.
+
+  Another, more successful take on the idea of CLC,
+  is Zach Beane's @(Quicklisp) (2011):
+  it manages the loading and configuration of @(ASDF),
+  and can then download and install libraries.
+  Because it does everything in the user's directory,
+  without attempts to share between users and
+  without relying on support from the system or software distribution,
+  it can be actually ubiquitous.
+  Thanks to @(ASDF2)'s modular configuration,
+  the @(Quicklisp)-managed libraries can be a complement
+  to the user's otherwise configured software rather than completely overriding them.
+}
 
 Configurability decoupled use and installation of software:
 multiple parties could now each modularly contribute some software,
@@ -831,10 +865,7 @@ and users had to know and specify configuration of all software installed.
 
 @subsection{Robustness}
 
-During the development of @(ASDF2) (then 3),
-a great number of bugs were introduced, and even more bugs were fixed.
-
-@(ASDF) used to pay no attention to robustness.
+@(ASDF1) used to pay little attention to robustness.
 A glaring issue, for instance, was causing much aggravation in large projects:
 killing the build process while a file was being compiled
 would result in a corrupt output file that would poison further builds
@@ -851,12 +882,8 @@ could be causing a fatal error during compilation
 The developer, after restarting compilation, might not see the issue;
 he would then commit a change that others had to track down and painfully debug.
 This was fixed by having @(ASDF) compile into a temporary file,
-and move the outputs to their destination only in case of success, atomically.@note{
-  Not all Lisp implementations and/or underlying operating systems
-  allowed this replacement to be atomic.
-  In the latest @(ASDF3), the function @cl{rename-file-overwriting-target}
-  abstracts over the details.
-}
+and move the outputs to their destination only in case of success,
+atomically where supported by implementation and OS.
 A lot of corner cases similarly had to be handled to make the build system robust.
 
 We eventually acquired the discipline to
@@ -929,25 +956,22 @@ to suit the specific choice of internals by @(ASDF) itself.
 @subsection{Usability}
 
 Usability was an important concern while developing @(ASDF2).
-Portability, Configurability, Robustness and Performance
-already contribute to Usability,
-as do all improvements to the software;
-some changes were made, though, that were specifically introduced
-to ease usability of @(ASDF).
+While all the previously discussed aspects of software contribute to Usability,
+some changes were specifically introduced to improve the user experience.
 
 As a trivial instance, the basic @(ASDF) invocation was the clumsy
 @cl{(asdf:operate 'asdf:load-op :foo)} or
 @cl{(asdf:oos 'asdf:load-op :foo)}.
 With @(ASDF2), that would be the more obvious
-@cl{(asdf:load-system :foo)},
-and starting with @(ASDF3.1), we recommend
-@cl{(asdf:build :foo)}.@note{
+@cl{(asdf:load-system :foo)}@note{
   @(load-system) was actually implemented
   by Gary King, the last maintainer of @(ASDF1), in June 2009;
   but users couldn't casually @emph{rely} on it being there
-  until @(ASDF2) made it possible in 2010
-  for everyone to hot upgrade whatever their implementation was providing.
+  until @(ASDF2) in 2010 made it possible to rely on it being ubiquitous.
 }
+and starting with @(ASDF3.1), we recommend
+@cl{(asdf:build :foo)}, that will also work
+for new kind of systems not meant to be loaded.
 
 @(ASDF2) provided a portable way to specify pathnames
 by adopting Unix pathname syntax as an abstraction,
@@ -996,7 +1020,7 @@ that the rest of the @tt{defsystem} form could use.
 
 These days, this feature is the recommend way of loading extensions.
 But from the story of it, we can learn that
-@moneyquote{a feature isn't finished until it is used in production and tested}.
+@moneyquote{a feature isn't finished until it is tested and used in production}.
 Until then, there are likely issues that will need to be addressed.
 
 As an example use, the proper way to use the CFFI library
@@ -1025,9 +1049,9 @@ In @(ASDF2) that would be more colloquially:
 @clcode{
   (asdf:load-system 'my-system :force :all)
 }
-As early as 2003, Dan Barlow introduced in @(ASDF)
+In 2003, Dan Barlow introduced
 a mechanism to @emph{selectively} @cl{:force}
-the recompilation of some systems, but not others:
+recompilation of some systems, but not others:
 @cl{:force :all} would force recompilation of all systems;
 @cl{:force t} would only force recompilation of the requested system;
 and @cl{:force '(some list of systems)}
@@ -1037,7 +1061,7 @@ However, his implementation had two bugs:
 and @cl{:force '(some list of systems)} would cause a runtime error
 (that could have been found at compile-time with static strong typing).
 
-Instead, the bugs were found in 2010 while working on @(ASDF2);
+The bugs were found in 2010 while working on @(ASDF2);
 the code was partially fixed, but
 support for the selective syntax was guarded by a continuable error message
 inviting users to contact the maintainer.@note{
@@ -1049,7 +1073,7 @@ Despite the feature demonstrably not ever having had any single user,
 it had been partially documented, and so was finally
 fixed and enabled in @(ASDF 2.015) (May 2011) rather than removed.
 
-Then the feature was extended in @(ASDF 2.21) (April 2012)
+The feature was then extended in @(ASDF 2.21) (April 2012)
 to cover a negative @cl{force-not} feature,
 allowing the fulfillment of a user feature request:
 a variant @cl{require-system} of @(load-system)
@@ -1073,59 +1097,6 @@ This illustrates both Dan Barlow's foresight and
 his relative lack of interest in developing @(ASDF)
 beyond the point where it got the rest of his software off the ground;
 and by contrast the obsession to detail of his successor.
-
-@subsection{Hooking into @cl{require}}
-
-@; TODO: move to concluding section about problems?
-
-Imitating the example set by Dan Barlow on SBCL in @(ASDF1),
-@(ASDF2) was made to hook into the @cl{require} mechanism
-of a growing number of implementations, so far (March 2014), seven:
-ABCL, GNU CLISP, Clozure CL, CMUCL, ECL, MKCL, SBCL
-— and this list notably coincides with that of all
-the maintained free software implementations.
-Thus, on all these implementations, users could,
-after they @cl{(require "asdf")},
-use this standard but deliberately underspecified CL mechanism
-for extending the language:
-by evaluating @cl{(require :foo)} they could have it implicitly rely on @(ASDF)
-to load the system if not present yet.
-
-However, users ended up mostly not using it, we presume for the following reasons:
-@itemlist[
-  @item{
-    This mechanism is still not ubiquitous enough,
-    therefore for portability and reliability,
-    you have to know about @(ASDF) and be able to fall back to it explicitly, anyway;
-    thus trying to "optimize" the easy case with @cl{require}
-    is just gratuitous cognitive load for no gain;
-    this illustrates once again the principle that
-    @moneyquote{it's counter-productive to standardize underspecified software};
-    it's better to specify some situations to cause an error,
-    and to reserve any resolution to a later version of the standard
-    (and then follow up on it), or to delegate it to a different standard;
-    but underspecifying a specification is only inviting
-    a hell of mutually incompatible variants the use of which will bring
-    as many portability landmines.
-    In case of disagreement, it is much better to let each implementation's variant
-    exist in its own, distinct namespace, which avoids any confusion.
-  }
-  @item{
-    The @cl{require} mechanism purposefully avoids loading a module that has already been provided,
-    thereby making it unpopular in a culture of ubiquitous modifiable source code;
-    if you modified a file, you really want it to be reloaded automatically.@note{
-      At the same time, @(ASDF) wasn't reliable in avoiding to reload provided modules,
-      since most systems don't call @cl{provide} with their name to signal that such
-      call to @cl{require} was successful, and therefore next call to @cl{require}
-      would cause a new load attempt — this was fixed with the introduction of
-      the above-mentioned @cl{require-system} in @(ASDF 2.21) in 2012,
-      and its use instead of @(load-system).
-    Maybe the more general point is that @(ASDF) did not have a good story with regards to
-    extending the set of things that are considered "system" versus "user" defined.
-    @(ASDF3.1) adds a notion of "immutable systems"
-    that should not be refreshed from filesystem once loaded into memory.
-    @; https://bugs.launchpad.net/asdf/+bug/1184002
-  } } ]
 
 @subsection{Encoding support}
 
@@ -1839,45 +1810,7 @@ and keeps the compilation results in the same output-file cache as @(ASDF3),
 likewise nicely segregated by implementation, ABI, version, etc.@note{
   Historically, it is more accurate to say that @(ASDF) imported
   the cache technology previously implemented by @(cl-launch),
-  which itself was reusing a technique popularized by
-  Debian's @cl{common-lisp-controller} as far back as 2002,
-  and by the more widely portable @cl{asdf-binary-locations} after it.
-
-  By defining an @cl{:around} method for the @cl{output-files} function,
-  it was possible for the user to control where @(ASDF)
-  would store its compilation output,
-  without the authors of @(ASDF) having had to create an explicit hook.
-  It is unclear who first came up with the idea,
-  but the fact that this technique could be developed
-  as an obvious extension to @(ASDF)
-  without the author explicitly designing the idea into it,
-  and without having to modify the source code,
-  is an illustration of how expressive and modular CLOS can be.
-
-  Now, @cl{asdf-binary-locations} and other variants of the same idea
-  had a bootstrapping issue: the extension had to be specially loaded
-  before it could be used, whether as source code or precompiled code,
-  otherwise the potential clashes regarding its own compiled file
-  would negate any advantage in avoiding clashes for files of other systems.
-  @cl{common-lisp-controller} was trying to solve the same issue
-  by having managed software installations in a controlled way;
-  it failed eventually, because these efforts were only available
-  to CL programmers using Debian or a few select other Linux software distributions,
-  and only for the small number of slowly updated libraries,
-  making the maintainers a bottleneck in a narrow distribution process.
-  @cl{common-lisp-controller} also attempted to manage a system-wide cache of compiled objects,
-  but this was ultimately abandoned for security issues;
-  a complete solution would have required a robust and portable build service,
-  which was much more work than justified by said narrow distribution process.
-  The solution in @(ASDF2) was to merge this functionality in @(ASDF) itself,
-  yielding its @cl{output-translations} layer,
-  according to the principle of making everything as simple as possible,
-  @emph{but no simpler}.
-  As another, more successful take on the idea of @cl{common-lisp-controller},
-  Zach Beane eventually wrote @(Quicklisp), that uses @(ASDF2),
-  and makes deployment of software ubiquitous by not requiring a particular system,
-  but working in any user's environment on any system,
-  avoiding the hard problem of sharing rather than failing at it.
+  which itself imported it from @cl{common-lisp-controller}
 }
 Therefore, the first time it sees a given file or system,
 or after they have been updated, there may be a startup delay
@@ -2125,6 +2058,53 @@ but the main functionality of which is not affected by these bugs.
 Until there exists some configuration system that allows
 for those checks to happen on new code without breaking old code,
 the feature will have to remain disabled by default.
+
+@subsection{Ubiquity or Bust!}
+
+CL possesses a standard but underspecified mechanism for extending the language:
+@cl{(require "module")} will load given "module",
+as somehow provided by the implementation, if not present yet.
+Dan Barlow hooked @(ASDF) into SBCL's @cl{require} mechanism
+@(ASDF2) eventually did likewise for ABCL, GNU CLISP, Clozure CL, CMUCL, ECL, MKCL as well as SBCL.
+— the list coincides with that of all maintained free software implementations.
+Thus, on all these implementations, users could, after they @cl{(require "asdf")},
+implicitly rely on @(ASDF) to provide systems that are not yet loaded.
+
+However, users ended up mostly not using it, we presume for the following reasons:
+@itemlist[
+  @item{
+    This mechanism is still not ubiquitous enough,
+    therefore for portability and reliability,
+    you have to know about @(ASDF) and be able to fall back to it explicitly, anyway;
+    thus trying to "optimize" the easy case with @cl{require}
+    is just gratuitous cognitive load for no gain;
+    this illustrates once again the principle that
+    @moneyquote{it's counter-productive to standardize underspecified software}.
+    It is better to standardize that some situations to cause an error,
+    to reserve any resolution to a later version of the standard (and then follow up on it),
+    or to delegate it to a different standard;
+    but underspecifying a specification is only inviting
+    a hell of mutually incompatible variants the use of which will bring
+    as many portability landmines.
+    In case of disagreement, it is much better to let each implementation's variant
+    exist in its own, distinct namespace, which avoids any confusion.
+  }
+  @item{
+    The @cl{require} mechanism purposefully avoids loading a module that has already been provided,
+    thereby making it unpopular in a culture of ubiquitous modifiable source code;
+    if you modified a file, you really want it to be reloaded automatically.@note{
+      At the same time, @(ASDF) wasn't reliable in avoiding to reload provided modules,
+      since most systems don't call @cl{provide} with their name to signal that such
+      call to @cl{require} was successful, and therefore next call to @cl{require}
+      would cause a new load attempt — this was fixed with the introduction of
+      the above-mentioned @cl{require-system} in @(ASDF 2.21) in 2012,
+      and its use instead of @(load-system).
+    Maybe the more general point is that @(ASDF) did not have a good story with regards to
+    extending the set of things that are considered "system" versus "user" defined.
+    @(ASDF3.1) adds a notion of "immutable systems"
+    that should not be refreshed from filesystem once loaded into memory.
+    @; https://bugs.launchpad.net/asdf/+bug/1184002
+  } } ]
 
 @subsection{Innovation is Hard}
 

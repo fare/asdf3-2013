@@ -1542,37 +1542,38 @@ Yet the most complex piece turned out to be a portable implementation of @(run-p
 (run-program `("cp" "-lax" "--parents"
                "src/foo" ,destination))
 }|
-On Unix (or Cygwin), this will recursively copy
-the @tt{src/foo} directory into a directory named by the string @cl{destination},
-preserving the prefix @tt{src/foo} and creating hardlinks instead of copying contents.
-You might want to add @cl{:output t :error-output t}
-to get error messages on your @cl{*standard-output*} and @cl{*error-output*} streams, though,
-since the default value, @(nil), designates @tt{/dev/null}.
+On Unix, this will recursively hardlink files in directory
+@tt{src/foo} into a directory named by the string @cl{destination},
+preserving the prefix @tt{src/foo}.
+You will probably add @cl{:output t :error-output t}
+to get error messages on your @cl{*standard-output*} and @cl{*error-output*} streams,
+for the default value, @(nil), designates @tt{/dev/null}.
 If the invoked program returns an error code,
-@(run-program) will signal a structured Lisp @(error),
+@(run-program) will signal a structured CL @(error),
 unless you specify @cl{:ignore-error-status t}.
 
-Such a utility was essential for @(ASDF) extensions
+Such a utility is essential for @(ASDF) extensions
 to portably execute arbitrary programs.
 With it, CL can replace any shell scripts.
-But it was a challenge to write:
-Each implementation had a completely different interface to this functionality,
+It was a challenge to write:
+Each implementation provided a different underlying mechanism
 with wildly different feature sets and countless corner cases.
-Better implementations could spawn a process via @tt{fork(2)} and @tt{execve(2)} or equivalent,
-and handle redirection of standard-input, standard-output and error-output file descriptors;
-lesser implementations could only call out the @tt{system(3)} C library function.
-What more, the behavior on Windows was significantly different from that on Unix.
-@(ASDF1) itself actually had a @cl{run-shell-command} that had been copied over from @(mk-defsystem),
-but it was more of an attractive nuisance inviting for problems than a solution,
-despite a lot of bug fixes:
+The better ones could fork and exec a process
+and control its standard-input, standard-output and error-output;
+lesser ones could only call the @tt{system(3)} C library function.
+What more, Windows support differed significantly from Unix.
+@(ASDF1) itself actually had a @cl{run-shell-command},
+initially copied over from @(mk-defsystem),
+but it was more of an attractive nuisance than a solution, despite many bug fixes:
 it was implicitly calling @cl{format}; capturing output was particularly contrived;
 and what shell would be used varied between implementation, even more so on Windows.
 
-@(ASDF3) provides a full-featured @(run-program), papering over all these discrepancies
-to provide control of the program's standard output, using temporary files underneath if needed,
+@(ASDF3)'s @(run-program) is full-featured,
 based on code originally from @(XCVB)'s @cl{xcvb-driver} @~cite[XCVB-2009].
-Since @(ASDF "3.0.3"), @(run-program) can also control the standard input and error output.
-It can both execute a program with a list of arguments, or invoke a shell on a command.
+It papers over all these discrepancies to provide control of
+the program's standard output, using temporary files underneath if needed,
+Since @(ASDF "3.0.3"), it can also control the standard input and error output.
+It accepts either a list of a program and arguments, or a shell command string.
 Thus your previous program could have been:
 @clcode{
 (run-program
@@ -1581,7 +1582,7 @@ Thus your previous program could have been:
   :output t :error-output t)
 }
 Where (UIOP)'s @cl{native-namestring} converts the @cl{pathname} object @cl{destination}
-into a string suitable for use by the operating system,
+into a name suitable for use by the operating system,
 as opposed to a CL @cl{namestring}, that might be escaped somehow.
 
 You can also inject input and capture output:
@@ -1593,16 +1594,15 @@ will return the string @cl{"hello, world"}.
 It will also return secondary and tertiary values @(nil) and @cl{0} respectively,
 for the (non-captured) error-output and the (successful) exit code.
 
-Since the functionality provided by @(UIOP) is basic, and
-using it a lot can be cumbersome, a more practical interface to shell programs
-was written on top of @(UIOP), available as the separate system @(inferior-shell).
-It handles pipelines, @tt{zsh} style redirections,
+Now @(run-program) only provides a basic abstraction;
+a separate system @(inferior-shell) was written on top of @(UIOP),
+and provides a richer interface, handling pipelines, @tt{zsh} style redirections,
+splicing of strings and/or lists into the arguments, and
 implicit conversion of pathnames into native-namestrings,
-symbols into downcased string, keywords into downcased string with a @cl{"--"} prefix,
-splicing of strings and/or lists into arguments,
-and many short-named functions @cl{run}, @cl{run/nil}, @cl{run/s}, @cl{run/ss},
-to respectively run the external command with outputs to the Lisp standard and error output,
-run it with no output, run it with output to a string, run it with output to a stripped string, etc.
+of symbols into downcased strings, of keywords into downcased strings with a @cl{"--"} prefix.
+Its short-named functions @cl{run}, @cl{run/nil}, @cl{run/s}, @cl{run/ss},
+respectively run the external command with outputs to the Lisp standard and error output,
+with no output, with output to a string, or with output to a stripped string.
 Thus you could get the same result as previously with:
 @clcode{
 (run/ss '(pipe (echo (uryyb ", " jbeyq))

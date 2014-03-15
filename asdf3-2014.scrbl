@@ -2142,13 +2142,15 @@ having non-default values from previous systems,
 or to inflict non-default values upon next systems.
 What is worse, changing syntax is only useful if it also happens
 at the interactive REPL;
-these interactive changes can affect files built from the REPL
-— which can cause catastrophic circular dependencies if you
-compile with modified syntax files that in next sessions
-will have to be loaded before the files that support the syntax modification.
+yet these interactive syntax changes can affect files built from the REPL,
+including, upon modification,
+components that do not depend on the syntax support,
+or worse, that the syntax support depends on;
+this will cause catastrophic circular dependencies,
+and require a fresh start after having cleared the output file cache.
 Systems like @cl{named-readtables} or @cl{cl-syntax} help with syntax control,
 but proper hygiene is not currently enforced by either CL or @(ASDF),
-and remains up to the user.
+and remains up to the user, especially at the REPL.
 
 Build support is therefore strongly required for safe syntax modification;
 but this build support is not there yet in @(ASDF3)

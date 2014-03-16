@@ -1153,14 +1153,13 @@ the previous implicit standard being evolved from.
 On old implementations without support for Unicode or external-formats,
 @(ASDF) falls back to using the 8-bit implementation @cl{:default}.
 
-Though @cl{:utf-8} was the @(de_facto) standard,
+Though @cl{:utf-8} was already the @(de_facto) standard,
 the default was initially left to @cl{:default}
 for backward-compatibility,
-to give time to adapt to the authors of a dozen libraries
-that were implicitly using @cl{:latin1}, out of over 700 in @(Quicklisp),
-compared to a hundred that implicitly used @cl{:utf-8}
-and the rest plain ASCII.
-
+to give time to adapt to the twenty or so authors of systems
+that were using incompatible encodings,
+half of which fixed their code within a few days or weeks,
+and half of which never did.
 This default changed to @cl{:utf-8} one year later,
 with the pre-release of @(ASDF3),
 under the theory that
@@ -1168,18 +1167,16 @@ under the theory that
                  all small backward-incompatible changes
                  together with a big one},
 since that's the time users will have to pay attention, anyway.
-Though it did break a few libraries that were still unmaintained after a year,
-the new defaults actually made things more reliable for many other libraries,
+Though it did break the few remaining unmaintained systems,
+the new defaults actually made things more reliable for a hundred or so other systems,
 as witnessed by the automated testing tool @cl{cl-test-grid}. @XXX{Give URL!}
 
 Because we had learned that a feature isn't complete until it's tested,
-we published a library to demonstrate how to put this new infrastructure to good use:
+we published a system that demonstrates how to put this new infrastructure to good use:
 @cl{lambda-reader}, a utility that lets you use the unicode character @cl{λ}
 instead of @cl{lambda} in your code.@note{
   Yes, it does feel good to write @cl{λ} this way,
   and it does improve code that uses higher-order functions.
-  My @tt{.emacs} has a @tt{(global-set-key "\C-cl" "λ")},
-  and my @tt{.XCompose} has @tt{<Multi_key> <period> <backslash> : "λ" U03BB}.
 }
 Originally based on code by Brian Mastenbrook,
 @cl{lambda-reader} was modified to fall back gracefully to working mojibake
@@ -1189,7 +1186,8 @@ to offer the syntax modification via the @(de_facto) standard
 Users still have to enable the modified syntax
 at the beginning of every file,
 and carefully disable it at the end,
-least they cause havoc in other files or at the REPL.
+least they cause havoc in other files or at the REPL
+(see @secref{syntax_control}).
 
 @subsection{Hooks around compilation}
 
@@ -1379,11 +1377,11 @@ that bundles into a single fasl
 all the individual fasls from the @(compile-op) outputs
 of each file in a system.
 This bundle fasl may then be loaded by operation @(load-fasl-op).@note{
-  FASL, for FASt Loading, is the name of CL compilation output files.
-  @(fasl-op) is not a good name, since every individual @(compile-op) also outputs a fasl.
-  This operation should have been called @cl{compile-bundle-op}
-  and the corresponding loader @cl{load-bundle-op}.
-  But backward compatibility makes it hard to change the name.
+  A fasl, for FASt Loading, is a CL compilation output file.
+  @(fasl-op) and @(load-fasl-op) are not good names,
+  since every individual @(compile-op) has a fasl;
+  @cl{compile-bundle-op} and @cl{load-bundle-op} would be better,
+  but not backward compatible.
 }
 Also @cl{lib-op} links into a library all the object files in a system;
 @cl{dll-op} creates a dynamically loadable libary out of these files.
@@ -1991,11 +1989,11 @@ In contrast, @(ASDF2) has no way to automatically locate the @(asd) file
 from the name of a secondary system, and so you must ensure that you loaded the primary @(asd) file
 before you may use the secondary system.
 This feature may look like a textbook case of a backward-compatible "conservative extension".
-Yet, it is the major reason why @(Quicklisp) itself hasn't adopted @(ASDF3):
+Yet, it is the major reason why @(Quicklisp) itself still hasn't adopted @(ASDF3):
 @(Quicklisp) assumed it could always create a file named after each system,
-which happened to be true in practice (though not guaranteed) before this @(ASDF3) innovation.
-Refactoring @(Quicklisp) to account for this new style of secondary systems
-was more work than the author Zach Beane has so far been willing to spend.
+which happened to be true in practice (though not guaranteed) before this @(ASDF3) innovation;
+systems that newly include secondary system using this style
+break this assumption, and will require non-trivial work for @(Quicklisp) to support.
 
 What then, is backward compatibility? It is not a technical constraint.
 @moneyquote{Backward compatibility is a social constraint}.
@@ -2120,7 +2118,7 @@ However, users ended up mostly not using it, we presume for the following reason
     @; https://bugs.launchpad.net/asdf/+bug/1184002
   } } ]
 
-@subsection{Safety before Ubiquity}
+@subsection[#:tag "syntax_control"]{Safety before Ubiquity}
 
 Guy Steele has been quoted
 as vaunting the programmability of Lisp's syntax by saying:

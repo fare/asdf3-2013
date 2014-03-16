@@ -1,6 +1,7 @@
-ae := asdf3
+ae := asdf3-2014
 
-src = asdf3.scrbl live-programming.scrbl old-bug.scrbl history.scrbl utils.rkt tutorial.scrbl
+src = live-programming.scrbl utils.rkt bibliography.scrbl
+# asdf3.scrbl old-bug.scrbl history.scrbl tutorial.scrbl
 
 export PLTCOLLECTS:=$(shell pwd):${PLTCOLLECTS}
 
@@ -34,7 +35,7 @@ ${ae}.html: ${ae}.scrbl ${src}
 	scribble --latex --dest tmp $<
 
 clean:
-	rm -f ${ae}.pdf ${ae}.html *.css *.js
+	rm -f *.pdf *.html *.tex *.css *.js
 	rm -rf tmp
 
 mrproper:

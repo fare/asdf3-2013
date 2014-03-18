@@ -13,7 +13,9 @@
 @conferenceinfo["ELS 2014" "May 5--6, Paris, France."]
 @copyrightyear{2014}
 
-@title{@(ASDF3), or Why Lisp is Now an Acceptable Scripting Language}
+@title{@(ASDF3), or Why Lisp is Now an Acceptable Scripting Language @;
+@(extended-only (linebreak) @smaller{Extended version})
+}
 
 @abstract{
 @(ASDF), the @(de_facto) standard build system for @(CL),
@@ -38,7 +40,7 @@ in bringing change to the @(CL) community.
 
 Better late than never,
 with the release of @(ASDF3) in May 2013,
-one can write @emph{portably} in @(CL) (CL, see @secref{common-lisp})
+one can write @emph{portably} in @(CL) (CL, see @appref["common-lisp"]{appendix A})
 all the programs for which one traditionally uses so-called "scripting" languages:
 one can write small scripts that glue together functionality provided
 by the operating system, external programs, C libraries, or network services;
@@ -87,7 +89,7 @@ concluding with lessons learnt from our experience with CL and @(ASDF).
 
 This article has several appendices that give details
 about the history of @(ASDF), its successes and its failures.
-See @secref{Appendices}.
+See @appref["Appendices"]{the appendices}.
 
 @section[#:tag "what_it_is"]{What @(ASDF) is}
 
@@ -148,7 +150,7 @@ in a file @tt{fare-quasiquote.asd}.
 It contains three files, @tt{packages},
 @tt{quasiquote} and @tt{pp-quasiquote}
 (the @tt{.lisp} suffix is automatically added based on the component class;
-see @secref{pathnames}).
+see @appref["pathnames"]{appendix C}).
 The latter files each depend on the first,
 that defines the CL packages@note{
   Each CL image has a global flat two-level namespace of symbols in packages:
@@ -244,7 +246,7 @@ both more portable and simpler by co-developing it with @(ASDF).
 Understanding the many clever tricks
 by which Andreas Fuchs overcame the issues with the @(ASDF1) model
 to compute such a complete DAG led to many aha moments,
-instrumental when writing @(ASDF3) (see @secref{traverse}).
+instrumental when writing @(ASDF3) (see @appref["traverse"]{appendix F}).
 
 @subsubsection{In-image}
 
@@ -415,7 +417,7 @@ there was an essential bug at the heart of @(ASDF),
 present from the very first day in 2001, and before it in @(mk-defsystem) since 1990,
 that survived till December 2012.
 Fixing it required a complete rewrite of @(ASDF)'s core.
-The entire story is told in @secref{traverse}.
+The entire story is told in @appref["traverse"]{appendix F}.
 
 In the end, though, the object model of @(ASDF) is at the same time
 more powerful, more robust, and simpler to explain.
@@ -587,7 +589,8 @@ At Google, @(UIOP) is actually used for portability without the rest of @(ASDF),
 the build being handled by Google's @tt{blaze};
 this led to @(UIOP) improvements that will be released with @(ASDF3.1).
 
-Most of the utilities deal with providing sane pathname abstractions (see @secref{pathnames}),
+Most of the utilities deal with providing sane pathname abstractions
+(see @appref["pathnames"]{appendix C}),
 filesystem access, sane input/output (including temporary files),
 basic operating system interaction:
 many things for which the CL standard was lacking.
@@ -958,8 +961,8 @@ any operation that inherited from the @(operation) class hierarchy used
 to be propagated sideway and downward along the component DAG.
 In most cases, this was an unwanted behavior, and indeed,
 @(ASDF3) was predicated upon the introduction of a new operation @(prepare-op)
-that instead propagates upward along the DAG (see @secref{traverse}).
-Most existing extensions to @(ASDF), thus included
+that instead propagates @emph{upward} along the DAG (see @appref["traverse"]{appendix F}).
+Most existing extensions to @(ASDF) thus included
 various workarounds and approximations to deal with the issue.
 But there were a handful extensions that did expect this behavior,
 and now they were broken.
@@ -969,22 +972,21 @@ distributed by @(Quicklisp) had been contacted,
 to make their code compatible with the new fixed model.
 But there was no way to contact unidentified authors of proprietary extensions,
 beside sending an announcement to the mailing-list.
-Yet, whatever message was sent didn't attract enough attention,
-because our co-maintainer Robert Goldman got bitten hard
+Yet, whatever message was sent didn't attract enough attention.
+Even our co-maintainer Robert Goldman got bitten hard
 when an extension used at work stopped working,
 wasting days of debugging to figure out the issue.
 
-Therefore, @(ASDF3.1) features a new feature to make it more backward-compatible.
-The class @(operation) will implement sideway and downward propagation
-on all classes that do not explicitly inherit from any of the automatic propagation mixins
+Therefore, @(ASDF3.1) features enhanced backward-compatibility..
+The class @(operation) implements sideway and downward propagation
+on all classes that do not explicitly inherit from any of the propagating mixins
 @(downward-operation), @(upward-operation), @(sideway-operation) or @(selfward-operation),
 unless they explicitly inherit from the new mixin @(non-propagating-operation).
-@(ASDF) will issue a @(warning) at runtime when an operation class is instantiated
-that doesn't inherit from any of the propagating or non-propagating mixins,
-which will hopefully tip off any author of a proprietary extension that it is time to upgrade.
-To signal to @(ASDF) that their operation class is not backward,
-extension authors thus have to define their non-propagating operations as inheriting from
-@(non-propagating-operation) as in:
+@(ASDF) will signal a @(warning) at runtime when an operation class is instantiated
+that doesn't inherit from any of the above mixins,
+which will hopefully tip off authors of a proprietary extension that it is time to upgrade.
+To tell @(ASDF) that their operation class is not backward,
+extension authors may have to define their non-propagating operations as follows:
 @verbatim|{
 (defclass my-op (#+asdf3.1 non-propagating-operation operation) ())
 }|
@@ -1090,18 +1092,22 @@ if it's a large company with many teams, it can take many weeks or months.
 When the software is used by a weakly synchronized group like the CL community,
 the change can take years.
 
-When releasing @(ASDF3), we changed the default encoding
+When releasing @(ASDF3),
+it took a few months to fix all the publicly available systems
+that were affected by any of the minor incompatibilities.
+We notably modified the default encoding
 from the uncontroled environment-dependent @cl{:default}
-to the @(de_facto) standard @cl{:utf-8};
-yet it had taken us a year to make that change
+to the @(de_facto) standard @cl{:utf-8},
+after a year of having specified forewarning community members.
+Since originally account
 after the support for encodings and @cl{:utf-8} was added
-(see @secref{Encoding_support}).
-It took a few months to fix all the publicly available systems
-that were affected by any of the minor incompatibilities in @(ASDF3);
-and a lot of those months though were fixing @(ASDF3) itself to be more compatible.
+(see @appref["Encoding_support"]{appendix D}).
+
+and a lot of the work consisted in fixing @(ASDF3) itself to be more compatible.
 Indeed, several intended changes had to be forsaken,
 that didn't have an incremental upgrade path,
 and for which it proved infeasible to fix all the clients.
+
 
 Among these changes was an innovative system to control warnings issued by the compiler.
 On the one hand, the @cl{*uninteresting-conditions*} mechanism allows system builders
@@ -1220,7 +1226,7 @@ This illustrates the principle that you should always
 @moneyquote{explain your programs}:
 having to intelligibly verbalize the concepts will make @emph{you} understand them better.
 
-
+@extended-only{
 @section[#:tag "Appendices" #:style (make-style 'appendix '(unnumbered))]{
   Appendices
 }
@@ -3479,5 +3485,6 @@ or that @(ASDF3) is a jewel among build systems.
 But I believe that it has a clean and original design worth explaining, yet
 that neither Dan Barlow nor I can honestly be said to have designed this design;
 we merely stumbled upon it.
+}
 
 @(generate-bib)

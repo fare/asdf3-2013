@@ -12,6 +12,17 @@
 
 (provide (all-defined-out))
 
+(define extended-url "http://fare.tunes.org/files/asdf3/asdf3-2014.html")
+
+(define variant (make-parameter '#:extended))
+(define-syntax-rule (extended-only x ...) (when (eq? (variant) '#:extended) (list x ...)))
+(define-syntax-rule (short-only x ...) (when (eq? (variant) '#:short) (list x ...)))
+(define (appref tag alt)
+  (case variant
+    ((#:extended) (secref tag))
+    ((#:short) (hyperlink (string-append extended-url "#" tag)
+                          (list alt " of the extended version")))))
+
 (define backend (make-parameter '#:html))
 (define-syntax-rule (html-only x ...) (when (eq? (backend) '#:html) (list x ...)))
 (define-syntax-rule (pdf-only x ...) (when (eq? (backend) '#:pdf) (list x ...)))

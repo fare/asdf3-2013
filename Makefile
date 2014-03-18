@@ -10,10 +10,9 @@ html: ${ae}.html
 pdf: ${ae}.pdf
 PDF: pdf ${ae}.PDF
 
-asdf: asdf3-2014.html asdf3-2014.pdf
-	rsync -av $^ *.js *.css ~/files/tmp/asdf/
-	rsync -av ~/files/tmp/asdf/ bespin:files/tmp/asdf/
-
+asdf: asdf3-2014.html asdf3-2014.pdf asdf3-els2014.html asdf3-els2014.pdf
+	rsync -av --delete $^ *.js *.css ~/files/asdf3/
+	rsync -av --delete ~/files/asdf3/ bespin:files/asdf3/
 
 %.W: %.html
 	w3m -T text/html $<

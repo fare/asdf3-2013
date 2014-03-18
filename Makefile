@@ -25,14 +25,14 @@ asdf: asdf3-2014.html asdf3-2014.pdf
 	evince $<
 
 %.pdf: %.scrbl ${src}
-	scribble --dest-name $@ --pdf $<
+	time scribble --dest-name $@ --pdf $<
 
 ${ae}.html: ${ae}.scrbl ${src}
 %.html: %.scrbl utils.rkt bibliography.scrbl
-	scribble --dest-name $@ --html $<
+	time scribble --dest-name $@ --html $<
 
 %.latex: %.scrbl ${src}
-	scribble --latex --dest tmp $<
+	time scribble --latex --dest tmp $<
 
 clean:
 	rm -f *.pdf *.html *.tex *.css *.js

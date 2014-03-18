@@ -39,53 +39,12 @@ in bringing change to the @(CL) community.
 Better late than never,
 with the release of @(ASDF3) in May 2013,
 all the programs for which one uses so-called "scripting" languages
-may now be written @emph{portably} in @(CL) (CL):
-one can write small scripts that glue together functionality provided
+may now be written @emph{portably} in @(CL) (CL, see @secref{common-lisp}).
+One can write small scripts that glue together functionality provided
 by the operating system, external programs, C libraries, or network services;
 one can scale them seamlessly into large, maintainable, modular, systems;
 and one can make those new services available to other programs via the command-line
-as well as via network protocols, etc.@note{
-  CL is a language defined in the ANSI standard X3.226-1994.
-  It is a multi-paradigm, dynamically-typed high-level language.
-  Though it is known for its decent support for functional programming,
-  its support for Object-Oriented Programming
-  is actually what remains unsurpassed still in many ways;
-  also, few languages even attempt to match either
-  its syntactic extensibility or its support for interactive development.
-  It was explicitly designed to allow for high-performance implementations;
-  some of them, depending on the application,
-  may rival compiled C programs in terms of speed,
-  usually far ahead of "scripting" languages and their implementations.
-
-  There are over a dozen maintained or unmaintained CL implementations.
-  No single one is at the same time
-  the best, shiniest, leanest, fastest, cheapest,
-  and the one ported to the most platforms.
-  For instance, SBCL is quite popular for its runtime speed
-  on intel-compatible Linux machines;
-  but it is slower at compiling and loading,
-  won't run on ARM, and doesn't have the best Windows support;
-  and so depending on your constraints, you might prefer
-  Clozure CL, ECL, CLISP or ABCL.
-  Or you might desire the technical support or additional libraries
-  from a proprietary implementation.
-
-  While it is possible to write useful programs
-  using only the standardized parts of the language,
-  fully taking advantage of extant libraries
-  that harness modern hardware and software techniques
-  requires the use of various extensions.
-  Happily, each implementation provides its own extensions
-  and there exist libraries to abstract over
-  the discrepancies between these implementations
-  and provide portable access to threads (@cl{bordeaux-threads}),
-  unicode support (@cl{cl-unicode}),
-  a "foreign function interface" to libraries written in C (@cl{cffi}),
-  ML-style pattern-matching (@cl{optima}), etc.
-  A software distribution system, @(Quicklisp),
-  makes it easy to install hundreds of libraries that use @(ASDF).
-  The new features in @(ASDF3) were only the last missing pieces in this puzzle.
-}
+as well as via network protocols, etc.
 
 @(ASDF) has been the @(de_facto) standard build system
 for portable CL software since shortly after its release
@@ -134,26 +93,8 @@ of evolving a piece of community software,
 concluding with lessons learnt from our experience with CL and @(ASDF).
 
 This article has several appendices that give details
-about the history of @(ASDF),
-its successes and its failures.
-@;
-In @secref{asdf1}, we lay down the historical context
-for @(ASDF1) and what it initially brought to the CL community.
-@;
-In @secref{asdf2},
-we explain how innovations introduced with @(ASDF "2.000")
-that made it reliable.
-@;
-In @secref{pathnames} we examine the fiasco of CL pathnames.
-@;
-In @secref{asdf2.26},
-we describe features added during the @(ASDF2) series,
-and how they enabled more declarative extensions of @(ASDF) and of CL itself.
-@;
-In @secref{traverse} we explain the conceptual bug at the heart of @(ASDF)
-that led to its rewrite as @(ASDF3).
-@;
-In @secref{failures} we discuss some failed attempts to improve @(ASDF).
+about the history of @(ASDF), its successes and its failures.
+See @secref{Appendices}.
 
 @section[#:tag "what_it_is"]{What @(ASDF) is}
 
@@ -480,61 +421,6 @@ to other build systems for CL, C, Java, or other systems:
     if that alternative is written in CL.
   }
 ]
-
-@subsection{A brief history of @(ASDF)}
-
-Ever since the late 1970s, Lisp Machines had a build system called @(DEFSYSTEM).
-In the 1990s, a portable free software reimplementation, @(mk-defsystem),
-became somewhat popular.
-By 2001, it had grown crufty and proved hard to extend, so
-Daniel Barlow created his own variant, @(ASDF), that he published in 2002,
-and that became an immediate success.
-Dan's @(ASDF) was an experiment in many dimensions,
-and was notably innovative in its extensible object-oriented API
-and its clever way of locating software.
-See @secref{asdf1}.
-
-By 2009, Dan's @(ASDF1) was used by hundreds of software systems on many CL implementations;
-however, its development cycle was dysfunctional, its bugs were not getting fixed,
-those bug fixes that existed were not getting distributed,
-and configuration was noticeably harder that it should have been.
-After the then maintainer Gary King resigned, we took over his position,
-and produced a new version @(ASDF2), released in 2010,
-that was turned @(ASDF) from a successful experiment
-to a product, making it upgradable, portable, configurable, robust, performant and usable.
-See @secref{asdf2}.
-
-By 2009, Dan's @(ASDF1) was used by hundreds of software systems on many CL implementations;
-however, its development cycle was dysfunctional, its bugs were not getting fixed,
-those bug fixes that existed were not getting distributed,
-and configuration was noticeably harder that it should have been.
-After the then maintainer Gary King resigned, we took over his position,
-and produced a new version @(ASDF2), released in 2010,
-that was turned @(ASDF) from a successful experiment
-to a product, making it upgradable, portable, configurable, robust, performant and usable.
-See @secref{asdf2}.
-
-The biggest hurdle in productizing @(ASDF) was related to dealing with CL pathnames.
-We explain a few salient issues in @secref{pathnames}.
-
-While maintaining @(ASDF2), we implemented several new features
-that enabled a more declarative style in using @(ASDF) and CL in general:
-declarative use of build extensions, selective control of the build,
-declaration of file encoding, declaration of hooks around compilation,
-enforcement of user-defined invariants.
-See @secref{asdf2.26}.
-
-Evolving @(ASDF) was not monotonic progress, we also had many failures along the way,
-from which lessons can be learned.
-See @secref{failures}.
-
-After fixing all the superficial bugs in @(ASDF),
-we found there remained but a tiny bug in its core.
-But the bug ended up being a deep conceptual issue with its dependency model;
-fixing it required a complete reorganization of the code,
-yielding @(ASDF3). See @secref{traverse}.
-
-And that's we have now reached...
 
 @section[#:tag "asdf3"]{@(ASDF) 3: A Mature Build}
 
@@ -1409,9 +1295,123 @@ This illustrates the principle that you should always
 @moneyquote{explain your programs}:
 having to intelligibly verbalize the concepts will make @emph{you} understand them better.
 
-@section[#:tag "asdf1" #:style (make-style 'appendix '(unnumbered))]{
-  Appendix A: @(ASDF1), an extensible @(defsystem)
+
+@section[#:tag "Appendices" #:style (make-style 'appendix '(unnumbered))]{
+  Appendices
 }
+
+@section[#:tag "asdf1"]{
+  Appendix A: @(ASDF1), an extensible @(defsystem) for CL
+}
+
+@subsection[#:tag "common-lisp"]{Common Lisp, aka CL}
+
+@(CL), often abbreviated CL,
+is a language defined in the ANSI standard X3.226-1994
+by technical committee X3J13.
+It is a multi-paradigm, dynamically-typed high-level language.
+Though it is known for its decent support for functional programming,
+its support for Object-Oriented Programming
+is actually what remains unsurpassed still in many ways;
+also, few languages even attempt to match either
+its syntactic extensibility or its support for interactive development.
+It was explicitly designed to allow for high-performance implementations;
+some of them, depending on the application,
+may rival compiled C programs in terms of speed,
+usually far ahead of "scripting" languages and their implementations.
+
+There are over a dozen maintained or unmaintained CL implementations.
+No single one is at the same time
+the best, shiniest, leanest, fastest, cheapest,
+and the one ported to the most platforms.
+For instance, SBCL is quite popular for its runtime speed
+on intel-compatible Linux machines;
+but it is slower at compiling and loading,
+won't run on ARM, and doesn't have the best Windows support;
+and so depending on your constraints, you might prefer
+Clozure CL, ECL, CLISP or ABCL.
+Or you might desire the technical support or additional libraries
+from a proprietary implementation.
+
+While it is possible to write useful programs
+using only the standardized parts of the language,
+fully taking advantage of extant libraries
+that harness modern hardware and software techniques
+requires the use of various extensions.
+Happily, each implementation provides its own extensions
+and there exist libraries to abstract over
+the discrepancies between these implementations
+and provide portable access to threads (@cl{bordeaux-threads}),
+unicode support (@cl{cl-unicode}),
+a "foreign function interface" to libraries written in C (@cl{cffi}),
+ML-style pattern-matching (@cl{optima}), etc.
+A software distribution system, @(Quicklisp),
+makes it easy to install hundreds of libraries that use @(ASDF).
+The new features in @(ASDF3) were only the last missing pieces in this puzzle.
+
+@subsection{A brief history of @(ASDF)}
+
+In the early history of Lisp, back when core memory was expensive,
+all programs fit in a deck of punched cards.
+As computer systems grew, they became files on a tape,
+or, if you had serious money, on a disk.
+As they kept growing, programs would start to use libraries,
+and not be made of a single file;
+then you'd just a quick script that loaded the few files your code depended on.
+As software kept growing, manual scripts proved unwieldy,
+and people started developing @emph{build systems}.
+A popular one, since the late 1970s, was @(make).
+
+Ever since the late 1970s, Lisp Machines had a build system called @(DEFSYSTEM).
+In the 1990s, a portable free software reimplementation, @(mk-defsystem),
+became somewhat popular.
+By 2001, it had grown crufty and proved hard to extend, so
+Daniel Barlow created his own variant, @(ASDF), that he published in 2002,
+and that became an immediate success.
+Dan's @(ASDF) was an experiment in many dimensions,
+and was notably innovative in its extensible object-oriented API
+and its clever way of locating software.
+See @secref{asdf1}.
+
+By 2009, Dan's @(ASDF1) was used by hundreds of software systems on many CL implementations;
+however, its development cycle was dysfunctional, its bugs were not getting fixed,
+those bug fixes that existed were not getting distributed,
+and configuration was noticeably harder that it should have been.
+After the then maintainer Gary King resigned, we took over his position,
+and produced a new version @(ASDF2), released in 2010,
+that was turned @(ASDF) from a successful experiment
+to a product, making it upgradable, portable, configurable, robust, performant and usable.
+See @secref{asdf2}.
+
+By 2009, Dan's @(ASDF1) was used by hundreds of software systems on many CL implementations;
+however, its development cycle was dysfunctional, its bugs were not getting fixed,
+those bug fixes that existed were not getting distributed,
+and configuration was noticeably harder that it should have been.
+After the then maintainer Gary King resigned, we took over his position,
+and produced a new version @(ASDF2), released in 2010,
+that was turned @(ASDF) from a successful experiment
+to a product, making it upgradable, portable, configurable, robust, performant and usable.
+See @secref{asdf2}.
+
+The biggest hurdle in productizing @(ASDF) was related to dealing with CL pathnames.
+We explain a few salient issues in @secref{pathnames}.
+
+While maintaining @(ASDF2), we implemented several new features
+that enabled a more declarative style in using @(ASDF) and CL in general:
+declarative use of build extensions, selective control of the build,
+declaration of file encoding, declaration of hooks around compilation,
+enforcement of user-defined invariants.
+See @secref{asdf2.26}.
+
+Evolving @(ASDF) was not monotonic progress, we also had many failures along the way,
+from which lessons can be learned.
+See @secref{failures}.
+
+After fixing all the superficial bugs in @(ASDF),
+we found there remained but a tiny bug in its core.
+But the bug ended up being a deep conceptual issue with its dependency model;
+fixing it required a complete reorganization of the code,
+yielding @(ASDF3). See @secref{traverse}.
 
 @subsection{DEFSYSTEM before @(ASDF)}
 
@@ -1578,7 +1578,7 @@ In the end, there was little demand for bug fixes,
 and supply followed by not being active fixing bugs.
 And so @(ASDF) development stagnated for many years.
 
-@section[#:tag "asdf2" #:style (make-style 'appendix '(unnumbered))]{
+@section[#:tag "asdf2"]{
   Appendix B: @(ASDF2), or Productizing @(ASDF)
 }
 
@@ -1928,7 +1928,7 @@ involving copy-pasting magical incantations.
 The principle followed was that
 @moneyquote{the cognitive load on each kind of user must be minimized}.
 
-@section[#:tag "pathnames" #:style (make-style 'appendix '(unnumbered))]{
+@section[#:tag "pathnames"]{
    Appendix C: Pathnames
 }
 
@@ -2365,7 +2365,7 @@ Only then, could the same specification be used on all supported platforms with 
 Once again, portability was achieved by systematically
 @emph{abstracting away semantic discrepancies between underlying implementations}.
 
-@section[#:tag "asdf2.26" #:style (make-style 'appendix '(unnumbered))]{
+@section[#:tag "asdf2.26"]{
   Appendix D: Features introduced in the @(ASDF2) series
 }
 
@@ -2689,7 +2689,7 @@ A good programming language will let you define new invariants,
 and a good build system will enforce them.
 In CL, thanks to @(ASDF), this can all happen without leaving the language.
 
-@section[#:tag "failures" #:style (make-style 'appendix '(unnumbered))]{
+@section[#:tag "failures"]{
   Appendix E: Failed Attempts at Improving @(ASDF)}
 }
 
@@ -2921,7 +2921,7 @@ There are many lessons to be learned by studying the successes and failures of t
 The CL language and community are probably too rigid to apply these lessons;
 but maybe your current or next programming language can.
 
-@section[#:tag "traverse" #:style (make-style 'appendix '(unnumbered))]{
+@section[#:tag "traverse"]{
   Appendix F: A @(traverse) across the build}
 }
 

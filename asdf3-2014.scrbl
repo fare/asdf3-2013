@@ -770,7 +770,7 @@ Thus @(UIOP) features a @cl{dump-image} function to dump the current heap image,
 except for ECL and its successors that follow a linking model and use a @cl{create-image} function.
 These functions were based on code from @cl{xcvb-driver}, that had taken them from @(cl-launch).
 
-@(ASDF3) also introduces a @(defsystem) option to system to specify an entry point as e.g.
+@(ASDF3) also introduces a @(defsystem) option to specify an entry point as e.g.
 @cl{:entry-point "my-package:entry-point"}.
 The specified function (designated as a string to be read after the package is created)
 will be called without arguments after the program image is initialized;
@@ -1090,10 +1090,14 @@ if it's a large company with many teams, it can take many weeks or months.
 When the software is used by a weakly synchronized group like the CL community,
 the change can take years.
 
-We discussed the change in default encoding (see @secref{Encoding_support}),
-and how it took a year to change the default from @cl{:default} to @cl{:utf-8}.
-When introducing @(ASDF3), it took a few months to fix all the publicly available systems
-that were affected by its minor incompatibilities;
+When releasing @(ASDF3), we changed the default encoding
+from the uncontroled environment-dependent @cl{:default}
+to the @(de_facto) standard @cl{:utf-8};
+yet it had taken us a year to make that change
+after the support for encodings and @cl{:utf-8} was added
+(see @secref{Encoding_support}).
+It took a few months to fix all the publicly available systems
+that were affected by any of the minor incompatibilities in @(ASDF3);
 and a lot of those months though were fixing @(ASDF3) itself to be more compatible.
 Indeed, several intended changes had to be forsaken,
 that didn't have an incremental upgrade path,
@@ -1198,7 +1202,7 @@ doing it in backward-compatible way is technically hard (but not impossible),
 and otherwise the change will break tens of existing systems,
 that have to be fixed beforehand, which is socially hard.
 
-In any case, until such issues are resolved,
+Until such issues are resolved,
 even though the Lisp ideal is one of ubiquitous syntax extension,
 and indeed extension through macros is ubiquitous,
 extension though reader changes are rare in the CL community.
@@ -1210,8 +1214,8 @@ by having it be strictly scoped to the current file or REPL.
 @subsection{Final Lesson: Explain it}
 
 While writing this article, we had to revisit many concepts and pieces of code,
-which led to many bug fixes and small refactorings;
-an earlier interactive "walkthrough" via Google Hangout also led to enhancements.
+which led to many bug fixes and refactorings to @(ASDF) and @(cl-launch).
+An earlier interactive "@(ASDF) walkthrough" via Google Hangout also led to enhancements.
 This illustrates the principle that you should always
 @moneyquote{explain your programs}:
 having to intelligibly verbalize the concepts will make @emph{you} understand them better.

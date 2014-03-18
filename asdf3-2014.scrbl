@@ -1568,10 +1568,10 @@ Originally written for @tt{sbcl},
 Each implementation shipped its own old version, often slightly edited;
 system definition semantics often varied subtly between implementations,
 notably regarding pathnames.
-@(ASDF) 2.000 supported 9 implementations, adding:
+@(ASDF "2.000") supported 9 implementations, adding:
 @tt{abcl}, @tt{lispworks}, @tt{gcl};
 system definition semantics was uniform across platforms.
-@(ASDF) 2.26 (last in the @(ASDF2) series) supported 15, adding:
+@(ASDF 2.26) (last in the @(ASDF2) series) supported 15, adding:
 @tt{cormanlisp}, @tt{genera}, @tt{mkcl}, @tt{rmcl}, @tt{scl}, @tt{xcl}.
 Since then, new implementations are being released with @(ASDF) support:
 @tt{mocl}, and hopefully soon @tt{clasp}.
@@ -2289,7 +2289,7 @@ Once again, portability was achieved by systematically
 @;TODO: import tables from ilc2010 talk-outline
 
 @section[#:tag "asdf2.26"]{
-  Appendix D: @(ASDF2.26), more declarative
+  Appendix D: @(ASDF 2.26), more declarative
 }
 
 @subsection{@(defsystem) dependencies}

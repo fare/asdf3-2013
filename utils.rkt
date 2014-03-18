@@ -68,18 +68,36 @@
 (defpretty cl
   ASDF-Install UIOP POIU XCVB DEFSYSTEM defsystem mk-defsystem
   quick-build faslpath asdf/package-system
+
   run-program inferior-shell run run/nil run/string run/ss
-  nil error cerror warning defpackage define-package
+
+  nil error cerror warning eval
+  defpackage
+  pathname namestring merge-pathnames make-pathname truename *load-pathname* *load-truename*
+  directory probe-file
+
+  define-package
+  merge-pathnames* subpathname truenamize
+  parse-unix-namestring unix-namestring parse-native-namestring native-namestring
+  getcwd
+
   operation load-op compile-op prepare-op load-fasl-op fasl-op concatenate-source-op
   program-op image-op build-op
   upward-operation downward-operation sideway-operation selfward-operation non-propagating-operation
+
   component system module file cl-source-file component-children
+
   operate load-system
+
   traverse traverse-action compute-action-stamp operation-done-p needed-in-image-p
+
   component-depends-on output-files input-files perform
   action-depends-on)
 
+(define (*dpd*) @cl{*default-pathname-defaults*})
+
 (defpretty emph depends-on in-order-to do-first force)
+
 (defpretty tt Make make)
 (define (Quicklisp) "Quicklisp")
 (define (asd) @tt{.asd})

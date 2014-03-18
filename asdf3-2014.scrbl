@@ -334,7 +334,7 @@ Quantitatively, @(ASDF) must minimize its memory footprint,
 since it is present in all programs that are built,
 and any resource spent is spent by all.@note{
   This arguably mattered more in 2002 when @(ASDF) was first released
-  and was about a thousand line long:
+  and was about a thousand lines long:
   By 2014, it has grown over ten times in size,
   but memory sizes have increased even faster.
 }
@@ -459,7 +459,7 @@ to other build systems for CL, C, Java, or other systems:
     (See below @secref{asdf-package-system}).
   }
   @item{
-    Because of its age-old model of building software in-image, what more
+    Because of its age-old model of building software in-image, what's more
     in traditional friendly single-user, single-processor, single-machine environments
     with a single coherent view of source code and single target configuration,
     @(ASDF) isn't geared at all to build large software
@@ -532,7 +532,7 @@ the support for now obsolete implementations that couldn't be tested anymore.
 @subsection{@(ASDF1): A Successful Experiment}
 
 In 2001, Dan Barlow, a then prolific CL hacker,
-dissatisfied @(mk-defsystem),
+dissatisfied with @(mk-defsystem),
 wrote a new @(defsystem) variant, @(ASDF).@note{
   In a combined reverence for tradition and joke,
   @(ASDF) stands for "Another System Definition Facility",
@@ -552,7 +552,7 @@ It was an immediate success.
 @(ASDF) featured many brilliant innovations in its own right.
 
 Perhaps most importantly as far as usability goes,
-@(ASDF) cleverly used the @cl{*load-truename*} feature of modern Lisps,
+@(ASDF) cleverly used the @(*load-truename*) feature of modern Lisps,
 whereby programs (in this case, the @(defsystem) form)
 can identify from which file they are loaded.
 Thus, system definition files didn't need to be edited anymore,
@@ -611,7 +611,7 @@ The extensibility API while basically sane was missing many hooks,
 so that power users had to redefine or override @(ASDF) internals
 with modified variants, which made maintenance costly.
 
-What more, there was a vicious circle preventing
+Moreover, there was a vicious circle preventing
 @(ASDF) bugs from being fixed or features from being added @~cite[Software-Irresponsibility]:
 Every implementation or software distribution (e.g. Debian) had its own version,
 with its own bug fixes and its own bugs;
@@ -645,7 +645,7 @@ In November 2009, François-René Rideau
 took over @(ASDF) maintainership and development.
 A first set of major changes led to @(ASDF2), released in May 2010.
 The versions released by Dan Barlow and the maintainers who succeeded him,
-and numbered 1.x are thereafter referred to at @(ASDF1).
+and numbered 1.x are thereafter referred to as @(ASDF1).
 These changes are explained in more detail in
 our ILC 2010 article @~cite[Evolving-ASDF].
 
@@ -694,7 +694,7 @@ all but the most obsolete ones can be fixed
 by an installation script we provide with @(ASDF3.1).
 
 Upgradability crucially decoupled what @(ASDF) users could rely on
-from implementations provided, enabling a virtuous circle of universal upgrades,
+from what implementations provided, enabling a virtuous circle of universal upgrades,
 where previously everyone was waiting for others to upgrade, in a deadlock.
 @moneyquote{Allowing for divergence creates an incentive towards convergence}.
 
@@ -924,7 +924,7 @@ but leave a lot of leeway to implementors, unlike e.g. ML or Java.
 @(ASDF1) performance didn't scale well to large systems:
 Dan Barlow was using the @cl{list} data structure everywhere,
 leading to planning time polynomial in the size of systems built.
-We assume did it for the sake of coding simplicity while experimenting,
+We assume he did it for the sake of coding simplicity while experimenting,
 and that his minimalism was skewed by the presence of many builtin CL functions
 supporting this old school programming style.
 @(ASDF) did scale reasonably well to a large number of small systems,
@@ -1009,11 +1009,11 @@ for classes defined in an extension in the @cl{:asdf} package.
 Before then, there was a chicken-and-egg problem:
 the @(defsystem) form containing the @cl{:defsystem-depends-on} declaration
 was read before the extension was loaded
-(what more, @(ASDF1) and 2 read it in a temporary package);
+(what's more, @(ASDF1) and 2 read it in a temporary package);
 therefore, the extension had nowhere to intern or export any symbol
 that the rest of the @tt{defsystem} form could use.
 
-These days, this feature is the recommend way of loading extensions.
+These days, this feature is the recommended way of loading extensions.
 But from the story of it, we can learn that
 @moneyquote{a feature isn't finished until it is tested and used in production}.
 Until then, there are likely issues that will need to be addressed.
@@ -1117,7 +1117,7 @@ The SBCL implementation was notable for simultaneously (and legitimately)
 (1) setting the default encoding in a given session
 from the same environment variables as the @tt{libc} locale,
 which could vary wildly between developers, even more so hypothetical end-users,
-and (2) issuing an error rather accept invalid UTF-8.
+and (2) issuing an error rather than accept invalid UTF-8.
 Unhappily, the person who chose the encoding was whoever wrote the code,
 and had no control on what environment was used at compile-time;
 whereas the user, who may or may not be aware of such encoding issues,
@@ -1328,7 +1328,7 @@ it will be released again as 3.1.1 in March 2014.
 
 Robert Goldman assumed maintainership in July 2013,
 a few months after the release of @(ASDF3).
-François-René Rideau remained main developer until release 3.1.1.
+François-René Rideau remained the main developer until release 3.1.1.
 
 All known bugs have been fixed, and the regression test suite has swollen;
 but there will always be portability issues to fix.
@@ -1559,7 +1559,7 @@ with wildly different feature sets and countless corner cases.
 The better ones could fork and exec a process
 and control its standard-input, standard-output and error-output;
 lesser ones could only call the @tt{system(3)} C library function.
-What more, Windows support differed significantly from Unix.
+Moreover, Windows support differed significantly from Unix.
 @(ASDF1) itself actually had a @cl{run-shell-command},
 initially copied over from @(mk-defsystem),
 but it was more of an attractive nuisance than a solution, despite many bug fixes:
@@ -1869,7 +1869,7 @@ This style provides many maintainability benefits:
 by imposing upon programmers a discipline of smaller namespaces,
 with explicit dependencies, and forward dependencies especially so,
 the style encourages good factoring of the code into coherent units;
-by contrast, the tradition style of "everything in one package"
+by contrast, the traditional style of "everything in one package"
 has low overhead, but doesn't scale very well.
 @(ASDF) itself was re-written in this package-system style as part of @(ASDF 2.27),
 the initial @(ASDF3) pre-release, for very positive results.
@@ -2190,7 +2190,7 @@ to configure fixes to builds without patching code, but it is not there yet.
 
 Later versions of @(ASDF1) also introduced
 their own generalized @cl{asdf:around} method combination,
-that wrapped around the tradition @cl{:around} method combination,
+that wrapped around the traditional @cl{:around} method combination,
 so it may define some methods without blocking users from defining their own extensions.
 This was causing portability issues with implementations
 that didn't fully implement this corner of CLOS.
@@ -2328,7 +2328,7 @@ to portably specify relative pathnames, a task made unnecessary by
 @(ASDF2) being capable of specifying these pathnames portably with Unix syntax.
 
 @(ASDF3) also removed the magic undocumented capability of specifying a systems
-as dependencies of a system or module by declaring it in the list of subcomponent
+as dependencies of a system or module by declaring it in the list of subcomponents
 rather than the list of dependencies;
 this capability seems to have been an undesigned artifact of how systems used to be parsed,
 though at the same time it seems to have been compatible with how some older defsystems did things,
@@ -2412,7 +2412,416 @@ having to intelligibly verbalize the concepts will make @emph{you} understand th
 
 @section[#:tag "pathnames" #:style (make-style 'appendix '(unnumbered))]{Appendix A: Pathnames}
 
-Abandon all hopes, ye who enter here!
+@subsection{Abstracting over Pathnames}
+
+The CL standard specifies a @(pathname) class that is to be used
+when accessing the filesystem.
+In many ways, this provides a convenient abstraction,
+that smoothes out the discrepancies between implementations and between operating systems.
+In other ways, the standard vastly underspecifies the behavior in corner cases,
+which makes pathnames quite hard to use.
+The sizable number of issues dealt by @(ASDF) over the years
+were related to pathnames and either how they don't match
+either the underlying operating system's notion,
+or how their semantics vary between implementations.
+We also found many outright bugs in the pathname support of several implementations,
+many but not all of which have been fixed after being reported to the respective vendors.
+
+To make @(ASDF) portable, we started writing abstraction functions
+during the end year of @(ASDF1), they grew during the years of @(ASDF2),
+and exploded during the heavy portability testing that took place before @(ASDF3).
+The result is now part of the @(UIOP) library transcluded in @(ASDF3).
+However, it is not possible to fully recover the functionality of the underlying operating system
+in a portable way from the API that CL provides.
+This API is thus what Henry Baker calls an @emph{abstraction inversion} @~cite[Critique-DIN-Kernel-Lisp]
+or, in common parlance, @emph{putting the cart before the horse}.
+
+@(UIOP) thus provides its functionality on a best-effort basis,
+within the constraint that it builds on top of what the implementation provides.
+While the result is robust enough to deal with the kind of files used while developing software,
+that makes @(UIOP) not suitable for dealing with all the corner cases that may arise
+when processing files for end-users, especially not in adverseurial situations.
+For a complete and well-designed reimplementation of pathnames, see IOLib instead.
+Because of its constraint of being self-contained and minimal, however,
+@(ASDF) cannot afford to use IOLib (or any library).
+
+All the functions in (UIOP) have documentation strings explaining their intended contract.
+
+@subsection{Pathname Structure}
+
+In CL, a @(pathname) is an object with the following components:
+@itemlist[
+  @item{
+    A @emph{host} component, which is often but not always @(nil) on Unix implementations,
+    or sometimes @cl{:unspecific};
+    it can also be a string representing a registered "logical pathname host"
+    (see @secref{Logical_Pathnames});
+    and in some implementations, it can be a string or a structured object
+    representing the name of a machine, or elements of a URL, etc.
+  }
+  @item{
+    A @emph{device} component, which is often but not always @(nil) on Unix implementations,
+    can be a string representing a device,
+    like @cl{"c"} or @cl{"C"} for the infamous @tt{C:} on Windows,
+    and can be other things on other implementations.
+  }
+  @item{
+    A @emph{directory} component, which
+    can be @(nil) (or on some implementations @cl{:unspecific}),
+    or a list of either @cl{:absolute}) or @cl{:relative}
+    followed by "words" that can be strings that each name a subdirectory,
+    or @cl{:wild} (wildcard matching any subdirectory)
+    or @cl{:wild-inferiors}
+    (wildcard matching any recursive subdirectory),
+    or some string or structure representing wildcards.
+    e.g. @cl{(:absolute "usr" "bin")}, or
+    @cl{(:relative ".svn")}.
+    For compatibility with ancient operating systems without hierarchical filesystems,
+    the directory component on some implementations can be just a string,
+    which is then an @cl{:absolute}.
+  }
+  @item{
+    A @emph{name} component, which is often a string,
+    can be @(nil) (or on some implementations @cl{:unspecific}),
+    or @cl{:wild} or something structure with wilcards,
+    though the wildcards can be represented as strings.
+  }
+  @item{
+    A @emph{type} component, which is often a string,
+    can be @(nil) (or on some implementations @cl{:unspecific}),
+    or @cl{:wild} or something structure with wilcards,
+    though the wildcards can be represented as strings.
+  }
+  @item{
+    A @emph{version} component,
+    which can be @(nil) (or on some implementations @cl{:unspecific}),
+    and for backward compatibility with old filesystems
+    that supported this kind of file versions,
+    it can be a positive integer, or @cl{:newest}.
+    Some implementations may try to emulate this feature on a regular Unix filesystem.
+    @; cmucl, scl and genera do it.
+    @; for i in sbcl ccl clisp cmucl ecl abcl scl allegro lispworks gcl xcl ; do cl -l $i '(uiop:strcat "'$i' FOO: " (namestring (make-pathname :version 2 :defaults #p"/tmp/foo.text")))' ; done |& grep FOO
+    @; all print /tmp/foo.text except cmucl which prints /tmp/foo.text.~2~ (and can parse it back).
+    @; lispworks errors out, and is justified in doing so.
+  }
+]
+
+Previous versions of SCL tried to define additional components to a pathname,
+so as to natively support URLs as pathnames,
+but this ended up causing extra compatibility issues,
+and recent versions fold all the additional information into the @emph{host} component.
+
+@cl{:unspecific} is only fully or partly supported on some implementations,
+and differs from @(nil) in that when you use @(merge-pathnames),
+@(nil) means "use the component from the defaults"
+whereas @cl{:unspecific} overrides it.
+
+Already, @(UIOP) has to deal with normalizing away the ancient form of the directory component,
+comparing pathnames as despite de-normalization,
+and previously bridging over ancient implementations that don't support pathnames well.
+
+@subsection{Namestrings}
+
+The CL standard accepts a strings as a pathname designator
+in most functions where pathname is wanted.
+The string is then parsed into a pathname using function @(parse-namestring).
+A pathname can be mapped back to a string using @(namestring).
+Due to the many features regarding pathnames,
+not all strings validly parse to a pathname,
+and not all pathnames have a valid representation as a namestring.
+However, the two functions are reasonably expected to be inverse of each other
+when restricted to their respective output domains.
+
+These functions are completely implementation-dependent, and indeed,
+two implementations on the same operating system may do things differently.
+Moreover, parsing is relative to the host of a default pathname
+(itself defaulting to @(*dpd*)), and even on Unix,
+this host can be a "logical pathname", in which case the syntax is completely different.
+
+Behavior that vary notably include:
+escaping of wildcard characters (if done at all),
+handling of filenames that start with a dot @tt{"."},
+catching of forbidden characters (such as a slash @tt{"/"} in a @emph{name} component,
+of a dot @tt{"."} in a type component),
+etc.
+
+Notably because of wildcard characters, CL namestrings do not always match
+the namestrings typically used by the operating system and/or by other programming languages,
+or indeed by other CL implementations on the same operating system.
+Also, due to character encoding issues, size limits, special character handling,
+and depending on Lisp implementations and underlying operating system,
+it is possible that not all byte sequences that the OS may use to represent filenames
+may have a corresponding namestring on the CL side,
+while not all well-formed CL namestrings have a corresponding OS namestring.
+For instance, Linux accepts any sequence of null-terminated bytes as a namestring,
+whereas Apple's MacOS tends to only accept sequence of Unicode characters in Normalization Form D.
+And so @(UIOP) provides @(parse-native-namestring) and @(native-namestring)
+to map between pathname objects and strings more directly usable by the underlying OS.
+On good implementations, these notably do a better job than the vanilla CL functions
+at handling wildcard characters.
+
+Finally, so that (asd) files may portably designate pathnames
+of recursive subdirectories and files under a build hierarchy,
+we implemented our own parsing infrastructure.
+Thus, even if the current pathname host of @(*dpd*) is not a Unix host,
+indeed even if the operating system is not Unix but Windows, MacOS 9 or Genera,
+the same (asd) file will keep working unmodified, and correctly refer
+to the proper filenames under the current source directory.
+In @(UIOP), the main parsing function is @(parse-unix-namestring).
+It is designed to match the expectations of a Unix developer
+rather than follow the CL API.
+
+For instance, it allows to specify an optional type suffix in a way
+that is added to the provided stem
+rather than "merged" in the style of @(make-pathname) or @(merge-pathnames);
+thus @cl{(parse-unix-namestring "foo-V1.2" :type "lisp")}
+will parse as @cl{#p"foo-V1.2.lisp"} and not as @cl{#p"foo-V1.lisp"}
+as it would if the type were given to @(make-pathname), overriding what was previously parsed,
+nor as @cl{#p"foo-V1.2"}
+as it would if the type were given to the second argument of @(merge-pathnames),
+being overridden by what was previously parsed.
+The type may also be specified as @cl{:directory},
+in which case it will treat the last "word" in the slash-separated path
+as a directory component rather than a name and type components;
+thus, @cl{(parse-unix-namestring "foo-V1.2" :type :directory)}
+will return @cl{#p"foo-V1.2/"} at least on a Unix filesystem
+where the slash is the directory separator.
+
+Each function in @(UIOP) tries to do the Right Thing™, in its limited context,
+when passed a string argument where a pathname is expected.
+Often, this Right Thing consists in calling the standard CL @(parse-namestring);
+sometimes, it is calling @(parse-unix-namestring);
+rarely, it is calling @(parse-native-namestring).
+And sometimes, that depends on @cl{:namestring} argument,
+as interpreted by @(UIOP)'s general pathname coercing function @cl{ensure-pathname}.
+To be sure, you should read the documentation and/or the source code carefully.
+
+@subsection{Trailing slash}
+
+Because CL pathnames distinguishes between directory, name and type components,
+it must distinguish @cl{#p"/tmp/foo.bar"} from @cl{#p"/tmp/foo.bar/"}.
+Assuming that @(*dpd*) is a physical Unix pathname,
+the former is about the same as
+@cl{(make-pathname :directory '(:absolute "tmp") :name "foo" :type "bar")}
+and denotes a file,
+whereas the latter is about the same as
+@cl{(make-pathname :directory '(:absolute "tmp" "foo.bar") :name nil :type nil)}
+and denotes a directory.
+They are very different things.
+Yet to people not familiar with CL pathname,
+it is a common issue to not differentiate between the two,
+then get bitten by the system.
+@(UIOP) implements predicates @cl{file-pathname-p} and @cl{directory-pathname-p}
+to distinguish between the two kinds of pathnames
+(and there are yet more kinds of pathname objects, because of wildcards).
+It also provides a function @cl{ensure-directory-pathname}
+to try to add the equivalent trailing slash after the fact when it was previously omitted.
+
+@(ASDF1) notably located systems thanks to a @cl{*central-registry*},
+a list of expressions that @(eval)uate to directories,
+in which to look for @(asd) files.
+That was a great innovation of @(ASDF) compared to its predecessors,
+that made it much easier to configure,
+and @(ASDF2) and @(ASDF3) still support this feature.
+But it was also somewhat quite fragile and easy to misconfigure,
+the most recurrent issue being that users familiar with Unix but not CL pathnames
+would insert the name of a directory without a trailing slash @cl{"/"}.
+CL would parse that a the name of a file in the parent directory,
+which, when later merged (see @secref{merge-pathnames}) with the name of a prospective @(asd) file,
+would behave as if it were the parent directory, leading to confusion, defeat and
+a lot of frustration before the issue is identified.
+
+Gary King fixed that issue in the late days 2009.
+But users couldn't rely on the fix being present everywhere,
+since the availability of @(ASDF) upgrades was limited.
+Since @(ASDF2), you can.
+
+Because of all the parsing issues above,
+specifying relative pathnames in @(ASDF1) was completely not portable.
+Some people would give to a component a name that included the slash character @cl{"/"}
+and that might work on some implementations and not at all others.
+@(ASDF2), by parsing things itself the hard way, makes all such systems work on all implementations.
+
+@subsection[#:tag "merge-pathnames"]{Merging Pathnames}
+
+CL has an idiom @cl{(merge-pathnames pathname defaults)}
+that ostensibly serves to merge a relative pathname with an absolute pathname.
+However, using it properly is not trivial at all.
+
+First, CL makes no guarantee that @(nil) is a valid pathname @emph{host} component.
+Indeed, since the pathname syntax may itself vary depending on hosts,
+there might be no such thing as a pathname with "no host";
+same thing with the @emph{device} component.
+Now, the result from @(merge-pathnames) will take the host from the first argument, if not @(nil);
+if the intent was supposed to designate a pathname relative to the second argument,
+which might be on a host unknown at the time the first argument was made or parsed,
+this will be totally the wrong thing: care must be taken
+to pass to @(merge-pathnames) a first argument that has the correct host and device components,
+as taken from the second argument — unless the first argument is itself an absolute pathname
+that should @emph{not} default these components.
+
+To resolve these issues, as well as various other corner cases and implementation bugs,
+and to make things fully portable and support logical pathnames correctly,
+we ended up completely reimplementing our own variant of @(merge-pathnames)
+that indeed considers that the host and device components of a relative pathname
+are not to be merged, and called it @(merge-pathnames*)
+where @cl{*} is a common suffix traditionally used in CL to denote variants of a function.
+
+Also, to make it easier to portably specify in one go
+the merging of a relative pathname under a given main directory,
+@(UIOP) also provides @cl{(subpathname main relative)}.
+See the @(UIOP) documentation for additional options to this function, and yet more functions.
+
+@subsection{@(nil) as a pathname}
+
+The functions defined by the CL standard do not recognize @(nil) as valid input
+where a pathname is required.
+At the same time, they provide no way to explicit specify
+"no pathname information available".
+This is compounded by the fact that most functions implicitly call @(merge-pathnames)
+with the default @(*dpd*) (that thus cannot be @(nil)).
+Yet, when the resulting pathname is relative,
+it may result in the Unix operating system implicitly merging it with the result of @(getcwd),
+according to its own rules different from those of CL.
+
+Some people may be tempted to try use @cl{#p""}
+or @cl{(make-pathname :host nil :device nil :directory nil :name nil :type nil :version nil)}
+as a neutral pathname, but even though either or both might work
+on many implementations most of the time,
+the former will fail catastrophically
+if parsed in a context when the @(*dpd*) is a logical pathname or otherwise non-standard,
+and the latter is not guaranteed to be valid, since
+some implementations may reject @(nil) as a host or device component,
+or may merge them implicitly from the defaults.
+@(UIOP) tries hard to provide function @cl{nil-pathname} and variable @cl{*nil-pathname*},
+yet on some implementations they are not neutral for the standard CL @(merge-pathnames),
+only for @(UIOP)'s @(merge-pathnames*).
+
+Most pathname-handling functions in @(UIOP) tend to accept @(nil) as valid input.
+@(nil) is a neutral element for @(merge-pathnames*).
+Other functions that receive @(nil) where pathname information is required
+tend to return @(nil) instead of signalling an error.
+For instance, the variant @cl{subpathname*} of @(subpathname)
+which will return @(nil) when its first argument is @(nil),
+rather than return the its second argument parsed as a relative pathname.
+In doubt, you should read the documentation or the source.
+
+As an aside, one issue that @cl{*central-registry*} had during the days of @(ASDF1)
+was that computed entries (as evaluated by @(eval)) had to always return a pathname object,
+even when the computation resulted in not finding anything useful;
+this could lead to subtle unwanted complications.
+Gary King also fixed that in the late days of @(ASDF1),
+by making @(ASDF) accept @(nil) as a result and then ignore the entry.
+
+@subsection{Logical Pathnames}
+
+A logical pathname is a way to specify a pathname under
+a virtual "logical host" that can be configured independently
+from the @bydef{physical pathname} where the file is actually stored on a machine.
+
+Before it may be used, a logical pathname host must be registered,
+with code such as follows:
+@clcode{
+(setf (logical-pathname-translations "SOME-LOGICAL-HOST")
+      '(("SOURCE;**;*.LISP.*" "/home/john/common-lisp/**/*.lisp.*")
+        ("SOURCE;**;*.ASD.*" "/home/john/common-lisp/**/*.asd.*")
+        ("**;*.FASL.*" "/home/john/.fasl-cache/**/*.fasl.*")
+        ("**;*.TEMP.*" "/tmp/**/*.tmp.*")
+        ("**;*.*.*" "/home/john/data/**/*.*.*")))}
+The first two lines map Lisp source files and system definitions
+under the absolute directory source to a subdirectory in John's home;
+The third line maps fasl files to a cache;
+the fourth maps files with a temporary suffix to @tt{/tmp};
+and the fifth one maps all the rest to a data directory.
+Thus, the case-insensitive pathname
+@cl{#p"some-logical-host:source;foo;bar.lisp"}
+(internally stored in uppercase, @cl{#p"SOME-LOGICAL-HOST:SOURCE;FOO;BAR.LISP"}),
+would be an absolute logical pathname that is mapped to the absolute physical pathname
+@tt{/home/john/common-lisp/foo/bar.lisp} on that machine,
+but might be configured to map to @tt{C:\Users\jane\Source\foo\bar.lsp}
+on a different machine running Windows.
+
+Problem is, this interface is only suitable for power users:
+it requires special setup before anything is compiled that uses them,
+typically either by the programmer or by a system administrator,
+in an implementation-dependent initialization file,
+This made sense in the 1970s, but already no more in the late 1990s,
+and is totally inappropriate for distributing programs
+as source code "scripts" to end users.
+Even programmers who are not beginners may have trouble with this.
+
+Moreover, once a string is registered as a logical pathname host,
+it may shadow any another potential use of that string
+as representing an actual host, according to whatever host scheme
+the underlying implementation may provide.
+Such a setup is therefore not robust.
+
+Importantly, the standard specifies that
+only a small subset of characters is portably accepted:
+uppercase letters, digits, and hyphens.
+When parsed, letters of a logical pathname are converted to uppercase;
+once mapped to physical pathnames, the uppercase letters
+are typically converted to whatever is conventional on the destination pathname host,
+which these days is typically lowercase, unlike in the old days.
+Logical pathnames also use the semi-colon @cl{";"} as directory separator,
+and, in a convention opposite to that of Unix,
+a leading separator indicates a @cl{:relative} pathname directory
+whereas absence thereof indicates an @cl{:absolute} pathname directory.
+This makes the printing of standard logical pathnames look quite unusual
+and the distraction generated is a minor nuisance.
+
+Most implementations actually accept a preserved mix of lowercase and uppercase letters
+without mapping them all to uppercase;
+on the one hand, that makes these logical pathnames more useful to users;
+on the other hand, this does not conform to the standard.
+One implementation, SBCL, strictly implements the standard,
+in the hope of helping programmers not accidentally write non-conformant programs,
+but, actually makes it harder to portably use logical pathnames,
+especially since it is the only implementation doing this (that I know of).
+
+Finally, because the specification involves matching patterns in a sequence
+until a first match is found, which is inefficient,
+and because the feature is not popular for all the above reasons,
+implementations are unlikely to be fast at translating logical pathnames,
+and especially not for large lists of translations;
+even if optimized translation tables were made,
+there is no incremental interface to modifying such tables.
+Logical pathnames thus intrinsically do not scale.
+
+Until we added more complete tests, we found that logical pathname support tended to bitrot quickly;
+adding the tests revealed a lot of discrepancies and bugs in implementations,
+that entailed a lot of painful work.
+For instance, subtle changes in how we search for (asd) files may have caused
+logical pathnames being translated to physical pathnames earlier than users might expect.
+The use of @(truename), implicitly called by @(directory) or @(probe-file),
+would also translate away the logical pathname as well as symlinks.
+Some implementations, probably for sanity, translate the logical pathname to a physical pathname,
+before they bind @(*load-pathname*):
+indeed code that includes literal @cl{#p"pathname/objects"}
+when read while the @(*dpd*) is "logical",
+or when such namestrings are merged with the @(*load-pathname*),
+may fail in mysterious ways (including @(ASDF) itself at some point during our development).
+
+Many implementations also had notable bugs in some corner cases,
+that we discovered as we added more tests that @(ASDF) worked well with logical-pathnames;
+this suggests that logical pathnames are not a widely used feature.
+Indeed, we estimate that only a handful or two of old style programmers worldwide
+may be using this feature still, and that the days or work poured into getting them to work
+were probably not well spent.
+Yet, despite our better sense, we sunk vast amounts of time
+into making @(ASDF) support them,
+for the sake of the sacred backward compatibility and of hushing the criticism
+by this handful of ungrateful old school programmers who still use them.
+
+In any case, this all means that these days,
+logical pathnames are @emph{always} a bad idea,
+and @emph{we strongly disrecommend use of these ill "logical" pathnames}.
+They are a hazard to end users.
+They are a portability nightmare.
+They can't reliably name arbitrary files in arbitrary systems.
+In locating source code, it is vastly inferior to the @(ASDF2) @cl{source-registry}.
+As a programmer interface, it is inferior to @(ASDF)'s @cl{asdf:system-relative-pathname} function
+that uses a system's base directory as the first argument to @(UIOP)'s @(subpathname) function.
 
 @section[#:tag "traverse" #:style (make-style 'appendix '(unnumbered))]{Appendix B: A @(traverse) across the build}
 

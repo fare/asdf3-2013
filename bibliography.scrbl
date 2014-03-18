@@ -68,3 +68,9 @@
   #:date "2009")
 
 ;; ASDF 2.26: http://fare.livejournal.com/170504.html
+
+(define-bib Critique-DIN-Kernel-Lisp
+  #:author "Henry Baker"
+  #:title "Critique of DIN Kernel Lisp Definition Version 1.2"
+  #:url "http://www.pipeline.com/~hbaker1/CritLisp.html"
+  #:date "1992")

@@ -73,7 +73,8 @@
 
   nil error cerror warning eval
   defpackage
-  pathname namestring merge-pathnames make-pathname truename *load-pathname* *load-truename*
+  pathname merge-pathnames make-pathname truename *load-pathname* *load-truename*
+  parse-namestring namestring
   directory probe-file
 
   define-package

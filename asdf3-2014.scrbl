@@ -2559,6 +2559,8 @@ And so @(UIOP) provides @(parse-native-namestring) and @(native-namestring)
 to map between pathname objects and strings more directly usable by the underlying OS.
 On good implementations, these notably do a better job than the vanilla CL functions
 at handling wildcard characters.
+Unhappily, they on other implementations they don't do anything.
+CL is notably missing a portable way to escape a namestring to avoid wildcards.
 
 Finally, so that (asd) files may portably designate pathnames
 of recursive subdirectories and files under a build hierarchy,
@@ -2635,12 +2637,6 @@ Gary King fixed that issue in the late days 2009.
 But users couldn't rely on the fix being present everywhere,
 since the availability of @(ASDF) upgrades was limited.
 Since @(ASDF2), you can.
-
-Because of all the parsing issues above,
-specifying relative pathnames in @(ASDF1) was completely not portable.
-Some people would give to a component a name that included the slash character @cl{"/"}
-and that might work on some implementations and not at all others.
-@(ASDF2), by parsing things itself the hard way, makes all such systems work on all implementations.
 
 @subsection[#:tag "merge-pathnames"]{Merging Pathnames}
 
@@ -2722,24 +2718,30 @@ from the @bydef{physical pathname} where the file is actually stored on a machin
 Before it may be used, a logical pathname host must be registered,
 with code such as follows:
 @clcode{
-(setf (logical-pathname-translations "SOME-LOGICAL-HOST")
-      '(("SOURCE;**;*.LISP.*" "/home/john/common-lisp/**/*.lisp.*")
-        ("SOURCE;**;*.ASD.*" "/home/john/common-lisp/**/*.asd.*")
-        ("**;*.FASL.*" "/home/john/.fasl-cache/**/*.fasl.*")
-        ("**;*.TEMP.*" "/tmp/**/*.tmp.*")
-        ("**;*.*.*" "/home/john/data/**/*.*.*")))}
+(setf (logical-pathname-translations
+       "SOME-HOST")
+  '(("SOURCE;**;*.LISP.*"
+       "/home/john/src/**/*.lisp.*")
+    ("SOURCE;**;*.ASD.*"
+       "/home/john/src/**/*.asd.*")
+    ("**;*.FASL.*"
+       "/home/john/.fasl-cache/**/*.fasl.*")
+    ("**;*.TEMP.*"
+       "/tmp/**/*.tmp.*")
+    ("**;*.*.*"
+       "/home/john/data/**/*.*.*")))}
 The first two lines map Lisp source files and system definitions
 under the absolute directory source to a subdirectory in John's home;
 The third line maps fasl files to a cache;
 the fourth maps files with a temporary suffix to @tt{/tmp};
 and the fifth one maps all the rest to a data directory.
 Thus, the case-insensitive pathname
-@cl{#p"some-logical-host:source;foo;bar.lisp"}
-(internally stored in uppercase, @cl{#p"SOME-LOGICAL-HOST:SOURCE;FOO;BAR.LISP"}),
+@cl{#p"some-host:source;foo;bar.lisp"}
+(internally stored in uppercase)
 would be an absolute logical pathname that is mapped to the absolute physical pathname
-@tt{/home/john/common-lisp/foo/bar.lisp} on that machine,
-but might be configured to map to @tt{C:\Users\jane\Source\foo\bar.lsp}
-on a different machine running Windows.
+@tt{/home/john/src/foo/bar.lisp} on that machine,
+but might on a different machine running Windows be mapped to
+@tt{C:\Users\jane\Source\foo\bar.lsp}.
 
 Problem is, this interface is only suitable for power users:
 it requires special setup before anything is compiled that uses them,
@@ -2822,6 +2824,26 @@ They can't reliably name arbitrary files in arbitrary systems.
 In locating source code, it is vastly inferior to the @(ASDF2) @cl{source-registry}.
 As a programmer interface, it is inferior to @(ASDF)'s @cl{asdf:system-relative-pathname} function
 that uses a system's base directory as the first argument to @(UIOP)'s @(subpathname) function.
+
+@subsection{Portability Done Right}
+
+Because of all the parsing issues above,
+trying to specify relative pathnames in @(ASDF1) was very hard to do
+in a portable way.
+Some would attempt to include a slash @cl{"/"}
+in places that @(ASDF) passed as a name component to @(make-pathname),
+notably the name of an @(ASDF) @(component) (confusingly, a completely different concept).
+This would work on some lax implementations on Unix
+but would fail outright on stricter implementations and/or outside Unix
+(remarkably, SBCL counts as lax in this case).
+Some would try to use @cl{#.(merge-pathnames ...)} to construct pathnames at read-time,
+but few would understand the complexity of pathname merging well enough to do it just right,
+and the results would be highly non-portable, with corner cases galore.
+
+@(ASDF2) solved the entire situation by standardizing on its own portable Unix-like syntax for pathnames.
+Only then, could the same specification be used on all supported platforms with the same semantics.
+Once again, portability was achieved by systematically
+@emph{abstracting away semantic discrepancies between underlying implementations}.
 
 @section[#:tag "traverse" #:style (make-style 'appendix '(unnumbered))]{Appendix B: A @(traverse) across the build}
 

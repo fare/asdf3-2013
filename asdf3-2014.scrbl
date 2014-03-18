@@ -334,7 +334,7 @@ Quantitatively, @(ASDF) must minimize its memory footprint,
 since it is present in all programs that are built,
 and any resource spent is spent by all.@note{
   This arguably mattered more in 2002 when @(ASDF) was first released
-  and was about a thousand line long:
+  and was about a thousand lines long:
   By 2014, it has grown over ten times in size,
   but memory sizes have increased even faster.
 }
@@ -459,7 +459,7 @@ to other build systems for CL, C, Java, or other systems:
     (See below @secref{asdf-package-system}).
   }
   @item{
-    Because of its age-old model of building software in-image, what more
+    Because of its age-old model of building software in-image, what's more
     in traditional friendly single-user, single-processor, single-machine environments
     with a single coherent view of source code and single target configuration,
     @(ASDF) isn't geared at all to build large software
@@ -532,7 +532,7 @@ the support for now obsolete implementations that couldn't be tested anymore.
 @subsection{@(ASDF1): A Successful Experiment}
 
 In 2001, Dan Barlow, a then prolific CL hacker,
-dissatisfied @(mk-defsystem),
+dissatisfied with @(mk-defsystem),
 wrote a new @(defsystem) variant, @(ASDF).@note{
   In a combined reverence for tradition and joke,
   @(ASDF) stands for "Another System Definition Facility",
@@ -611,7 +611,7 @@ The extensibility API while basically sane was missing many hooks,
 so that power users had to redefine or override @(ASDF) internals
 with modified variants, which made maintenance costly.
 
-What more, there was a vicious circle preventing
+What's more, there was a vicious circle preventing
 @(ASDF) bugs from being fixed or features from being added @~cite[Software-Irresponsibility]:
 Every implementation or software distribution (e.g. Debian) had its own version,
 with its own bug fixes and its own bugs;
@@ -645,7 +645,7 @@ In November 2009, François-René Rideau
 took over @(ASDF) maintainership and development.
 A first set of major changes led to @(ASDF2), released in May 2010.
 The versions released by Dan Barlow and the maintainers who succeeded him,
-and numbered 1.x are thereafter referred to at @(ASDF1).
+and numbered 1.x are thereafter referred to as @(ASDF1).
 These changes are explained in more detail in
 our ILC 2010 article @~cite[Evolving-ASDF].
 
@@ -694,7 +694,7 @@ all but the most obsolete ones can be fixed
 by an installation script we provide with @(ASDF3.1).
 
 Upgradability crucially decoupled what @(ASDF) users could rely on
-from implementations provided, enabling a virtuous circle of universal upgrades,
+from what implementations provided, enabling a virtuous circle of universal upgrades,
 where previously everyone was waiting for others to upgrade, in a deadlock.
 @moneyquote{Allowing for divergence creates an incentive towards convergence}.
 
@@ -924,7 +924,7 @@ but leave a lot of leeway to implementors, unlike e.g. ML or Java.
 @(ASDF1) performance didn't scale well to large systems:
 Dan Barlow was using the @cl{list} data structure everywhere,
 leading to planning time polynomial in the size of systems built.
-We assume did it for the sake of coding simplicity while experimenting,
+We assume he did it for the sake of coding simplicity while experimenting,
 and that his minimalism was skewed by the presence of many builtin CL functions
 supporting this old school programming style.
 @(ASDF) did scale reasonably well to a large number of small systems,
@@ -1009,11 +1009,11 @@ for classes defined in an extension in the @cl{:asdf} package.
 Before then, there was a chicken-and-egg problem:
 the @(defsystem) form containing the @cl{:defsystem-depends-on} declaration
 was read before the extension was loaded
-(what more, @(ASDF1) and 2 read it in a temporary package);
+(what's more, @(ASDF1) and 2 read it in a temporary package);
 therefore, the extension had nowhere to intern or export any symbol
 that the rest of the @tt{defsystem} form could use.
 
-These days, this feature is the recommend way of loading extensions.
+These days, this feature is the recommended way of loading extensions.
 But from the story of it, we can learn that
 @moneyquote{a feature isn't finished until it is tested and used in production}.
 Until then, there are likely issues that will need to be addressed.
@@ -1117,7 +1117,7 @@ The SBCL implementation was notable for simultaneously (and legitimately)
 (1) setting the default encoding in a given session
 from the same environment variables as the @tt{libc} locale,
 which could vary wildly between developers, even more so hypothetical end-users,
-and (2) issuing an error rather accept invalid UTF-8.
+and (2) issuing an error rather than accept invalid UTF-8.
 Unhappily, the person who chose the encoding was whoever wrote the code,
 and had no control on what environment was used at compile-time;
 whereas the user, who may or may not be aware of such encoding issues,
@@ -1328,7 +1328,7 @@ it will be released again as 3.1.1 in March 2014.
 
 Robert Goldman assumed maintainership in July 2013,
 a few months after the release of @(ASDF3).
-François-René Rideau remained main developer until release 3.1.1.
+François-René Rideau remained the main developer until release 3.1.1.
 
 All known bugs have been fixed, and the regression test suite has swollen;
 but there will always be portability issues to fix.
@@ -1559,7 +1559,7 @@ with wildly different feature sets and countless corner cases.
 The better ones could fork and exec a process
 and control its standard-input, standard-output and error-output;
 lesser ones could only call the @tt{system(3)} C library function.
-What more, Windows support differed significantly from Unix.
+What's more, Windows support differed significantly from Unix.
 @(ASDF1) itself actually had a @cl{run-shell-command},
 initially copied over from @(mk-defsystem),
 but it was more of an attractive nuisance than a solution, despite many bug fixes:
@@ -1942,7 +1942,7 @@ Now, it has to support a cleaner new model for representing dependencies,
 software delivery as either scripts or binaries, a cleaner one-package-per-file style,
 a documented portability layer including image lifecycle and external program invocation, etc.
 
-@subsection[#:tag "backward_compat"]{Backward Compatibility is a Social, not Technical}
+@subsection[#:tag "backward_compat"]{Backward Compatibility is Social, not Technical}
 
 As efforts were made to improve @(ASDF),
 a constant constraint was that of @emph{backward compatibility}:
@@ -2190,7 +2190,7 @@ to configure fixes to builds without patching code, but it is not there yet.
 
 Later versions of @(ASDF1) also introduced
 their own generalized @cl{asdf:around} method combination,
-that wrapped around the tradition @cl{:around} method combination,
+that wrapped around the traditional @cl{:around} method combination,
 so it may define some methods without blocking users from defining their own extensions.
 This was causing portability issues with implementations
 that didn't fully implement this corner of CLOS.
@@ -2328,7 +2328,7 @@ to portably specify relative pathnames, a task made unnecessary by
 @(ASDF2) being capable of specifying these pathnames portably with Unix syntax.
 
 @(ASDF3) also removed the magic undocumented capability of specifying a systems
-as dependencies of a system or module by declaring it in the list of subcomponent
+as dependencies of a system or module by declaring it in the list of subcomponents
 rather than the list of dependencies;
 this capability seems to have been an undesigned artifact of how systems used to be parsed,
 though at the same time it seems to have been compatible with how some older defsystems did things,

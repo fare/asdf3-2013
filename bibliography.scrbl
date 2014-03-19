@@ -74,3 +74,9 @@
   #:title "Critique of DIN Kernel Lisp Definition Version 1.2"
   #:url "http://www.pipeline.com/~hbaker1/CritLisp.html"
   #:date "1992")
+
+(define-bib ASDF3-2014
+  #:title "ASDF3, or Why Lisp is Now an Acceptable Scripting Language (extended version)"
+  #:author "François-René Rideau"
+  #:date "2014"
+  #:url "http://fare.tunes.org/files/asdf3/asdf3-2014.html")

@@ -15,17 +15,17 @@
 (define extended-url "http://fare.tunes.org/files/asdf3/asdf3-2014.html")
 
 (define variant (make-parameter '#:extended))
-(define-syntax-rule (extended-only x ...) (when (eq? (variant) '#:extended) (list x ...)))
-(define-syntax-rule (short-only x ...) (when (eq? (variant) '#:short) (list x ...)))
+(define (extended?) (eq? (variant) '#:extended))
+(define-syntax-rule (extended-only x ...) (when (extended?) (list x ...)))
+(define-syntax-rule (short-only x ...) (unless (extended?) (list x ...)))
 (define (appref tag alt)
-  (case variant
-    ((#:extended) (secref tag))
-    ((#:short) (hyperlink (string-append extended-url "#" tag)
-                          (list alt " of the extended version")))))
+  (if (extended?)
+      (secref tag)
+      (hyperlink (string-append extended-url "#" tag) alt)))
 
 (define backend (make-parameter '#:html))
-(define-syntax-rule (html-only x ...) (when (eq? (backend) '#:html) (list x ...)))
-(define-syntax-rule (pdf-only x ...) (when (eq? (backend) '#:pdf) (list x ...)))
+(define-syntax-rule (html-only x ...) (and (eq? (backend) '#:html) (list x ...)))
+(define-syntax-rule (pdf-only x ...) (and (eq? (backend) '#:pdf) (list x ...)))
 
 (define multiple-sections (make-parameter #f))
 (define include-asdf1-diffs (make-parameter #t))

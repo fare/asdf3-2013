@@ -132,12 +132,31 @@ of evolving a piece of community software,
 concluding with lessons learnt from our experience.
 
 @short-only{
-This is a short version of the article.
+This is the short version of this article.
 The appendices we mention refer to the extended version@~cite[ASDF3-2014],
 that also includes a few additional details.
 }
 @extended-only{
-This article includes several @appref["Appendices"]{the appendices}.
+This is the extended version of this article.
+In addition to extra footnotes and examples,
+it includes several appendices with historical information
+about the evolution of @(ASDF) before @(ASDF3).
+Roughly in chronological order, we have
+the initial successful experiment in @secref{asdf1};
+how it became robust and usable in @secref{asdf2};
+the abyss of madness it has to bridge in @secref{pathnames};
+improvements in expressiveness in @secref{asdf2.26};
+various failures in @secref{failures};
+and the bug that required rewriting it all over again in @secref{traverse}.
+
+The short version was submitted to
+@hyperlink["http://www.european-lisp-symposium.org/"]{ELS 2014}.
+Both versions are available at @url{http://fare.tunes.org/files/asdf3/}
+as both HTML and PDF:
+@hyperlink["http://fare.tunes.org/files/asdf3/asdf3-2014.html"]{extended HTML},
+@hyperlink["http://fare.tunes.org/files/asdf3/asdf3-2014.html"]{extended PDF},
+@hyperlink["http://fare.tunes.org/files/asdf3/asdf3-els2014.html"]{short HTML},
+@hyperlink["http://fare.tunes.org/files/asdf3/asdf3-els2014.html"]{short PDF}.
 }
 
 @section[#:tag "what_it_is"]{What @(ASDF) is}
@@ -1013,7 +1032,7 @@ has low overhead, but doesn't scale very well.
 the initial @(ASDF3) pre-release, for very positive results.
 
 @(asdf/package-system) is not light weight like @(quick-build),
-that is two orders of magnitude smaller than @(ASDF).
+that is two orders of magnitude smaller than @(ASDF3).
 But it does interoperate perfectly with the rest of @(ASDF),
 from which it inherits the many features, and the portability and robustness.
 
@@ -2645,19 +2664,23 @@ In CL, thanks to @(ASDF), this can all happen without leaving the language.
   Appendix E: Failed Attempts at Improvement
 }
 
-@subsection{Innovation is Hard}
+@subsection{Failed Experiments}
 
 The road from @(mk-defsystem) to @(ASDF3) is undeniably one of overall improvements.
 Yet, along the way, many innovations were attempted that didn't pan out in the end.
 
-For instance, at some point, some concept of preference files was attempted,
+For instance, Gary King, when newly made maintainer of @(ASDF1),
+attempted to define some concept of preference files,
 so that users may customize how the build takes place, or fix some systems
 without modifying their source code.
-The feature was never used, and eventually was removed.
-On the one hand, anything that makes the build less predictable is a nuisance.
-On the other hand, sometimes things are broken, and
+The feature was never used, and Gary King eventually removed it altogether.
+Maybe the lack of a reliable shared version of @(ASDF),
+combined with the relative paucity of hooks in @(ASDF1),
+made the proposition unattractive and more pain to maintain that it helped.
+Also, on the one hand, anything that makes the build less predictable is a nuisance,
+but on the other hand, sometimes things are broken, and
 you do need a non-intrusive way of fixing them.
-@(ASDF) will probably need to grow some way
+@(ASDF) will probably need to grow at some point some way
 to configure fixes to builds without patching code, but it is not there yet.
 
 Later versions of @(ASDF1) also introduced
@@ -2668,19 +2691,37 @@ This was causing portability issues with implementations
 that didn't fully implement this corner of CLOS.
 @(ASDF2) removed this feature, instead dividing in two the function @(perform)
 that was using it, with the method around it
-being explicitly called @cl{perform-with-restarts}.
+being explicitly called @(perform-with-restarts).
 Indeed, in a cross-compilation environment, you'd want your restarts in the master Lisp,
 whereas the @(perform) method takes place on the target compiler,
 so it really makes sense.
 @(ASDF1) authors liked to experiment with how far they could push the use of CLOS;
 but at some point there can be too much fanciness.
-As another smaller example of that, Dan Barlow made a lot of uses of anaphoric macros
-as then popularized by Paul Graham, such as @cl{aif} that implicitly
-(and "non-hygienically") binds a variable @cl{it} in its success branch;
-but the experiment was eventually considered a failure, and the rough community consensus
-is that anaphoric macros are in poor taste, and so in @(ASDF3),
+
+As another smaller example of this experimental mindset,
+Dan Barlow made a lot of uses of anaphoric macros
+as then popularized by Paul Graham: @(ASDF) notably made copious use of @cl{aif},
+a variant of @cl{if} that implicitly (and "non-hygienically")
+binds a variable @cl{it} to the condition expression in its success branch.
+But the experiment was eventually considered a failure,
+and the rough community consensus of the CL community is that
+anaphoric macros are in poor taste, and so in @(ASDF3),
 all remaining occurrences of @cl{aif} where replaced by an explicitly binding macro
-@cl{if-bind} copied from the @cl{alexandria} library.
+@cl{if-let} copied from the @cl{alexandria} library.
+
+An experiment during the @(ASDF2) days was to introduce a variable @cl{*compile-file-function*}
+so that ECL could override @(ASDF)'s @cl{compile-file*} to introduce behavioral variations
+between its C generating compiler and its bytecode generating compiler.
+This proved to be a hard to maintain attractive nuisance,
+that only introduced new failure modes (particularly during upgrade)
+and required either duplication of code with @cl{compile-file*} or ugly refactorings,
+without bringing any actual meaningful user extensibility.
+The real solution was to make @(ASDF)'s @cl{compile-file*} itself
+more clever and aware of the peculiarities of ECL.
+@emph{Know the different between the need for extensibility and the need for correctness};
+if there's only one correct behavior, what you need isn't extensibility, it's correctness.
+
+@subsection{Partial Solutions}
 
 The @cl{asdf-binary-locations} extension ultimately failed because
 it didn't fully solve its configuration problem,
@@ -2718,7 +2759,16 @@ and that was not a task for @(ASDF).
 If anything, @(faslpath), @(quick-build) and @(asdf/package-system)
 seem to have a better approach at enforcing namespace discipline.
 
-There were other namespace fiascos.
+These failures were all partial solutions,
+that solved an issue in the common case
+(output redirection, namespace hygiene),
+while leaving it all too problematic in a concentrate case
+that didn't make the overall issue ultimately easier to solve.
+More like hiding the dirt under the carpet than vacuuming it away.
+The eventual solutions required confronting the issues head on.
+
+@subsection{Failed Namespace Grabs}
+
 In the last days of @(ASDF1), there was an attempt to export
 its small set of general purpose utilities as package @cl{asdf-extensions},
 quickly renamed @cl{asdf-utilities} before the release of @(ASDF2),
@@ -2734,10 +2784,17 @@ Instead, @cl{asdf-driver}, once renamed @(UIOP), was relatively successful,
 because it was also available as a system that could be updated independently
 from the rest of @(ASDF), yet shared the same source code and same package
 as the version used by @(ASDF) itself. No duplication involved.
-However, a brief attempt to give @cl{asdf-driver} the nickname @cl{d}
+That's a case where two namespaces for the same thing was defeating the purpose,
+and one namespace necessitated the two things to actually be the same,
+which could not be the case until this transclusion made it possible.
+
+In a different failure mode, a brief attempt to give @cl{asdf-driver} the nickname @cl{d}
 was quickly met with reprobation, as many programmers feel that that short a name
 should be available for a programmer's own local nicknames while developing.
 Trying to homestead the @cl{:dbg} keyword for a debugging macro met the same opposition.
+Some (parts of) namespaces are in the commons and not up for grabs.
+
+@subsection{Need successful yet}
 
 Some features were not actively rejected, but haven't found their users yet.
 @(ASDF3) introduced @(build-op) as a putative default build operation
@@ -2745,15 +2802,11 @@ that is not specialized for compiling CL software;
 but it isn't used yet either. It might be more useful if the associated function
 @cl{asdf:build-system} were renamed to @cl{asdf:build}, or @cl{asdf:build-op},
 or something shorter than @cl{asdf:load-system}, anyway.
-Similarly, the @cl{*load-system-operation*} was designed so that
+
+During the @(ASDF2) days, the @cl{*load-system-operation*} was designed so that
 ECL may use @(load-fasl-op) instead of @(load-op) by default;
 but that's still not the case, and won't be until ECL users more actively test it,
 which they might not do until it's the default, since they haven't otherwise heard of it.
-The similar variable @cl{*compile-file-function*} on the other hand,
-whereby ECL was overriding @(ASDF)'s @cl{compile-file*}
-abstraction and extension of CL's standard @cl{compile-file} function,
-was wholly rejected as only being one more way users would call the wrong function,
-in favor of making @cl{compile-file*} itself more clever and aware of the peculiarities of ECL.
 
 @subsection{Ubiquity or Bust!}
 
@@ -2818,6 +2871,11 @@ yet our software relied on that behavior being removed, so we had to remove it.
 In the end, we implemented an ugly mechanism of "negative inheritance",
 to selectively disable the behavior for appropriate subclasses of @(operation)
 while keeping it for legacy operations (see @secref{backwarder_compatibility}).
+
+The @(perform) function also has this general problem: the right thing would be
+for users to keep defining methods on @(perform),
+but to never call it directly, instead calling @(perform-with-restarts),
+which allows for more modular extensibility.
 
 By contrast, the CLOS protocol was cleverly designed so that users do not usually
 call the functions on which they define methods (such as @cl{initialize-instance},

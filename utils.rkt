@@ -103,7 +103,7 @@
 
   traverse traverse-action compute-action-stamp operation-done-p needed-in-image-p
 
-  component-depends-on output-files input-files perform
+  component-depends-on output-files input-files perform perform-with-restarts
   action-depends-on)
 
 (define (*dpd*) @cl{*default-pathname-defaults*})

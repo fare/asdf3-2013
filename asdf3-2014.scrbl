@@ -790,8 +790,8 @@ could be given a version string with e.g.
 that dependencies of at least a given version were used, as in
 @cl{:depends-on ((:version "inferior-shell" "2.0.0"))}.
 This feature can detect a dependency mismatch early,
-which saves users from having to painfully face bugs
-and figure out the hard way that they had to upgrade some libraries and which.
+which saves users from having to figure out the hard way
+that they need to upgrade some libraries, and which.
 
 Now, @(ASDF) always required components to use "semantic versioning",
 where versions are strings made of dot-separated numbers like @cl{3.1.0.97}.

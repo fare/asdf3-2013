@@ -19,7 +19,8 @@
 
 @abstract{
 @(ASDF), the @(de_facto) standard build system for @(CL),
-has been vastly improved between 2010 and 2014.
+has been vastly improved between
+@(extended-only "2009") @(short-only "2012") and 2014.
 These and other improvements finally bring @(CL) up to par
 with "scripting languages"
 in terms of ease of writing and deploying portable code
@@ -27,7 +28,7 @@ that can access and "glue" together
 functionality from the underlying system or external programs —
 except this time in a language with reasonable semantics,
 efficient implementations, and extensible syntax.
-We describe the most salient improvements in @(ASDF)
+We describe the most salient improvements in @(ASDF) @(short-only "3")
 and how they enable previously difficult and portably impossible
 uses of the programming language.
 We discuss past and future challenges
@@ -277,7 +278,8 @@ crucial information about the structure of operations.
 @short-only{
 @(ASDF) extracts from this DAG a @bydef{plan},
 which consists in a topologically sorted list of actions,
-that it then @bydef{performs} in order.
+that it then @bydef{perform}s in order,
+in a design inspired by Pitman@~cite[Pitman-Large-Systems]
 }
 @extended-only{
 Unlike its immediate predecessor @(mk-defsystem),
@@ -470,7 +472,8 @@ Surprising as it may be to all CL programmers who used it daily,
 there was an essential bug at the heart of @(ASDF),
 present from the very first day in 2001,
 and before it in @(mk-defsystem) since 1990@~cite[MK-DEFSYSTEM],
-that survived till December 2012.
+that survived till December 2012,
+despite all our robustification efforts since 2009@~cite[Evolving-ASDF].
 Fixing it required a complete rewrite of @(ASDF)'s core.
 The entire story is in @appref["traverse"]{Appendix F}.
 
@@ -534,7 +537,7 @@ than loading a lot of small fasls.@note{
   to build an application, you link all the libraries and object files together,
   and call the proper initialization functions in the correct order.
   Because of the overhead of dynamic linking, loading a single fasl
-  is much preferrable to a lot of fasls.
+  is much preferrable to a lot of smaller fasls.
 }
 
 The latter point is why bundle operations were initially introduced as @cl{asdf-ecl},
@@ -549,7 +552,7 @@ This was then merged into @(ASDF) during the development of @(ASDF3) (2.26.7, De
 not only did it provide useful new operations,
 but the way that @(ASDF3) was automatically upgrading itself for safety purposes
 would otherwise have broken things badly for ECL users
-if the bundle operations weren't itself bundled with @(ASDF).
+if the bundle support weren't itself bundled with @(ASDF).
 
 In @(ASDF3.1), using @cl{deliver-asd-op} (previously misnamed @cl{binary-op})
 you can create both the bundle fasl from @(fasl-op) and an @(asd) file
@@ -1155,41 +1158,42 @@ the change can take years.
 When releasing @(ASDF3),
 it took a few months to fix all the publicly available systems
 that were affected by any of the minor incompatibilities.
-We notably modified the default encoding
-from the uncontroled environment-dependent @cl{:default}
-to the @(de_facto) standard @cl{:utf-8},
-after a year of having specified forewarning community members.
-Since originally account
-after the support for encodings and @cl{:utf-8} was added
-(see @appref["Encoding_support"]{Appendix D}).
-
-and a lot of the work consisted in fixing @(ASDF3) itself to be more compatible.
+A lot of the work consisted in fixing @(ASDF3) itself to be more compatible.
 Indeed, several intended changes had to be forsaken,
 that didn't have an incremental upgrade path,
 and for which it proved infeasible to fix all the clients.
 
+A successful change was notably to modify the default encoding
+from the uncontroled environment-dependent @cl{:default}
+to the @(de_facto) standard @cl{:utf-8};
+this happened a year after adding support for encodings and @cl{:utf-8} was added,
+and having forewarned community members of the future change in defaults,
+yet a few systems still had to be fixed
+(see @appref["Encoding_support"]{Appendix D}).
 
-Among these changes was an innovative system to control warnings issued by the compiler.
-On the one hand, the @cl{*uninteresting-conditions*} mechanism allows system builders
+On the other hand, an unsuccessful change was the attempt to enable
+an innovative system to control warnings issued by the compiler.
+First, the @cl{*uninteresting-conditions*} mechanism allows system builders
 to hush the warnings they know they don't care for,
 so that any compiler output will be something they care for,
 and whatever they care for won't be drowned into a sea of uninteresting output.
 The mechanism itself is included in @(ASDF3), but disabled by default,
 because there was no consensually agreeable value except an empty set,
-and no good way (so far) to configure it both modularly without pain.
-Another related mechanism that was similarly disabled is @cl{deferred-warnings},
+and no good way (so far) to configure it both modularly and without pain.
+Second, another related mechanism that was similarly disabled
+is @cl{deferred-warnings},
 whereby @(ASDF) can check warnings that are deferred by SBCL or other compilers
-until the end of the current "compilation-unit".
+until the end of the current @bydef{compilation-unit}.
 These warnings notably include forward references to functions and variables.
 In the previous versions of @(ASDF), these warnings were output at the end
 of the session at the first time a file was built, not checked, and not displayed afterwards.
 If in @(ASDF3) you @cl{(uiop:enable-deferred-warnings)},
 these warnings are displayed and checked every time a system is compiled or loaded.
-This helps catch more bugs, but the catch is that enabling it prevents the successful
+This helps catch more bugs, however, enabling this feature prevents the successful
 loading of a lot of systems in @(Quicklisp) that have such bugs,
-but the main functionality of which is not affected by these bugs.
+even though the main functionality of these systems is not affected by these bugs.
 Until there exists some configuration system that allows
-for those checks to happen on new code without breaking old code,
+for all these checks to happen on new code without breaking old code,
 the feature will have to remain disabled by default.
 
 @subsection{Underspecification creates Portability Landmines}
@@ -1199,7 +1203,7 @@ in an effort to define a useful subset common to many existing implementations.
 However, the result is that portable programs can forever only access
 but a small subset of the complete required functionality,
 making its standard less useful than if it had not specified anything,
-and left the job to another standard.
+and left the job to another standard.@appref["pathnames"]{Appendix C}
 The lesson is @emph{don't standardize partially specified features}.
 It is better to standardize that some situations to cause an error,
 to reserve any resolution to a later version of the standard (and then follow up on it),

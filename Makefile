@@ -13,6 +13,7 @@ PDF: pdf ${ae}.PDF
 asdf: asdf3-2014.html asdf3-2014.pdf asdf3-els2014.html asdf3-els2014.pdf
 	rsync -av --delete $^ *.js *.css ~/files/asdf3/
 	rsync -av --delete ~/files/asdf3/ bespin:files/asdf3/
+	rsync -av --delete ~/files/asdf3/ st:www/asdf3/
 
 %.W: %.html
 	w3m -T text/html $<

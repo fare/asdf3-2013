@@ -135,7 +135,7 @@ concluding with lessons learnt from our experience.
 @short-only{
 This is the short version of this article.
 The appendices we mention refer to the extended version@~cite[ASDF3-2014],
-that also includes a few additional details.
+that also includes a few additional examples and footnotes.
 }
 @extended-only{
 This is the extended version of this article.
@@ -1142,7 +1142,7 @@ may define multiple "secondary" systems in a same @(asd) file,
 such as a test system @cl{foo-test} in addition to @cl{foo}.
 This could lead to "interesting" situations when a file @tt{foo-test.asd} existed,
 from a different, otherwise shadowed, version of the same library,
-resulting in a mismatch between the system and its tests.@node{
+resulting in a mismatch between the system and its tests.@extended-only{@note{
   Even more "interesting" was a case when you'd load your @cl{foo.asd},
   which would define a secondary system @cl{foo-test},
   at the mere reference of which @(ASDF) would try to locate a canonical definition;
@@ -1153,7 +1153,7 @@ resulting in a mismatch between the system and its tests.@node{
   resulting in an infinite loop.
   @(ASDF2) was robustified against such infinite loops by memoizing
   the location of the canonical definition for systems being defined.
-}
+}}
 To make these situations less likely,
 @(ASDF3) recommends that you name your secondary system @cl{foo/test} instead of of @cl{foo-test},
 which should work just as well in @(ASDF2), but with reduced risk of clash.
@@ -3043,7 +3043,7 @@ For the sake of extensibility, Dan Barlow added to @(ASDF1)
 a catch-all "component-properties" feature:
 system authors could specify for each component (including systems)
 an association list of arbitrary key-value pairs, with
-@cl{:properties ((key1 . value1) (key2 . value2))}@node{
+@cl{:properties ((key1 . value1) (key2 . value2))}@note{
   An experienced Lisp programmer will note that calling it properties
   then making it an alist rather than a plist was already bad form.
 }.

@@ -304,7 +304,7 @@ crucial information about the structure of operations.
 
 @short-only{
 @(ASDF) extracts from this DAG a @bydef{plan},
-which consists in a topologically sorted list of actions,
+which by default is a topologically sorted list of actions,
 that it then @bydef{perform}s in order,
 in a design inspired by Pitman@~cite[Pitman-Large-Systems]
 }
@@ -486,7 +486,7 @@ to other build systems for CL, C, Java, or other systems:
     @(ASDF) isn't geared at all to build large software
     in modern adverserial multi-user, multi-processor, distributed environments
     where source code comes in many divergent versions and yet as many configurations.
-    The new @(ASDF3) action is consistent and general enough
+    The new @(ASDF3) design is consistent and general enough
     that it could conceivably be made to scale, but that would be a lot of work.
   }
 ]
@@ -611,7 +611,7 @@ To bring some principle to this break down (2.26.62),
 we followed the principle of one-file, one-package,
 as demonstrated by @(faslpath) and @(quick-build),
 though not actively supported yet by @(ASDF) itself (see @secref{asdf-package-system}).
-This ensured that files were indeed providing related functionality,
+This programmning style ensured that files were indeed provided related functionality,
 only had explicit dependencies on other files, and
 didn't have any forward dependencies without special declarations.
 Indeed, this was a great success in making @(ASDF) understandable,
@@ -676,7 +676,7 @@ yet since @(ASDF) still needed to be delivered as a single file @tt{asdf.lisp},
 @cl{monolithic-concatenate-source-op} operation.
 At Google, @(UIOP) is actually used for portability without the rest of @(ASDF),
 the build being handled by Google's @tt{blaze};
-this led to @(UIOP) improvements that will be released with @(ASDF3.1).
+this led to @(UIOP) improvements that will be released with @(ASDF "3.1.1").
 
 Most of the utilities deal with providing sane pathname abstractions
 (see @appref["pathnames"]{Appendix C}),
@@ -786,7 +786,7 @@ but provides more usable replacements or improvements for old features.
 For instance, @(ASDF1) had always supported version-checking:
 each component (usually, a system)
 could be given a version string with e.g.
-@cl{:version "3.1.0.94"}, and @(ASDF) could be told to check
+@cl{:version "3.1.0.97"}, and @(ASDF) could be told to check
 that dependencies of at least a given version were used, as in
 @cl{:depends-on ((:version "inferior-shell" "2.0.0"))}.
 This feature can detect a dependency mismatch early,
@@ -1116,7 +1116,7 @@ had to keep working with new versions.
 But what more precisely is backward compatibility?
 
 In an overly strict definition that precludes any change in behavior whatsoever,
-even the most uncontroversial bug fix, is not backward-compatible:
+even the most uncontroversial bug fix is not backward-compatible:
 any change, for the better as it may be, is incompatible,
 since by definition, some behavior has changed!
 
@@ -1140,9 +1140,20 @@ Indeed this happened when @(ASDF3) tried to better support "secondary systems".
 Now, it was common practice that programmers
 may define multiple "secondary" systems in a same @(asd) file,
 such as a test system @cl{foo-test} in addition to @cl{foo}.
-This could lead to "interesting" situations when a file @tt{foo-test.asd}
-existed, possibly from a different, otherwise shadowed, version of the same library.
-@(ASDF2) required robustifying against the infinite loops that could result.
+This could lead to "interesting" situations when a file @tt{foo-test.asd} existed,
+from a different, otherwise shadowed, version of the same library,
+resulting in a mismatch between the system and its tests.@node{
+  Even more "interesting" was a case when you'd load your @cl{foo.asd},
+  which would define a secondary system @cl{foo-test},
+  at the mere reference of which @(ASDF) would try to locate a canonical definition;
+  it would not find a @cl{foo-test.asd}, instead Quicklisp might tell it
+  to load it from its own copy of @cl{foo.asd}, at which
+  the loading of which would refer to system @cl{foo},
+  for which @cl{ASDF} would look at the canonical definition in its own @cl{foo.asd},
+  resulting in an infinite loop.
+  @(ASDF2) was robustified against such infinite loops by memoizing
+  the location of the canonical definition for systems being defined.
+}
 To make these situations less likely,
 @(ASDF3) recommends that you name your secondary system @cl{foo/test} instead of of @cl{foo-test},
 which should work just as well in @(ASDF2), but with reduced risk of clash.
@@ -1182,13 +1193,13 @@ if it's a large company with many teams, it can take many weeks or months.
 When the software is used by a weakly synchronized group like the CL community,
 the change can take years.
 
-When releasing @(ASDF3),
-it took a few months to fix all the publicly available systems
-that were affected by any of the minor incompatibilities.
-A lot of the work consisted in fixing @(ASDF3) itself to be more compatible.
+When releasing @(ASDF3), we spent a few months making sure that it would work
+with all publicly available systems.
+We had to fix many of these systems,
+but mostly, we were fixing @(ASDF3) itself to be more compatible.
 Indeed, several intended changes had to be forsaken,
 that didn't have an incremental upgrade path,
-and for which it proved infeasible to fix all the clients.
+or for which it proved infeasible to fix all the clients.
 
 A successful change was notably to modify the default encoding
 from the uncontroled environment-dependent @cl{:default}
@@ -1203,7 +1214,7 @@ an innovative system to control warnings issued by the compiler.
 First, the @cl{*uninteresting-conditions*} mechanism allows system builders
 to hush the warnings they know they don't care for,
 so that any compiler output is something they care for,
-and whatever they care for isn't be drowned into a sea of uninteresting output.
+and whatever they care for isn't drowned into a sea of uninteresting output.
 The mechanism itself is included in @(ASDF3), but disabled by default,
 because there was no consensually agreeable value except an empty set,
 and no good way (so far) to configure it both modularly and without pain.
@@ -1216,7 +1227,7 @@ In the previous versions of @(ASDF), these warnings were output at the end
 of the session at the first time a file was built, not checked, and not displayed afterwards.
 If in @(ASDF3) you @cl{(uiop:enable-deferred-warnings)},
 these warnings are displayed and checked every time a system is compiled or loaded.
-This helps catch more bugs, however, enabling this feature prevents the successful
+These checks help catch more bugs, however, enabling them prevents the successful
 loading of a lot of systems in @(Quicklisp) that have such bugs,
 even though the main functionality of these systems is not affected by these bugs.
 Until there exists some configuration system that allows developers
@@ -1265,11 +1276,12 @@ he would have had to add:
 
 Indeed, syntax in CL is controled via a fuzzy set of global variables,
 prominently including the @cl{*readtable*}.
-Now making non-trivial modifications to the variables and/or tables
+Making non-trivial modifications to the variables and/or tables
 is possible, but letting these modifications escape is a serious issue;
-for the author of a system has no control on which systems will or won't
-be loaded before or after his system — this depends on what the user requests;
-therefore in absence of further convention,
+for the author of a system has no control over which systems will or won't
+be loaded before or after his system — this depends on what the user requests
+and on what happens to already have been compiled or loaded.
+Therefore in absence of further convention,
 it's always a bug to either rely on the syntax tables
 having non-default values from previous systems,
 or to inflict non-default values upon next systems.
@@ -1287,9 +1299,9 @@ and remains up to the user, especially at the REPL.
 
 Build support is therefore strongly required for safe syntax modification;
 but this build support is not there yet in @(ASDF3)
-because of backward-compatibility reasons.
-One option would be to enforce hygiene by binding the syntax tables
-to a read-only copies of the standard tables around each action;
+for backward-compatibility reasons.
+One option would be to strictly enforce hygiene by binding the syntax tables
+to read-only copies of the standard tables around each action;
 actions that want to modify syntax then have to explicitly use different tables.
 Another option would be to provide hygiene by binding the syntax tables
 to a fresh writable copies of the standard tables around each action,
@@ -1297,7 +1309,7 @@ or maybe to have actions share per-system tables,
 that may be initialized according in various simple or elaborate ways.
 In either case, a change is required in how @(ASDF) behaves and how it's extended;
 doing it in backward-compatible way is technically hard but not impossible,
-but first requires identifying the idioms that need or need not be supported:
+but first requires identifying the use patterns that need or need not be supported:
 otherwise the change may break tens of existing systems,
 that have to be fixed beforehand, which is socially hard.
 
@@ -1315,7 +1327,7 @@ by having it be strictly scoped to the current file or REPL.
 While writing this article, we had to revisit many concepts and pieces of code,
 which led to many bug fixes and refactorings to @(ASDF) and @(cl-launch).
 An earlier interactive "@(ASDF) walkthrough" via Google Hangout also led to enhancements.
-This illustrates the principle that you should always
+Our experience illustrates the principle that you should always
 @moneyquote{explain your programs}:
 having to intelligibly verbalize the concepts will make @emph{you} understand them better.
 
@@ -2858,7 +2870,7 @@ should be available for a programmer's own local nicknames while developing.
 Trying to homestead the @cl{:dbg} keyword for a debugging macro met the same opposition.
 Some (parts of) namespaces are in the commons and not up for grabs.
 
-@subsection{Need successful yet}
+@subsection{Not successful yet}
 
 Some features were not actively rejected, but haven't found their users yet.
 @(ASDF3) introduced @(build-op) as a putative default build operation
@@ -3019,6 +3031,53 @@ Or they can directly override the type while defining a component, as in:
 In any case, the protocol was roundabout both for users and implementers,
 and a new protocol was invented that is both simpler to use and easier to extend.
 @moneyquote{Verbosity is a bad smell, it suggests lack of abstraction, or bad abstractions}.
+
+@subsection[#:tag "underspecified"]{Underspecified Features}
+
+While discussing pathnames in @secref{pathnames},
+we mentioned how a lot of the issues were related to
+the CL standard leaving the semantics of pathnames underspecified.
+
+We experienced a bit of the same trouble with @(ASDF) itself.
+For the sake of extensibility, Dan Barlow added to @(ASDF1)
+a catch-all "component-properties" feature:
+system authors could specify for each component (including systems)
+an association list of arbitrary key-value pairs, with
+@cl{:properties ((key1 . value1) (key2 . value2))}@node{
+  An experienced Lisp programmer will note that calling it properties
+  then making it an alist rather than a plist was already bad form.
+}.
+The idea was that extensions could then make use of this data
+without having to explicitly define storage for it.
+The problem was, there was no way to associate shared meaning to these properties
+to any key-value pair across systems defined by multiple authors.
+Amongst the tens of authors that were using the feature in @(Quicklisp),
+no two agreed on the meaning of any key.
+Sometimes, general-purpose metadata was made available under different keys
+(e.g. @cl{#:author-email} vs @cl{("system" "author" "email")}.
+Most of the time, the data was meant to be processed
+by a specific extension from the same author.
+
+When we released @(ASDF3), we declared the feature as deprecated:
+we defined a few new slots in class @(system) to hold
+useful common metadata found previously in such properties:
+homepage, mailto, bug-tracker, long-name, source-control.
+Otherwise, we recommended that system authors should specify
+the @cl{:defsystem-depends-on} and @cl{:class} options,
+so that their systems could use regular object-oriented programming
+to define extended classes with well-defined semantics.
+What if a association-list is exactly what a programmer wants?
+He should define and use a subclass of @(system) to hold this alist,
+and then be confident that his keys won't clash with anyone else's.
+Unhappily, for the sake of backward-compatibility,
+we couldn't actually remove the @cl{:properties} feature yet;
+we also refrained from neutering it;
+we just marked it as deprecated for now.
+
+The @cl{:properties} interface created a commons, that was mismanaged.
+The @cl{:class} interface instead
+establishes semantic ownership of extended data elements,
+and opens a market for good system extensions.
 
 @subsection[#:tag "conclusion"]{Problems with CL itself}
 

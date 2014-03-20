@@ -1,33 +1,48 @@
 #lang scribble/sigplan @nocopyright
-
 @(require scribble/base "utils.rkt")
 
-@title{Live Computing vs Dead Software}
+@title{Live Computing vs Dead Software, or LAMBDA, the Ultimate Culture War}
 
-Most hackers these days are somewhat familiar with the Unix tradition,
-but mostly ignorant of Lisp Lore.
-@(if (multiple-sections)
-@list{This section of the document, as a short digression,}
-@list{This short essay})
-tries to describe the general difference in spirit
-between Lisp and Unix,
-from which springs the difference not just in resulting software
-but in pervasive culture:
-@emph{live computing} systems vs
-@hyperlink["http://wiki.squeak.org/squeak/2950"]{Cult-of-Dead} computer systems,
-as Lisp and Smalltalk programmers often proudly describe the difference.
+@authorinfo["François-René Rideau" "Google" "tunes@google.com"]
 
-I will be deliberately exaggerating the picture and painting with a big brush,
-to make the big picture more obvious.
-The gentle reader will easily figure the shades of grey
-to those black and white outlines.
-Hopefully, she can then proceed to make her own black on white drawings,
-white on black chalkings, and paintings using a full color palette.
+@conferenceinfo["Onward!" "October 20--24, Portland, Oregon."]
+@copyrightyear{2014}
+@;http://splashcon.org/2014/onward.html
 
-@(if (multiple-sections)
-@list{You may skip this section if you are already familiar with the concept.}
-@list{This essay was originally started as part of a tentative to explain
-@(ASDF) by contrasting it with @(Make), but took a life of its own.})
+@abstract{
+  Lisp and Smalltalk
+  tradition is at odds with the mainstream of programming.
+
+  Dynamic typing vs static typing.
+  Garbage collection vs static memory management.
+  Incremental code and data upgrade vs starting fresh processes everytime.
+  Interactive REPL vs batch processing.
+  Metaprogramming vs design patterns.
+
+  And while many of its once distinctive traits
+  are now commonplace features accepted in this mainstream,
+  ...
+
+  It proudly touts dynamic typing where
+  serious programming language experts
+  Most hackers these days are somewhat familiar with the Unix tradition,
+  but mostly ignorant of Lisp Lore.
+  This essay tries to describe the general difference in spirit
+  between Lisp and Unix,
+  from which springs the difference not just in resulting software
+  but in pervasive culture:
+  @emph{live computing} systems vs @emph{Cult-of-Dead} computer systems,
+  as Lisp and Smalltalk programmers often describe the difference.
+
+  I will be deliberately exaggerating the picture and painting with a big brush,
+  to make the big picture more obvious.
+  The gentle reader will easily figure the shades of grey
+  to those black and white outlines.
+  Hopefully, she can then proceed to make her own black on white drawings,
+  white on black chalkings, and paintings using a full color palette.
+}
+@; This essay was originally started as part of a tentative to explain @(ASDF)
+@; by contrasting it with @(make), but took a life of its own.
 
 
 @section{Computing vs Computers}
@@ -126,8 +141,8 @@ and from which new functionality grows bottom up.
 
 @subsection{Dead Programs}
 
-A cult-of-dead computer system is organized all along
-according to opposite principles.
+A @bydef{cult-of-dead} computer system@~cite[Cult-of-Dead-mail],
+is organized all along according to opposite principles.
 The machine, not the human,
 is the central concern from which radiates the architecture of the system.
 Indeed, end-users are considered as inferior beings,
@@ -659,3 +674,6 @@ that cannot interact well if at all with other applications.
 Recreating features by piling on layers of complexity.
 
 }
+
+In Lisp, you don't write a specification of the program,
+you write a specification of how to build the program.

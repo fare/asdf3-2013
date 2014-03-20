@@ -80,3 +80,9 @@
   #:author "François-René Rideau"
   #:date "2014"
   #:url "http://fare.tunes.org/files/asdf3/asdf3-2014.html")
+
+(define-bib Cult-of-Dead
+  #:title "Cult of Dead"
+  #:author "Jim Benson"
+  #:url "http://wiki.squeak.org/squeak/2950"
+  #:date "2002")

@@ -585,7 +585,7 @@ In @(ASDF3.1), using @cl{deliver-asd-op}@extended-only{@note{
   @cl{deliver-asd-op} was previously misnamed @cl{binary-op} in @cl{asdf-ecl},
   then in @cl{asdf-bundle} and @(ASDF3)'s @cl{bundle.lisp}.
   It was renamed to @cl{deliver-asd-op} in @(ASDF3.1).
-}
+}}
 you can create both the bundle fasl from @(fasl-op) and an @(asd) file
 to use to deliver the system in binary format only.
 
@@ -673,7 +673,7 @@ The portability layer was initially dubbed @cl{asdf-driver},
 because of merging in a lot of functionality from @cl{xcvb-driver}.
 Because users demanded a shorter name that didn't include @(ASDF),
 yet would somehow be remindful of it, it was eventually renamed @(UIOP):
-the Utilities for Implementation- and OS- Portability@node{
+the Utilities for Implementation- and OS- Portability@note{
   U, I, O and P are also the four letters that follow QWERTY
   on an anglo-saxon keyboard.
 }
@@ -1216,7 +1216,7 @@ to the @(de_facto) standard @cl{:utf-8};
 this happened a year after adding support for encodings and @cl{:utf-8} was added,
 and having forewarned community members of the future change in defaults,
 yet a few systems still had to be fixed
-(see @appref["Encoding_support"]{Appendix D}).
+(see @appref["Encoding_Support"]{Appendix D}).
 
 On the other hand, an unsuccessful change was the attempt to enable
 an innovative system to control warnings issued by the compiler.

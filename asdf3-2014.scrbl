@@ -2083,12 +2083,12 @@ at handling wildcard characters.
 Unhappily, they on other implementations they don't do anything.
 CL is notably missing a portable way to escape a namestring to avoid wildcards.
 
-Finally, so that (asd) files may portably designate pathnames
+Finally, so that @(asd) files may portably designate pathnames
 of recursive subdirectories and files under a build hierarchy,
 we implemented our own parsing infrastructure.
 Thus, even if the current pathname host of @(*dpd*) is not a Unix host,
 indeed even if the operating system is not Unix but Windows, MacOS 9 or Genera,
-the same (asd) file keeps working unmodified, and correctly refers
+the same @(asd) file keeps working unmodified, and correctly refers
 to the proper filenames under the current source directory.
 In @(UIOP), the main parsing function is @(parse-unix-namestring).
 It's designed to match the expectations of a Unix developer
@@ -2313,7 +2313,7 @@ Logical pathnames thus intrinsically do not scale.
 Until we added more complete tests, we found that logical pathname support tended to bitrot quickly;
 adding the tests revealed a lot of discrepancies and bugs in implementations,
 that entailed a lot of painful work.
-For instance, subtle changes in how we search for (asd) files may have caused
+For instance, subtle changes in how we search for @(asd) files may have caused
 logical pathnames being translated to physical pathnames earlier than users might expect.
 The use of @(truename), implicitly called by @(directory) or @(probe-file),
 would also translate away the logical pathname as well as symlinks.
@@ -2328,16 +2328,18 @@ Many implementations also had notable bugs in some corner cases,
 that we discovered as we added more tests that @(ASDF) worked well with logical-pathnames;
 this suggests that logical pathnames are not a widely used feature.
 Indeed, we estimate that only a handful or two of old style programmers worldwide
-may be using this feature still, and that the days or work poured into getting them to work
-were probably not well spent.
+may be using this feature still.
 Yet, despite our better sense, we sunk vast amounts of time
 into making @(ASDF) support them,
-for the sake of the sacred backward compatibility and of hushing the criticism
+for the sake of this sacred backward compatibility
+and the pride of hushing the criticism
 by this handful of ungrateful old school programmers who still use them.
+The days of work poured into getting logical pathnames to work
+were probably not well spent.
 
-In any case, this all means that these days,
+In any case, this all means that nowadays,
 logical pathnames are @emph{always} a bad idea,
-and @emph{we strongly disrecommend use of these ill "logical" pathnames}.
+and @emph{we strongly recommend against using these ill "logical" pathnames}.
 They are a hazard to end users.
 They are a portability nightmare.
 They can't reliably name arbitrary files in arbitrary systems.
@@ -2401,15 +2403,6 @@ or you had to define a new component class using a cumbersome protocol
 (see @secref{verbosity}).
 But you couldn't specify a file with no type when the class specified one.
 
-Starting with @(ASDF2), things became simpler:
-A type, if provided by the component or its class and not @(nil),
-would always be added at the end of the provided name.
-If the type were @(nil), nothing would be added and
-the type would be extracted from the name, if applicable.
-You could always explicitly override the class-provided type
-with @cl{:type "l"} or @cl{:type nil}.
-No surprise, no loss of information, no complex workarounds.
-
 The situation was much worse when dealing with subdirectories.
 You could naïvely insert a slash @cl{"/"} in your component name,
 and @(ASDF) would put it in the @emph{name} component of the pathname,
@@ -2429,11 +2422,45 @@ it was even harder:
 and to use @(merge-pathnames) you'd need to not use @cl{".."} as a directory component word,
 but instead use @cl{:back}, except on implementations that only supported @cl{:up}, or worse.
 
-With @(ASDF2), the name, combined with specified type information,
-is correctly parsed into relative subdirectory, name and type pathname components.
-Unix syntax is now used on all platforms, and translated
-into the proper combinations of @(make-pathname) and @(merge-pathnames),
-taking into account any quirks and bugs of the underlying implementation.
+Finally, there was no portable way to specify the current directory:
+none of @cl{""}, @cl{"."}, @cl{"./"}, @cl{#p""}, @cl{#p"."}, @cl{#p"./"}
+led to portable outcome, and they could all mean
+something completely different and usually wrong in "logical pathname" context.
+Thus, if you were in a module @cl{"this-module"} and wanted to define a submodule @cl{"that-submodule"}
+that doesn't define a subdirectory but shares that of @cl{"this-module"},
+with @(ASDF2) you can portably specify @cl{:pathname ""}, but back in the days of @(ASDF1),
+if you wanted to be completely portable, you had to specify the following,
+though you could define a variable rather than repeat the computation:
+@verbatim|{
+:pathname
+#.(merge-pathnames
+   (make-pathname
+     :name nil :type nil :version nil
+     :directory '(:relative "this-module")
+     :defaults *load-truename*)
+   *load-truename*)
+}|
+
+
+Starting with @(ASDF2), things became much simpler:
+Users specify names that are uniformly parsed according to
+Unix syntax on all platforms.
+Each component name (or explicit pathname override, if given as a string),
+is combined with the specified file type information
+and correctly parsed into
+relative subdirectory, name and type pathname components of a relative pathname object
+that relative pathname is merged into whichever directory is being considered,
+that it is relative to.
+Under the hood, the proper combinations of @(make-pathname) and @(merge-pathnames) are used,
+taking into account any quirks and bugs of the underlying implementation,
+in a way that works well with either logical pathnames or non-Unix physical pathnames.
+A type, if provided by the component or its class and not @(nil),
+is always added at the end of the provided name.
+If the type is @(nil), nothing is added and
+the type is extracted from the component name, if applicable.
+You could always explicitly override the class-provided type
+with @cl{:type "l"} or @cl{:type nil}.
+No surprise, no loss of information, no complex workarounds.
 
 @XXX{ @; Find out how to make this a floating figure, for it won't fit in a single column.
 
@@ -2605,9 +2632,9 @@ of character encodings, if such an issue mattered to them.
 
 By 2012, however, Unicode was ubiquitous,
 UTF-8 was a @(de_facto) standard, and Emacs supported it well.
-A few library authors had started to rely on it (if only for their own names).
-Out of over 700 in @(Quicklisp),
-most were using plain ASCII (or maybe some 7-bit encoding),
+A few authors had started to rely on it (if only for their own names).
+Out of over 700 systems in @(Quicklisp),
+most were using plain ASCII,
 but 87 were implicitly using @cl{:utf-8}, and
 20 were using some other encoding, mostly latin1.
 

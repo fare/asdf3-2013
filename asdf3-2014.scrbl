@@ -200,7 +200,7 @@ of packages, macros, variables, classes, functions, etc.,
 present in another component, the programmer must
 declare that the former component @(depends-on) the latter.
 
-@subsubsection{Example System Definitions}
+@subsubsection{Example System Definition@extended-only{s}}
 
 @clcode{
 (defsystem "fare-quasiquote" ...
@@ -908,8 +908,8 @@ when all you can assume is the shell command line,
 how are you going to portably invoke the Lisp code
 that creates the initial executable to begin with?
 
-This problem was solved some years ago with @(cl-launch).
-This bilingual program, both a portable shell script and a CL program,
+We solved this problem some years ago with @(cl-launch).
+This bilingual program, both a portable shell script and a portable CL program,
 provides a nice shell command interface to
 building shell commands from Lisp code,
 including delivery as either portable shell scripts or
@@ -2372,54 +2372,121 @@ was always portably treated by ASDF as meaning a file named @tt{"foo.lisp"}
 in the current system's or module's directory.
 But nothing else was both portable and easy.
 
-@XXX{
-If you wanted your file to a dot in its name, that was particularly tricky,
-because ...
+If you wanted your file to a dot in its name, that was particularly tricky.
+In Dan Barlow's original @(ASDF), that used a simple @(make-pathname),
+you could just specify the name with the dot as in
+@cl{(:file "foo.bar")}, which would yield file @cl{#p"foo.bar.lisp"},
+but trying that on a class that didn't specify a type such as
+@cl{(:static-file "READ.ME")} would yield an error on SBCL and other implementations,
+because it isn't acceptable to have a dot in the name yet no type
+you should instead separate out a type component
+— unless it's a single dot is at the beginning, indicating a Unix hidden file.
+In latter variants of @(ASDF1), the above static-file example would work,
+with an elaborate system to extract the type;
+however, the former example would now fail subtly,
+with the type @cl{"bar"} ending up overridden by the type @cl{"lisp"} from the class.
+I eventually fixed the issue in the build system at work by overriding key functions of @(ASDF),
+and got the fix accepted upstream shortly before I became maintainer.@note{
+  It is remarkable that CL makes it possible to patch code without having to modify source files.
+  This makes it possible to the use unmodified source code of libraries or compilers
+  with uncooperative or unavailable authors, yet get bugs fixed.
+  It is also important for temporary fixes in "release" branches of your code.
+  Maintenance costs are of course much reduced if you can get your fix accepted
+  by the upstream software maintainer.
+}
 
-If you wanted your file to have a different suffix, that also quite hard.
-To have a file called @cl{#p"foo.l"},
-with @(ASDF2)
-@cl{(:file "foo" :type "l")}.
-With @(ASDF2), you can just use
-With @(ASDF1), you could use @cl{(:file "bar" :pathname #p"bar.l")}.
-or if it's a frequent suffix ...
+If you wanted your file to have a different type, that was also quite hard.
+You could specify an explicit @cl{:pathname #p"foo.l"} option
+to each and every component, redundantly specifying the file name in an error-prone way,
+or you had to define a new component class using a cumbersome protocol
+(see @secref{verbosity}).
+But you couldn't specify a file with no type when the class specified one.
 
-@;TODO: import tables from ilc2010 talk-outline
+Starting with @(ASDF2), things became simpler:
+A type, if provided by the component or its class and not @(nil),
+would always be added at the end of the provided name.
+If the type were @(nil), nothing would be added and
+the type would be extracted from the name, if applicable.
+You could always explicitly override the class-provided type
+with @cl{:type "l"} or @cl{:type nil}.
+No surprise, no loss of information, no complex workarounds.
 
-(tabular
+The situation was much worse when dealing with subdirectories.
+You could naïvely insert a slash @cl{"/"} in your component name,
+and @(ASDF) would put it in the @emph{name} component of the pathname,
+which would happen to work on SBCL (that would be lax about it, contrary to its usual style),
+but would be illegal on many other implementations,
+and was not generally expected to work on a non-Unix operating system.
+You could try to provide an explicit pathname option to your component definition as in
+@cl{(:file "foo/bar" :pathname #p"foo/bar.lisp")},
+but in addition to being painfully redundant,
+it would still not be portable to non-Unix operating systems.
+A portable solution involved using @(merge-pathnames) inside a reader-evaluation idiom
+@cl{#.(merge-pathnames ...)}, which in addition to being particularly verbose and ugly,
+was actually quite tricky to get right (see @secref{merge-pathnames}).
+As for trying to go back a level in the filesystem hierarchy,
+it was even harder:
+@tt{#p"../"} was as least as unportable as the pathname literal syntax in general,
+and to use @(merge-pathnames) you'd need to not use @cl{".."} as a directory component word,
+but instead use @cl{:back}, except on implementations that only supported @cl{:up}, or worse.
+
+With @(ASDF2), the name, combined with specified type information,
+is correctly parsed into relative subdirectory, name and type pathname components.
+Unix syntax is now used on all platforms, and translated
+into the proper combinations of @(make-pathname) and @(merge-pathnames),
+taking into account any quirks and bugs of the underlying implementation.
+
+@XXX{ @; Find out how to make this a floating figure, for it won't fit in a single column.
+
+The following table gives some examples of things that could go wrong,
+depending on which variant of @(ASDF1) you were using on which implementation.
+It must be understood that none of these combinations
+yielded the "best" behavior in every case,
+and that the would-be author of portable code had no control over
+which of these versions would be available to the user.
+
+@(tabular
   #:sep @hspace[1]
   #:style 'boxed
   (list
-   (list @bold{component spec} @bold{@(ASDF1) + SBCL} @bold{@(ASDF1) + other}
-                               @bold{@(ASDF2) + Unix} @bold{@(ASDF2) + Genera})
+   (list @bold{component spec} @bold{@(ASDF2)} @bold{@(ASDF1) at best} @bold{@(ASDF1) at worst})
+
    (list @cl{(:file "foo")}
-         @cl{#p"foo.lisp"} @cl{#p"foo.lisp"} @cl{#p"foo.lisp"} @cl{#p"foo.lisp"})
+         @cl{#p"foo.lisp"} @cl{#p"foo.lisp"} @cl{#p"foo.lisp"})
 
    (list @cl{(:file "foo.bar")}
-         @cl{#p"foo.bar"} @cl{#p"foo.bar"} @cl{#p"foo.bar.lisp"} @cl{#p"foo.bar.lisp"})
-
-   (list @cl{(:file "foo" :type "bar")}
-         "(error)" "(error)" @cl{#p"foo.bar"} @cl{#p"foo.bar"})
+         @cl{#p"foo.bar.lisp"} @cl{#p"foo.bar.lisp"} @cl{#p"foo.lisp"})
 
    (list @cl{(:file "foo.bar"
                :pathname #p"foo.bar.lisp")}
-         @cl{#p"foo.bar.lisp"} @cl{#p"foo.bar.lisp"} @cl{#p"foo.bar.lisp"})
+         @cl{#p"foo.bar.lisp"} @cl{#p"foo.bar.lisp"} "error")
+
+   (list @cl{(:file "foo"
+               :pathname #p"foo")}
+         @cl{#p"foo.bar.lisp"} @cl{#p"foo"} @cl{#p"foo.lisp"})
+
+   (list @cl{(:file "foo" :type "bar")}
+         @cl{#p"foo.bar"} "error" "error")
+
+   (list @cl{(:file "foo"
+               :type nil)}
+         @cl{#p"foo"} "error" "error")
 
    (list @cl{(:file "foo-V1.0")}
-         @cl{#p"foo-V1.lisp"} @cl{#p"foo-V1.lisp"} @cl{#p"foo.bar.lisp"} @cl{#p"foo.bar.lisp"})
-))
-\begin{tabular}{l|l|l}
-Input & ASDF 1 & ASDF 2 \\ \hline
-\texttt{(:file "foo")} & \texttt{\#p"foo.lisp"} & \texttt{\#p"foo.lisp"} \\
-\texttt{(:file "foo.bar")}   &   \texttt{\#p"foo.bar"}    & \texttt{\#p"foo.bar.lisp"} \\
-\texttt{(:file "foo-V1.2")}  &   \texttt{\#p"foo-V1.2"}   & \texttt{\#p"foo-V1.2.lisp"} \\
-\texttt{(:static-file "FOO")} & \texttt{\#p"FOO"} & \texttt{\#p"FOO"} \\
-\texttt{(:file "FOO"} & & \\
-\texttt{\ \ :pathname \#p"FOO")} & \texttt{\#p"FOO.lisp"} & \texttt{\#p"FOO"} \\
-% \texttt{(:file "README" :pathname \#p"README")} & \texttt{\#p"README.lisp"} & \texttt{\#p"README"}
-\end{tabular}
-}
+         @cl{#p"foo-V1.0.lisp"} @cl{#p"foo-V1.0.lisp"} @cl{#p"foo-V1.lisp"})
 
+   (list @cl{(:static-file "README")}
+         @cl{#p"README"} @cl{#p"README"} "error")
+
+   (list @cl{(:static-file "READ.ME")}
+         @cl{#p"READ.ME"} @cl{#p"READ.ME"} "error")
+
+   (list @cl{(:static-file "READ" :type "ME")}
+         @cl{#p"READ.ME"} "error" "error")
+
+   (list @cl{(:file "foo/bar")}
+         @cl{#p"foo/bar.lisp"} @cl{#p"foo/bar.lisp"} "error")))
+}
 
 @section[#:tag "asdf2.26"]{
   Appendix D: @(ASDF 2.26), more declarative
@@ -2762,10 +2829,12 @@ The feature was never used, and Gary King eventually removed it altogether.
 Maybe the lack of a reliable shared version of @(ASDF),
 combined with the relative paucity of hooks in @(ASDF1),
 made the proposition unattractive and more pain to maintain that it helped.
-Also, on the one hand, anything that makes the build less predictable is a nuisance,
-but on the other hand, sometimes things are broken, and
+Also, the unconditional loading of preferences was interfering with
+the reproducible build of software, and some users complained,
+notably the authors of SBCL itself.
+On the other hand, sometimes things are broken, and
 you do need a non-intrusive way of fixing them.
-@(ASDF) will probably grow at some point some way
+Thus @(ASDF) will probably grow at some point some way
 to configure fixes to builds without patching code, but it isn't there yet.
 
 Later versions of @(ASDF1) also introduced
@@ -2992,7 +3061,7 @@ we could thus notably @moneyquote{reduce the cognitive load on users} for all fu
 No more need to learn complex syntactic and semantic constraints
 and even more complex tricks to evade those constraints.
 
-@subsection{Verbosity Smells Bad}
+@subsection[#:tag "verbosity"]{Verbosity Smells Bad}
 
 Back in the bad old days of @(ASDF1),
 the official recipe, described in the manual,

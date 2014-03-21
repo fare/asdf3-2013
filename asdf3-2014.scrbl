@@ -145,7 +145,7 @@ about the evolution of @(ASDF) before @(ASDF3).
 Roughly in chronological order, we have
 the initial successful experiment in @secref{asdf1};
 how it became robust and usable in @secref{asdf2};
-the abyss of madness it has to bridge in @secref{pathnames};
+the abyss of madness it had to bridge in @secref{pathnames};
 improvements in expressiveness in @secref{asdf2.26};
 various failures in @secref{failures};
 and the bug that required rewriting it all over again in @secref{traverse}.
@@ -581,13 +581,12 @@ but the way that @(ASDF3) was automatically upgrading itself for safety purposes
 would otherwise have broken things badly for ECL users
 if the bundle support weren't itself bundled with @(ASDF).
 
-In @(ASDF3.1), using @cl{deliver-asd-op}@extended-only{@note{
-  @cl{deliver-asd-op} was previously misnamed @cl{binary-op} in @cl{asdf-ecl},
-  then in @cl{asdf-bundle} and @(ASDF3)'s @cl{bundle.lisp}.
-  It was renamed to @cl{deliver-asd-op} in @(ASDF3.1).
-}}
+In @(ASDF3.1), using @cl{deliver-asd-op},
 you can create both the bundle fasl from @(fasl-op) and an @(asd) file
-to use to deliver the system in binary format only.
+to use to deliver the system in binary format only
+@extended-only{(@cl{deliver-asd-op} was previously misnamed @cl{binary-op} in @cl{asdf-ecl},
+then in @cl{asdf-bundle} and @(ASDF3)'s @cl{bundle.lisp}.
+It was renamed to @cl{deliver-asd-op} in @(ASDF3.1).)}
 
 @subsection{Understandable Internals}
 

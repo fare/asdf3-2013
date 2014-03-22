@@ -56,6 +56,7 @@
 
 (define (XXX . rest) '())
 (define (latin x) (emph x))
+(define (ad_hoc) @latin{ad hoc})
 (define (de_facto) @latin{de facto})
 (define (bydef . x) (emph x))
 
@@ -110,7 +111,7 @@
 
 (defpretty emph depends-on in-order-to do-first force)
 
-(defpretty tt Make make)
+(defpretty tt Make make blaze)
 (define (Quicklisp) "Quicklisp")
 (define (asd) @tt{.asd})
 

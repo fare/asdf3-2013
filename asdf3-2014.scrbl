@@ -343,7 +343,7 @@ For better or worse, this notably differs from common practice in most other lan
 where the build system is a completely different piece of software running in a separate process.@note{
   Of course, a build system could compile CL code in separate processes,
   for the sake determinism and parallelism:
-  our XCVB did @~cite[XCVB-2009]; so does Google's @tt{blaze}.
+  our XCVB did @~cite[XCVB-2009]; so does Google's @(blaze).
   @; As for the wide variety of Lisp dialects beside CL,
   @; they have as many different build systems, often integrated with a module system.
 }
@@ -373,10 +373,10 @@ However, these features are conceivable as @(ASDF) extensions.
 @subsection{Comparison to C programming practice}
 
 Most programmers are familiar with C, but not with CL.
-It's therefore worth contrasting @(ASDF) to the tools used by C programmers
+It's therefore worth contrasting @(ASDF) to the tools commonly used by C programmers
 to provide similar services.
 
-To build and load software, C programmers typically use
+To build and load software, C programmers commonly use
 @(make) to build the software and @tt{ld.so} to load it.
 Additionally, they use a tool like @tt{autoconf}
 to locate available libraries and identify their features.@extended-only{@note{
@@ -407,23 +407,23 @@ that CL does away with thanks to better architecture.
   @item{
     Lisp provides full introspection at runtime and compile-time alike,
     as well as a protocol to declare @bydef{features}
-    and conditionally read code and data based on them.
+    and conditionally read include or omit code or data based on them.
     Therefore you don't need dark magic at compile-time
     to detect available features.
     In C, people resort to
     horribly unmaintainable configuration scripts
     in a hodge podge of shell script, m4 macros, C preprocessing and C code,
-    plus often bits of python, perl, sed, etc.
+    plus often bits of @tt{python}, @tt{perl}, @tt{sed}, etc.
   }
   @item{
     @(ASDF) possesses a standard and standardly extensible way to configure
     where to find the libraries your code depends on, further improved in @(ASDF2).
     In C, then are tens of incompatible ways to do it,
-    between @tt{libtool}, @tt{autoconf}, @tt{gconf}, @tt{kde-config},
+    between @tt{libtool}, @tt{autoconf}, @tt{kde-config}, @tt{pkg-config},
     various manual @tt{./configure} scripts, and countless other protocols,
     so that each new piece of software requires the user
-    to learn a new ad hoc configuration method,
-    making it an expensive endeavor to use and/or distribute libraries.
+    to learn a new @(ad_hoc) configuration method,
+    making it an expensive endeavor to use or distribute libraries.
   }
   @item{
     @(ASDF) uses the very same mechanism
@@ -472,7 +472,7 @@ to other build systems for CL, C, Java, or other systems:
     At the other extreme, a build system for CL could have been made
     that is much simpler and more elegant than @(ASDF),
     if it could have required software to follow some simple organization constraints,
-    without much respect for legacy:
+    without much respect for legacy code:
     a constructive proof of that is Alastair Bridgewater's @(quick-build),
     being a fraction of the size of the original @(ASDF), which is a fraction of @(ASDF3)'s,
     and with a fraction of the bugs — but none of the generality and extensibility
@@ -495,10 +495,10 @@ to other build systems for CL, C, Java, or other systems:
 @subsection{A Consistent, Extensible Model}
 
 Surprising as it may be to all CL programmers who used it daily,
-there was an essential bug at the heart of @(ASDF),
-present from the very first day in 2001,
-and before it in @(mk-defsystem) since 1990@~cite[MK-DEFSYSTEM],
-that survived till December 2012,
+there was an essential bug at the heart of @(ASDF):
+the bug was present from the very first day in 2001,
+and even before in @(mk-defsystem) since 1990@~cite[MK-DEFSYSTEM],
+and it survived till December 2012,
 despite all our robustification efforts since 2009@~cite[Evolving-ASDF].
 Fixing it required a complete rewrite of @(ASDF)'s core.
 The entire story is in @appref["traverse"]{Appendix F}.
@@ -682,7 +682,7 @@ yet since @(ASDF) still needed to be delivered as a single file @tt{asdf.lisp},
 @(UIOP) was @emph{transcluded} inside that file, now built using the
 @cl{monolithic-concatenate-source-op} operation.
 At Google, @(UIOP) is actually used for portability without the rest of @(ASDF),
-the build being handled by Google's @tt{blaze};
+the build being handled by Google's @(blaze);
 this led to @(UIOP) improvements that will be released with @(ASDF "3.1.1").
 
 Most of the utilities deal with providing sane pathname abstractions
@@ -768,7 +768,9 @@ a separate system @(inferior-shell) was written on top of @(UIOP),
 and provides a richer interface, handling pipelines, @tt{zsh} style redirections,
 splicing of strings and/or lists into the arguments, and
 implicit conversion of pathnames into native-namestrings,
-of symbols into downcased strings, of keywords into downcased strings with a @cl{"--"} prefix.
+of symbols into downcased strings,
+@; Q: how do I prevent TeX from coalescing -- into — ???
+of keywords into downcased strings with a @literal|{"--"}| prefix.
 Its short-named functions @cl{run}, @cl{run/nil}, @cl{run/s}, @cl{run/ss},
 respectively run the external command with outputs to the Lisp standard and error output,
 with no output, with output to a string, or with output to a stripped string.
@@ -935,11 +937,11 @@ except with a Lisp compiler underneath, where desired:
       (print-loc-count *standard-input*)))
 }|
 
-In the examples above, option @tt{-sp}, shorthand for @tt{--system-package},
+In the examples above, option @literal|{-sp}|, shorthand for @literal|{--system-package}|,
 simultaneously loads a system using @(ASDF) during the build phase,
 and appropriately selects the current package;
-@tt{-i}, shorthand for @tt{--init} evaluates a form after the software is built;
-@tt{-E}, shorthand for @tt{--entry} configures a function that is called
+@literal|{-i}|, shorthand for @literal|{--init}| evaluates a form after the software is built;
+@literal|{-E}|, shorthand for @literal|{--entry}| configures a function that is called
 when the program starts, with the list of command-line arguments as its argument.@note{
   Several systems are available to help you define an evaluator
   for your command-line argument DSL:
@@ -952,7 +954,7 @@ after removing comments, blank lines, docstrings, and multiple lines in strings.
 with sensible defaults.
 You can easily override all defaults with a proper command-line option,
 a configuration file, or some installation-time configuration.
-See @tt{cl-launch --more-help} for complete information.
+See @literal|{cl-launch --more-help}| for complete information.
 Note that @(cl-launch) is on a bid to homestead the executable path
 @tt{/usr/bin/cl} on Linux distributions;
 it may slightly more portably be invoked as @tt{cl-launch}.
@@ -1097,7 +1099,7 @@ without using an abstraction library such as @cl{closer-mop},
 yet @(ASDF) cannot depend on any external library,
 and this is too small an issue to justify making a sizable MOP library part of @(UIOP).
 Therefore, the negative inheritance is implemented
-in an @emph{ad hoc} way at runtime.
+in an @(ad_hoc) way at runtime.
 
 @section[#:tag "evolving"]{Code Evolution in a Conservative Community}
 
@@ -3590,7 +3592,7 @@ which only applies of course if it's itself a @(needed-in-image-p) action.@note{
   The principle of visiting the action graph multiple times
   would be generalizable to other situations, and the maximum number of visits of a given node
   is the height of the semi-lattice of states in which the traversal is considered.
-  For instance, in a @tt{blaze} extension I wrote to support CL,
+  For instance, in a @(blaze) extension I wrote to support CL,
   visited files would be upgraded between being not needed in image, needed loaded as cfasl,
   needed loaded from source, or needed loaded from fasl.
   The same technique could be used to improve XCVB.
@@ -3779,7 +3781,7 @@ illustrate its expressive power,
 as well as provide essential services to Lisp programmers.
 
 In the end, we find that @moneyquote{software designs are discovered},
-not created @emph{ex nihilo}.
+not created @latin{ex nihilo}.
 Dan extracted a raw design from the mud of conceptual chaos,
 and gave birth to @(ASDF).
 Tasked with maintaining the software, I refined the design,

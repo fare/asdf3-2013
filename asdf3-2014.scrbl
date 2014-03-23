@@ -1075,7 +1075,7 @@ beside sending an announcement to the mailing-list.
 Yet, whatever message was sent didn't attract enough attention.
 Even our co-maintainer Robert Goldman got bitten hard
 when an extension used at work stopped working,
-wasting days of debugging to figure out the issue.
+wasting days to figure out the issue.
 
 Therefore, @(ASDF3.1) features enhanced backward-compatibility.
 The class @(operation) implements sideway and downward propagation
@@ -1105,15 +1105,16 @@ in an @(ad_hoc) way at runtime.
 
 @subsection{Feature Creep? No, Mission Creep}
 
-Throughout the many features added and decupling in size from @(ASDF1) to @(ASDF3),
+Throughout the many features added and tenfold increase in size from @(ASDF1) to @(ASDF3),
 @(ASDF) remained true to its minimalism — but the mission,
 relative to which the code remains minimal, was extended, several times:
 In the beginning, @(ASDF) was the simplest extensible variant of @(defsystem) that builds CL software.
 With @(ASDF2), it had to be upgradable, portable, modularly configurable, robust, performant, usable.
 Then it had to be more declarative, more reliable, more predictable,
 and capable of supporting language extensions.
-Now, it has to support a cleaner new model for representing dependencies,
-software delivery as either scripts or binaries, a cleaner one-package-per-file style,
+Now, it has to support a coherent model for representing dependencies,
+an alternative one-package-per-file style for declaring them,
+software delivery as either scripts or binaries,
 a documented portability layer including image life-cycle and external program invocation, etc.
 
 @subsection[#:tag "backward_compat"]{Backward Compatibility is Social, not Technical}
@@ -1261,7 +1262,7 @@ There could have been one pathname protocol per operating system,
 delegated to the underlying OS via a standard FFI.
 Libraries could then have sorted out portability over N operating systems.
 Instead, by standardizing but a common fragment and letting each of M implementations
-do whatever it can on each of N operating system,
+do whatever it can on each operating system,
 libraries now have to take into account N*M combinations
 of operating systems and implementations.
 In case of disagreement, it's much better to let each implementation's variant
@@ -1373,16 +1374,6 @@ Dan's @(ASDF) was an experiment in many dimensions,
 and was notably innovative in its extensible object-oriented API
 and its clever way of locating software.
 See @secref{asdf1}.
-
-By 2009, Dan's @(ASDF1) was used by hundreds of software systems on many CL implementations;
-however, its development cycle was dysfunctional, its bugs were not getting fixed,
-those bug fixes that existed were not getting distributed,
-and configuration was noticeably harder that it should have been.
-After the then maintainer Gary King resigned, we took over his position,
-and produced a new version @(ASDF2), released in 2010,
-that was turned @(ASDF) from a successful experiment
-to a product, making it upgradable, portable, configurable, robust, performant and usable.
-See @secref{asdf2}.
 
 By 2009, Dan's @(ASDF1) was used by hundreds of software systems on many CL implementations;
 however, its development cycle was dysfunctional, its bugs were not getting fixed,
@@ -2149,7 +2140,7 @@ and @(ASDF2) and @(ASDF3) still support this feature.
 But it was also somewhat quite fragile and easy to misconfigure,
 the most recurrent issue being that users familiar with Unix but not CL pathnames
 would insert the name of a directory without a trailing slash @cl{"/"}.
-CL would parse that a the name of a file in the parent directory,
+CL would parse that as the name of a file in the parent directory,
 which, when later merged (see @secref{merge-pathnames}) with the name of a prospective @(asd) file,
 would behave as if it were the parent directory, leading to confusion, defeat and
 a lot of frustration before the issue is identified.
@@ -2261,24 +2252,30 @@ Thus, the case-insensitive pathname
 @cl{#p"some-host:source;foo;bar.lisp"}
 (internally stored in uppercase)
 would be an absolute logical pathname that is mapped to the absolute physical pathname
-@tt{/home/john/src/foo/bar.lisp} on that machine,
-but might on a different machine running Windows be mapped to
-@tt{C:\Users\jane\Source\foo\bar.lsp}.
+@tt{/home/john/src/foo/bar.lisp} on that machine;
+on different machines, it might be be configured differently,
+and for instance on a Windows machine might be mapped
+to @tt{C:\Users\jane\Source\foo\bar.lsp}.
 
 Problem is, this interface is only suitable for power users:
 it requires special setup before anything is compiled that uses them,
 typically either by the programmer or by a system administrator,
-in an implementation-dependent initialization file,
-This made sense in the 1970s, but already no more in the late 1990s,
-and is totally inappropriate for distributing programs
-as source code "scripts" to end users.
-Even programmers who are not beginners may have trouble with this.
-
+in an implementation-dependent initialization file.
 Moreover, once a string is registered as a logical pathname host,
-it may shadow any another potential use of that string
+it may shadow any other potential use of that string
 as representing an actual host, according to whatever host scheme
 the underlying implementation may provide.
-Such a setup is therefore not robust.
+Such a setup is therefore not modular, and not robust:
+as an author, to be sure you're not interfering with any other piece of software,
+you'd need to avoid all the useful hostnames on all Lisp installations on the planet;
+more likely, as a system administrator, you'd need to audit and edit
+each and every piece of Lisp software
+to rename any logical pathname host that would clash with a useful machine name.
+All of this made sense in the 1970s, but already no more in the late 1990s,
+and not at all in the 2010s.
+It makes "logical pathnames" totally inappropriate for distributing programs
+as source code "scripts" to end users.
+Even programmers who are not beginners will have trouble with "logical pathnames".
 
 Importantly, the standard specifies that
 only a small subset of characters is portably accepted:
@@ -3077,14 +3074,16 @@ this evaluation was used by a few users to use @cl{merge-pathnames}
 to portably specify relative pathnames, a task made unnecessary by
 @(ASDF2) being capable of specifying these pathnames portably with Unix syntax.
 
-@(ASDF3) also removed the magic undocumented capability of specifying a systems
-as dependencies of a system or module by declaring it in the list of subcomponents
-rather than the list of dependencies;
-this capability seems to have been an undesigned artifact of how systems used to be parsed,
-though at the same time it seems to have been compatible with how some older defsystems did things,
-and one user relied on the capability whose system definition had been ported from @(mk-defsystem).
+@(ASDF3) also removed the magic undocumented capability
+that a system could specify a dependency on another system @cl{foo}
+by having @cl{(:system "foo")} in its list of children components,
+rather than @cl{"foo"} in its @(depends-on) option.
+One system relied on it, which had been ported from @(mk-defsystem)
+where this a valid documentes way to do things.
+In @(ASDF1) and 2, it seems to this happened to work by accident rather than design,
+and this accident had been eliminated in the @(ASDF3) refactorings.
 
-At the cost of a handful of users having to cleanup their code a bit,
+At the cost of a few users having to cleanup their code a bit,
 we could thus notably @moneyquote{reduce the cognitive load on users} for all future systems.
 No more need to learn complex syntactic and semantic constraints
 and even more complex tricks to evade those constraints.
@@ -3287,7 +3286,7 @@ reusing the vocabulary introduced in @secref{Action_Graph}.
 marking those that are visited, and detecting circularities.
 Each action consists of an operation on a component;
 for a simple CL system with regular Lisp files,
-these actions will are @(compile-op) for compiling the code in the component,
+these actions are @(compile-op) for compiling the code in the component,
 and @(load-op) for loading this compiled code;
 a component is a @(system), a recursive @(module), or a @(file)
 (actually a @(cl-source-file)).
@@ -3464,7 +3463,7 @@ inefficiently and inelegantly in a list, updated using @cl{append}
 for a quadratic worst time cost.
 This cost wouldn't explode as long as there were few systems and modules;
 but removing the magic sequencing of @(traverse)
-to replace it a different and inefficient kluge wasn't seem appealing,
+to replace it with a different and inefficient kluge didn't seem appealing,
 especially after having optimized @(traverse) into being of linear complexity only.
 
 And the solution was of course to explicitly reify those implicit dependencies
@@ -3580,7 +3579,7 @@ the action was needed in the current image.
 When visiting an action in a context where the goal is not (known to be) needed in image,
 or where the action is intrinsically not @(needed-in-image-p)
 because its value resides in filesystem side-effects,
-then all the action's dependencies would themselves visited
+then all the action's dependencies would themselves be visited
 in a mode where the goal is not (known to be) needed in image.
 In that mode, the action is consulted for its timestamp,
 but won't be included in the plan as long as it's up-to-date.

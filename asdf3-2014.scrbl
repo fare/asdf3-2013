@@ -531,18 +531,14 @@ had all the extension hooks required to avoid overrides.
 
 Bundle operations create a single output file
 for an entire system or collection of systems.
-The most directly user-facing bundle operation is @(fasl-op),
-that bundles into a single fasl (compilation output)
+The most directly user-facing bundle operations are
+@(compile-bundle-op) and @(load-bundle-op):
+the former bundles into a single fasl (compilation output)
 all the individual fasls from the @(compile-op) outputs
-of each file in a system.
-This bundle fasl may then be loaded by operation @(load-fasl-op).@note{
-  A fasl, for FASt Loading, is a CL compilation output file. @;
-  @extended-only{
-  @(fasl-op) and @(load-fasl-op) are not good names,
-  since every individual @(compile-op) has a fasl;
-  @cl{compile-bundle-op} and @cl{load-bundle-op} would be better,
-  but not backward compatible.
-}}
+of each source file in a system;
+the latter loads the result of the former.@note{
+  A fasl, for FASt Loading, is a CL compilation output file.
+}
 Also @cl{lib-op} links into a library all the object files in a system
 and @cl{dll-op} creates a dynamically loadable library out of these files.
 The above bundle operations also have so-called "monolithic" variants
@@ -582,11 +578,19 @@ would otherwise have broken things badly for ECL users
 if the bundle support weren't itself bundled with @(ASDF).
 
 In @(ASDF3.1), using @cl{deliver-asd-op},
-you can create both the bundle fasl from @(fasl-op) and an @(asd) file
-to use to deliver the system in binary format only
-@extended-only{(@cl{deliver-asd-op} was previously misnamed @cl{binary-op} in @cl{asdf-ecl},
-then in @cl{asdf-bundle} and @(ASDF3)'s @cl{bundle.lisp}.
-It was renamed to @cl{deliver-asd-op} in @(ASDF3.1).)}
+you can create both the bundle fasl from @(compile-bundle-op) and an @(asd) file
+to use to deliver the system in binary format only.
+
+@extended-only{
+  Note that the @(compile-bundle-op), @(load-bundle-op) and @cl{deliver-asd-op}
+  were called @(fasl-op), @(load-fasl-op) and @cl{binary-op}
+  in the original @cl{asdf-ecl} and its successors.
+  These were bad names, since every individual @(compile-op) has a fasl,
+  and since @cl{deliver-asd-op} doesn't generate a binary.
+  They were renamed in @(ASDF3.1),
+  with backward compatibility stubs left behind under the old name.
+}
+
 
 @subsection{Understandable Internals}
 
@@ -2978,14 +2982,16 @@ Some (parts of) namespaces are in the commons and not up for grabs.
 Some features were not actively rejected, but haven't found their users yet.
 @(ASDF3) introduced @(build-op) as a putative default build operation
 that is not specialized for compiling CL software;
-but it isn't used yet either. It might be more useful if the associated function
-@cl{asdf:build-system} were renamed to @cl{asdf:build}, or @cl{asdf:build-op},
-or something shorter than @cl{asdf:load-system}, anyway.
+but it isn't used yet either.
+The associated function @cl{asdf:build-system}
+was renamed @cl{asdf:make} in @(ASDF3.1) in an effort to make it more usable.
+Maybe we should add an alias @cl{asdf:aload} for @cl{asdf:load-system}, too.
 
 During the @(ASDF2) days, the @cl{*load-system-operation*} was designed so that
-ECL may use @(load-fasl-op) instead of @(load-op) by default;
+ECL may use @(load-bundle-op) instead of @(load-op) by default;
 but that's still not the case, and won't be until ECL users more actively test it,
 which they might not do until it's the default, since they haven't otherwise heard of it.
+Indeed, it seems there are still bugs in corner cases.
 
 @subsection{Ubiquity or Bust!}
 
@@ -3548,11 +3554,13 @@ Still, they must be done, in order, in the current image.
 Now, this last constraint was utterly defeating the purpose of some bundle operations,
 where the whole point of using a bundle fasl was to not have to load the individual fasls
 (see @secref{bundle_operations}).
-In the old @(ASDF1) model, the @(load-fasl-op) @(depends-on) @(fasl-op)
+In the old @(ASDF1) model, the @(load-fasl-op) @(depends-on) @(fasl-op)@note{
+  Since renamed to @(load-bundle-op) and @(compile-bundle-op) respectively.
+}
 which @(depends-on) a lot of individual @(compile-op),
 which only @(do-first) the @(load-op) of their dependencies.
 Therefore, if the individual files look up to date, no individual loading takes place.
-Except of course @(ASDF1) is incapable of detecting that files are out of date
+Except of course @(ASDF1) will fail to detect that files are out of date
 when the system's dependencies have changed.
 In the new @(ASDF3) model, the fact that the @(compile-op) actions are out of date
 is detected thanks to recursing through their @(prepare-op) and @(load-op) dependencies;
@@ -3562,9 +3570,9 @@ this causes all those individual @(load-op) to be issued.
 The solution was again suggested by @(POIU).
 For the sake of determining whether an action could be performed in parallel in a fork,
 or had to be done in the image of the main process,
-@(POIU) had introduced a predicate @(needed-in-image-p);
-the notion was actually suggested by the old method @(operation-done-p)
-from Dan Barlow's original @(ASDF1).
+@(POIU) had introduced a predicate @(needed-in-image-p).
+The notion was actually suggested by the old method @(operation-done-p)
+from Dan Barlow's original @(ASDF1):
 If an action has any @(output-files), then
 @(ASDF) considers that the operation is worth it for its output,
 and should have no meaningful or reliable side-effects in the current image;
@@ -3611,20 +3619,36 @@ a much more robust and versatile product than it was:
 not only does it cover the robust building of CL software,
 it also includes runtime software management functionality
 and integration both ways with the Unix command line.
-Considering the massive changes,
-I decided it @(ASDF3), even though a few months ago,
-I was convinced that there would be no such thing.
 
+Considering the massive changes,
+I decided it should be called @(ASDF3), even though a few months ago,
+I was convinced I would never write such a thing,
+since @(ASDF2) was quite stable and
+I had no interest in making big changes.
 @(ASDF3) was pre-released as 2.27 in February 2013,
 then officially released as 3.0.0 on May 15th 2013.
-After a new series of significant improvements,
-it will be released again as 3.1.1 in March 2014.
+
+The numbering change itself triggered an interesting bug,
+because @(ASDF) had adopted without documenting it
+the version compatibility check from Unix libraries,
+whereby an increase in the major version number indicates incompatibility.
+@(ASDF3) thus considered itself incompatible with its @(ASDF 2),
+including with its pre-releases from 2.27 to 2.33.
+Since this compatibility check was undocumented and no one relied on it,
+and since it didn't make sense for CL software distributed as source code
+the way it did for Unix software distributed as object files,
+this led to a 3.0.1 release the next day,
+replacing the compatibility check so that
+a higher major version number still signifies compatibility.
 
 Robert Goldman assumed maintainership in July 2013,
-a few months after the release of @(ASDF3).
-I remain the main developer until release 3.1.1.
+a few months after the release of @(ASDF) 3.0.1,
+and has since released 3.0.2 and 3.0.3.
+I remained the main developer until release 3.1.1, in March 2014,
+after a new series of significant improvement.
 
-All known bugs have been fixed, and the regression test suite has swollen;
+All known bugs have been fixed except for wishlist items,
+while the regression test suite has swollen;
 but there will always be portability issues to fix.
 A big TODO file lists suggested improvements
 but it's uncertain whether a new active developer will ever implement them.
@@ -3672,11 +3696,11 @@ unless they bother to use some automated dependency analysis tools.
 Still, the situation is somewhat worse in the CL world,
 first because every file serves the purpose of both @tt{.c} and @tt{.h}
 so these dependencies are ubiquitous;
-second because because software is both much more amenable to modification,
+second because because CL software is much more amenable to modification,
 indeed, dynamic interactive modification,
 so these changes happen more often;
-thirdly because software libraries are indeed often lacking in finish,
-because tinkering with the software is so easy that users are often @emph{expected} to do so
+third because CL software libraries are indeed often lacking in finish,
+since tinkering with the software is so easy that users are often @emph{expected} to do so
 rather than have all the corner cases painfully taken care of by the original author.
 In C, the development loop is so much longer,
 jumping from one library to the next is so expensive,
@@ -3703,7 +3727,7 @@ when a dependency changes incompatibly,
 clients are modified before the system is expected to work anyway.
 Those who have written large software in the past tended
 to use proprietary implementations,
-that did provide a fix to that bug.
+that provided a @(defsystem) where this bug was fixed.
 ITA Software was one of the few companies using @(ASDF)
 to write really large software, and indeed,
 it's by managing the build there that we eventually cared enough to fix @(ASDF).

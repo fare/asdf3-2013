@@ -94,7 +94,8 @@
   parse-unix-namestring unix-namestring parse-native-namestring native-namestring
   getcwd
 
-  operation load-op compile-op prepare-op load-fasl-op fasl-op concatenate-source-op
+  operation load-op compile-op prepare-op
+  load-fasl-op fasl-op load-bundle-op compile-bundle-op concatenate-source-op
   program-op image-op build-op
   upward-operation downward-operation sideway-operation selfward-operation non-propagating-operation
 

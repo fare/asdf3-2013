@@ -595,7 +595,7 @@ to use to deliver the system in binary format only.
 @subsection{Understandable Internals}
 
 After bundle support was merged into @(ASDF) (see @secref{bundle_operations} above),
-it became trivial to add a new @(concatenate-source-op) operation to @(ASDF).
+it became trivial to implement a new @(concatenate-source-op) operation.
 Thus @(ASDF) could be developed as multiple files, which would improve maintainability.
 For delivery purpose, the sources files would be concatenated in correct dependency order,
 into the single file @tt{asdf.lisp} required for bootstrapping.
@@ -704,7 +704,8 @@ a set of general-purpose utilities, and a common core for the @(ASDF) configurat
 Importantly for a build system, there are portable abstractions for compiling CL files
 while controlling all the warnings and errors that can occur,
 and there is a support for the life-cycle of a Lisp image:
-dumping and restoring images, initialization and finalization hooks, error handling, etc.
+dumping and restoring images, initialization and finalization hooks,
+error handling, backtrace display, etc.
 Yet the most complex piece turned out to be a portable implementation of @(run-program).
 
 @subsection{@(run-program)}
@@ -739,7 +740,19 @@ Moreover, Windows support differed significantly from Unix.
 initially copied over from @(mk-defsystem),
 but it was more of an attractive nuisance than a solution, despite many bug fixes:
 it was implicitly calling @cl{format}; capturing output was particularly contrived;
-and what shell would be used varied between implementation, even more so on Windows.
+and what shell would be used varied between implementation, even more so on Windows.@;
+@extended-only{@note{
+  Actually, our first reflex was to declare the broken @cl{run-shell-command} deprecated,
+  and move @(run-program) to its own separate system.
+  However, after our then co-maintainer (and now maintainer) Robert Goldman insisted that
+  @cl{run-shell-command} was required for backward compatibility and
+  some similar functionality expected by various @(ASDF) extensions,
+  we decided to provide the real thing rather than this nuisance,
+  and moved from @cl{xcvb-driver} the nearest code there was to this real thing,
+  that we then extended to make it more portable, robust, etc.,
+  according to the principle:
+  @bold{Whatever is worth doing at all is worth doing well} (Chesterfield).
+}}
 
 @(ASDF3)'s @(run-program) is full-featured,
 based on code originally from @(XCVB)'s @cl{xcvb-driver} @~cite[XCVB-2009].
@@ -773,7 +786,6 @@ and provides a richer interface, handling pipelines, @tt{zsh} style redirections
 splicing of strings and/or lists into the arguments, and
 implicit conversion of pathnames into native-namestrings,
 of symbols into downcased strings,
-@; Q: how do I prevent TeX from coalescing -- into — ???
 of keywords into downcased strings with a @literal|{"--"}| prefix.
 Its short-named functions @cl{run}, @cl{run/nil}, @cl{run/s}, @cl{run/ss},
 respectively run the external command with outputs to the Lisp standard and error output,
@@ -1319,8 +1331,8 @@ One option would be to strictly enforce hygiene by binding the syntax tables
 to read-only copies of the standard tables around each action;
 actions that want to modify syntax then have to explicitly use different tables.
 Another option would be to provide hygiene by binding the syntax tables
-to a fresh writable copies of the standard tables around each action,
-or maybe to have actions share per-system tables
+to a writable copies of the standard tables around each action,
+or maybe to have actions share per-system or global tables
 that are initialized according to some well-defined strategy, whether simple or elaborate.
 In either case, a change is required in how @(ASDF) behaves and how it's extended;
 doing it in backward-compatible way is technically hard but not impossible,
@@ -2950,7 +2962,7 @@ that didn't make the overall issue ultimately easier to solve.
 More like hiding the dirt under the carpet than vacuuming it away.
 The eventual solutions required confronting the issues head on.
 
-@subsection{Failed Namespace Grabs}
+@subsection{Attempted Namespace Grabs}
 
 In the last days of @(ASDF1), there was an attempt to export
 its small set of general purpose utilities as package @cl{asdf-extensions},
@@ -2980,9 +2992,10 @@ Some (parts of) namespaces are in the commons and not up for grabs.
 @subsection{Not Successful Yet}
 
 Some features were not actively rejected, but haven't found their users yet.
+
 @(ASDF3) introduced @(build-op) as a putative default build operation
-that is not specialized for compiling CL software;
-but it isn't used yet either.
+that is not specialized for compiling CL software.
+But it hasn't found its users yet.
 The associated function @cl{asdf:build-system}
 was renamed @cl{asdf:make} in @(ASDF3.1) in an effort to make it more usable.
 Maybe we should add an alias @cl{asdf:aload} for @cl{asdf:load-system}, too.
@@ -3659,13 +3672,22 @@ Some may ask: how did @(ASDF) survive for over 11 years
 with such an essential birth defect?
 Actually, the situation is much worse:
 the very same the bug was present in @(mk-defsystem), since 1990.
-Actually, it looks like the bug might have been
+Worse, it looks like the bug might have been
 as old as the original @(DEFSYSTEM) from the 1970s.
+
 The various proprietary variants of @(defsystem)
-from Symbolics, Franz, and LispWorks all include fixes to this issue;
-however, the variants from Symbolics and Franz, require
-using a @emph{non-default variant} @cl{:definitions} of @cl{:depends-on};
-and the one from Franz still has bugs in corner cases.
+from Symbolics, Franz, and LispWorks all include fixes to this issue.
+However, the variants from Symbolics and Franz, require
+using a @emph{non-default} kind of dependency, @cl{:definitions},
+as opposed to the regularly advertised @cl{:serial};
+also, the variant from Franz still has bugs in corner cases.
+Meanwhile the variant from LispWorks also requires the programmer to follow
+a non-trivial and under-documented discipline in defining build @cl{:rules}.
+What is worse, the @emph{live} knowledge about this bug and its fix
+never seems to have made it out to the general Lisp programming public,
+and so most of those who are using those tools are probably doing it wrong,
+even when the tools allow them to do things right.
+@bold{The problem is not solved unless the bug is fixed by default}.
 
 This is all very embarrassing indeed:
 in the world of C programming,
@@ -3756,6 +3778,7 @@ Then, a change in a dependency can lead in expecting a change in the macro expan
 without the client site being modified, and that change will fail to take place
 due to the @(defsystem) bug.
 But most macros are "stateless", "pure", and have no such side-effect.
+@; See @hyperlink["http://random-state.net/log/3390120648.html"]{@cl{CALL-WITH-} style}
 Then, a meaningful change in a macro defined in a dependency usually requires
 a change in the client file that depends on it,
 in which case the client will be recompiled after that change and no bug will be seen.

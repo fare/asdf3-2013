@@ -4,7 +4,7 @@ ASDF3, or Why Lisp is Now an Acceptable Scripting Language
 This is an article I submitted to the European Lisp Symposium in 2014
 	http://www.european-lisp-symposium.org/
 
-HTML and PDF versions of the extended version of the article (25 pages)
+HTML and PDF versions of the extended version of the article (26 pages)
 can be found here:
 	http://fare.tunes.org/files/asdf3/asdf3-2014.html
 	http://fare.tunes.org/files/asdf3/asdf3-2014.pdf

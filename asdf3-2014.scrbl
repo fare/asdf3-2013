@@ -1339,6 +1339,11 @@ doing it in backward-compatible way is technically hard but not impossible,
 but first requires identifying the use patterns that need or need not be supported:
 otherwise the change may break tens of existing systems
 that have to be fixed beforehand, which is socially hard.
+@extended-only{
+Other tools beside @(ASDF) will have to be updated too:
+SLIME, the Emacs mode for CL, will need to be taught about readtables,
+as well as its competitors for VIM, climacs, hemlock, CCL-IDE, etc.
+}
 
 Until such issues are resolved,
 even though the Lisp ideal is one of ubiquitous syntax extension,
@@ -2332,7 +2337,7 @@ For instance, subtle changes in how we search for @(asd) files may have caused
 logical pathnames being translated to physical pathnames earlier than users might expect.
 The use of @(truename), implicitly called by @(directory) or @(probe-file),
 would also translate away the logical pathname as well as symlinks.
-Some implementations, probably for sanity, translate the logical pathname to a physical pathname,
+Some implementations, probably for sanity, translate the logical pathname to a physical pathname
 before they bind @(*load-pathname*):
 indeed code that includes literal @cl{#p"pathname/objects"}
 when read while the @(*dpd*) is "logical",

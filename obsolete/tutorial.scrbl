@@ -208,15 +208,3 @@ Sucks less than editing the load file of each of ten different libraries,
 each in different ways, to specify where to load the rest of the library,
 then editing a master load file to load each of these libraries.
 
-late 1970s, defsystem. Rule based.
-
-1980s. more declarative
-
-mkdefsystem. free version
-
-asdf: solves the loading issue. but sbcl only. not very usable
-
-asdf2: make it portable, robust
-
-asdf3: rewrite it to be conceptually coherent
-

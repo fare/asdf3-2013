@@ -10,14 +10,26 @@
 @;http://splashcon.org/2014/onward.html
 
 @abstract{
-  Lisp and Smalltalk
-  tradition is at odds with the mainstream of programming.
+  The world of computing has been torn by war for many decades.
+  A culture war, of many dimensions, of which we'll try to describe one.
+  On the one side we have live programmers opposing cult-of-dead zombies.
+  On the other side we have formal programmers opposing brutish bitdiddlers.
+  The opposition is not a matter of various features present or absent
+  from programming systems, although it does manifest itself through
+  a preference for some features over others.
+  The opposition is one of approach, of paradigm, of sense of life.
+  We'll try to speak for both sides, one at a time,
+  taking extreme stances to make the points more visible;
+  yet we'll offer a way for the two sides to make peace,
+  and reconcile their visions into a richer paradigm.
+}
 
   Dynamic typing vs static typing.
   Garbage collection vs static memory management.
   Incremental code and data upgrade vs starting fresh processes everytime.
   Interactive REPL vs batch processing.
   Metaprogramming vs design patterns.
+  Evolution vs Intelligent Design
 
   And while many of its once distinctive traits
   are now commonplace features accepted in this mainstream,
@@ -115,8 +127,8 @@ in which code and data persist transparently.
   @item{
     @emph{Transparence} means the entire system is designed
     to be run in interaction with the user and is
-    @hyperlink["http://martinfowler.com/bliki/InternalReprogrammability.html"]
-        {Internally Reprogrammable}.
+    @hyperlink["http://martinfowler.com/bliki/InternalReprogrammability.html"
+       ]{Internally Reprogrammable}.
     though the user doesn't have to deal
     with any particular details he doesn't care for,
     whatever aspect of the system the user does decide to care for
@@ -677,3 +689,22 @@ Recreating features by piling on layers of complexity.
 
 In Lisp, you don't write a specification of the program,
 you write a specification of how to build the program.
+
+Hayekian evolution vs "intelligent" design.
+
+
+Programmers vary a lot in personality.
+Their approach to software may contain more or less of the
+Scientist who sees it as pre-existing mysteries to be unraveled, understood and admired;
+the Engineer who sees it as man-made structures to be built and maintained;
+the Artist who sees it as an expression or man's tastes and values;
+or the Manager who sees it as a project of people to coordinate.
+Common Lisp programmers tend to distinguish themselves in
+more than other programmers
+seeing @emph{existing} software as uncreated discoveries
+that must be studied by exploration to discover more,
+rather than fully designed artefacts
+that must be either learned from authority,
+and accepted or rejected to create more.
+Software, like Mathematics, is not of Man, but of God —
+that is, it is not designed, it @hyperlink["evolutionism"]{evolves}.

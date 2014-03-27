@@ -326,7 +326,7 @@
 
 (tslide "Creating Basic ASDF Systems"
   @t{foo.asd}
-  @clcode{(asdf:defsystem foo 
+  @clcode{(asdf:defsystem foo
             :components
             ((:file "foo")))})
 

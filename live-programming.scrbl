@@ -1,5 +1,5 @@
 #lang scribble/sigplan @nocopyright
-@(require scribble/base "utils.rkt")
+@(require scribble/base "utils.rkt" "bibliography.scrbl")
 
 @title{Live Computing vs Dead Software, or LAMBDA, the Ultimate Culture War}
 
@@ -708,3 +708,5 @@ that must be either learned from authority,
 and accepted or rejected to create more.
 Software, like Mathematics, is not of Man, but of God —
 that is, it is not designed, it @hyperlink["evolutionism"]{evolves}.
+
+@(generate-bib)

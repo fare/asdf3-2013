@@ -555,9 +555,7 @@ The most directly user-facing bundle operations are
 the former bundles into a single compilation file
 all the individual outputs from the @(compile-op)
 of each source file in a system;
-the latter loads the result of the former.@extended-only{@note{
-  A fasl, for FASt Loading, is a CL compilation output file.
-}}
+the latter loads the result of the former.
 Also @cl{lib-op} links into a library all the object files in a system
 and @cl{dll-op} creates a dynamically loadable library out of them.
 The above bundle operations also have so-called @emph{monolithic} variants
@@ -580,8 +578,8 @@ an extension to @(ASDF) specific to the implementation ECL, back in the day of @
   and call the proper initialization functions in the correct order.
   Bundle operations are important to deliver CL software
   as a library to be embedded in some C program.
-  Also, because of the overhead of dynamic linking, loading a single fasl
-  is preferable to a lot of smaller fasls.
+  Also, because of the overhead of dynamic linking, loading a single object file
+  is preferable to a lot of smaller object files.
 }}
 It was distributed with @(ASDF2), though in a way
 that made upgrade slightly awkward to ECL users,
@@ -589,7 +587,7 @@ who had to explicitly reload @cl{asdf-ecl} after upgrading @(ASDF),
 even though it was included by the initial @cl{(require "asdf")}.
 In @extended-only{May} 2012, it was generalized to other implementations
 as the external system @cl{asdf-bundle}.
-This was then merged into @(ASDF)
+It was then merged into @(ASDF)
 during the development of @(ASDF3)@extended-only{ (2.26.7, December 2012)}:
 not only did it provide useful new operations,
 but the way that @(ASDF3) was automatically upgrading itself for safety purposes
@@ -602,13 +600,13 @@ you can create both the bundle from @(compile-bundle-op) and an @(asd) file
 to use to deliver the system in binary format only.
 
 @extended-only{
-  Note that the @(compile-bundle-op), @(load-bundle-op) and @cl{deliver-asd-op}
-  were called @(fasl-op), @(load-fasl-op) and @cl{binary-op}
-  in the original @cl{asdf-ecl} and its successors.
-  These were bad names, since every individual @(compile-op) has a fasl
-  (FASt Loading file, the name of a CL compilation output file)
+  Note that @(compile-bundle-op), @(load-bundle-op) and @cl{deliver-asd-op}
+  were respectively called @(fasl-op), @(load-fasl-op) and @cl{binary-op}
+  in the original @cl{asdf-ecl} and its successors up until @(ASDF3.1).
+  But those were bad names, since every individual @(compile-op) has a fasl
+  (a fasl, for FASt Loading, is a CL compilation output file),
   and since @cl{deliver-asd-op} doesn't generate a binary.
-  They were renamed in @(ASDF3.1),
+  They were eventually renamed,
   with backward compatibility stubs left behind under the old name.
 }
 
@@ -922,12 +920,12 @@ These functions were based on code from @cl{xcvb-driver}, that had taken them fr
 @cl{:entry-point "my-package:entry-point"}.
 The specified function (designated as a string to be read after the package is created)
 is called without arguments after the program image is initialized;
-after doing it own initialization,
+after doing it own initializations,
 it can explicitly consult @cl{*command-line-arguments*}@note{
-  In CL, global variables are dynamically bound, unlike normal, lexical variables,
-  that are statically bound. To avoid subtle errors,
-  the former are conventionally named with enclosing asterisks,
-  recently dubbed @emph{earmuffs}.
+  In CL, most variables are lexically visible and statically bound,
+  but @emph{special} variables are globally visible and dynamically bound.
+  To avoid subtle mistakes, the latter are conventionally named with enclosing asterisks,
+  also known in recent years as @emph{earmuffs}.
 }
 or pass it as an argument to some main function.
 
@@ -963,7 +961,7 @@ We solved this problem some years ago with @(cl-launch).
 This bilingual program, both a portable shell script and a portable CL program,
 provides a nice shell command interface to
 building shell commands from Lisp code,
-including delivery as either portable shell scripts or
+and supports delivery as either portable shell scripts or
 self-contained precompiled executable files.
 The very same file is accepted by both language processors;
 no error-prone extraction of temporary files is required.
@@ -1193,7 +1191,7 @@ since by definition, some behavior has changed!
 One might be tempted to weaken the constraint a bit,
 and define "backward compatible" as being the same as
 a "conservative extension":
-a conservative extension may fix erroneous situations,
+a @bydef{conservative extension} may fix erroneous situations,
 and give new meaning to situations that were previously undefined,
 but may not change the meaning of previously defined situations.
 Yet, this definition is doubly non satisfactory.
@@ -1201,8 +1199,8 @@ On the one hand, it precludes any amendment to previous bad decisions;
 hence, the jest @moneyquote{if it's not backwards, it's not compatible}.
 On the other hand, even if it only creates new situations
 that work correctly where they were previously in error,
-some analysis tool might exist that assumed these situations could never arise,
-and if stumbled that they now do.
+some existing analysis tool might assume these situations could never arise,
+and be stumbled that they now do.
 
 Indeed this happened when @(ASDF3) tried to better support @emph{secondary systems}.
 @(ASDF) looks up systems by name: if you try to load system @cl{foo},
@@ -1237,7 +1235,7 @@ This feature may look like a textbook case of a backward-compatible "conservativ
 Yet, it's the major reason why @(Quicklisp) itself still hasn't adopted @(ASDF3):
 @(Quicklisp) assumed it could always create a file named after each system,
 which happened to be true in practice (though not guaranteed) before this @(ASDF3) innovation;
-systems that newly include secondary system using this style
+systems that newly include secondary systems using this style
 break this assumption, and will require non-trivial work for @(Quicklisp) to support.
 
 What then, is backward compatibility? It isn't a technical constraint.
@@ -1259,9 +1257,9 @@ at some point you must have both kinds active,
 and you cannot remove the old ones until you have stopped relying on them.
 Within a fast moving company,
 such migration of an entire code base can happen in a single checkin.
-if it's a large company with many teams, it can take many weeks or months.
+If it's a large company with many teams, the migration can take many weeks or months.
 When the software is used by a weakly synchronized group like the CL community,
-the change can take years.
+the migration can take years.
 
 When releasing @(ASDF3), we spent a few months making sure that it would work
 with all publicly available systems.
@@ -1424,7 +1422,7 @@ As computer systems grew, they became files on a tape,
 or, if you had serious money, on a disk.
 As they kept growing, programs would start to use libraries,
 and not be made of a single file;
-then you'd just a quick script that loaded the few files your code depended on.
+then you'd just write a quick script that loaded the few files your code depended on.
 As software kept growing, manual scripts proved unwieldy,
 and people started developing @emph{build systems}.
 A popular one, since the late 1970s, was @(make).
@@ -1435,7 +1433,7 @@ became somewhat popular.
 By 2001, it had grown crufty and proved hard to extend, so
 Daniel Barlow created his own variant, @(ASDF), that he published in 2002,
 and that became an immediate success.
-Dan's @(ASDF) was an experiment in many dimensions,
+Dan's @(ASDF) was an experiment in many ways,
 and was notably innovative in its extensible object-oriented API
 and its clever way of locating software.
 See @secref{asdf1}.
@@ -1444,10 +1442,12 @@ By 2009, Dan's @(ASDF1) was used by hundreds of software systems on many CL impl
 however, its development cycle was dysfunctional, its bugs were not getting fixed,
 those bug fixes that existed were not getting distributed,
 and configuration was noticeably harder that it should have been.
-After the then maintainer Gary King resigned, we took over his position,
-and produced a new version @(ASDF2), released in 2010,
-that was turned @(ASDF) from a successful experiment
-to a product, making it upgradable, portable, configurable, robust, performant and usable.
+Dan abandoned CL development and @(ASDF) around May 2004;
+@(ASDF) was loosely maintained until Gary King stepped forward in May 2006.
+After Gary King resigned in November 2009, we took over his position,
+and produced a new version @(ASDF2), released in May 2010,
+that turned @(ASDF) from a successful experiment to a product,
+making it upgradable, portable, configurable, robust, performant and usable.
 See @secref{asdf2}.
 
 The biggest hurdle in productizing @(ASDF) was related to dealing with CL pathnames.
@@ -1510,18 +1510,18 @@ in addition to a slightly annoying software license.
 These flaws were probably justified at the time it was written,
 several years before the CL standard was adopted,
 but were making it less than ideal in the world of universal personal computing.
-First, installing a system required editing the system's definition files to configure pathnames,
+First, installing a system required editing the system definition files to configure pathnames,
 and/or editing some machine configuration file to define "logical pathname translations"
-that map "logical pathnames" used by those files to actual physical pathnames.
+that map to actual physical pathnames the "logical pathnames" used by those system definition files.
 Back when there were a few data centers each with a full time administrator,
-each configuring the system once for tens of users, this was a small issue;
+each of whom configured the system once for tens of users, this was a small issue;
 but when hundreds of amateur programmers
 were each installing software on their home computer,
 this situation was less than ideal.
 Second, extending the code was very hard:
-Mark Kantrovitz had to restrict his code to functionality universally available in 1990,
-and to add a lot of boilerplate and magic to support many implementations;
-to add the desired features in 2001, a programmer would have had to modify the carefully crafted file,
+Mark Kantrovitz had to restrict his code to functionality universally available in 1990
+(which didn't include CLOS), and to add a lot of boilerplate and magic to support many implementations.
+To add the desired features in 2001, a programmer would have had to modify the carefully crafted file,
 which would be a lot of work, yet eventually would probably still break
 the support for now obsolete implementations that couldn't be tested anymore.
 
@@ -1554,8 +1554,8 @@ can identify from which file they are loaded.
 Thus, system definition files didn't need to be edited anymore,
 as was previously required with @(mk-defsystem),
 since pathnames of all components could now be deduced
-from the pathname of the system definition file itself;
-furthermore, because the @cl{truename} resolved Unix symlinks,
+from the pathname of the system definition file itself.
+Furthermore, because the @cl{truename} resolved Unix symlinks,
 you could have symlinks to all your Lisp systems
 in one or a handful directories that @(ASDF) knew about,
 and it could trivially find all of them.
@@ -1570,7 +1570,7 @@ Also, following earlier suggestions by Kent Pitman@~cite[Pitman-Large-Systems],
 Dan Barlow used object-oriented style to make his @(defsystem) extensible
 without the need to modify the main source file.@note{
   Dan Barlow may also have gotten from Kent Pitman
-  the idea of reifying a plan then executing it
+  the idea of reifying a plan then executing it in two separate phases
   rather than walking the dependencies on the go.
 }
 Using the now standardized @(CLOS) (CLOS),
@@ -3321,7 +3321,7 @@ By the time of @(ASDF 2.26) in October 2012,
 many changes had been made,
 for correctness (fixing the incorrect handling of many corner cases),
 for robustness (adding graceful error handling),
-for performance (enhancing asymptotic behavior from O(n⁴) to O(n)
+for performance (enhancing asymptotic behavior from @emph{O(n⁴)} to @emph{O(n)}
 by using better data structures than naïve lists),
 for extensibility (moving away support for extra features such as @cl{:version} and @cl{:feature}),
 for portability (a trivial tweak to support old Symbolics Lisp Machines!),
@@ -3865,14 +3865,14 @@ and he had quite a knack for finding interesting designs.
 
 And the design of @(ASDF) is undoubtly interesting.
 It masterfully takes advantage of the multiple inheritance and multiple dispatch
-provided by CLOS to deliver in a thousand lines or so
+capabilities of CLOS to deliver in a thousand lines or so
 a piece of software that is extremely extensible,
 and unlike anything written in languages missing these features.
 @(ASDF3) is ten times this thousand lines,
 because of all the infrastructure for robustness and portability,
 because of all the burden of hot upgrade and backward compatibility,
 because of all the builtin documentation and comments,
-and because of all the several extensions that it bundles.
+and because of all the extensions that it bundles.
 But the core is still a thousand lines of code or so,
 and these extensions, built on top of this core,
 illustrate its expressive power,

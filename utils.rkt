@@ -94,7 +94,7 @@
   parse-unix-namestring unix-namestring parse-native-namestring native-namestring
   getcwd
 
-  operation load-op compile-op prepare-op
+  operation load-op compile-op prepare-op test-op
   load-fasl-op fasl-op load-bundle-op compile-bundle-op concatenate-source-op
   program-op image-op build-op
   upward-operation downward-operation sideway-operation selfward-operation non-propagating-operation
@@ -116,7 +116,9 @@
 (define (Quicklisp) "Quicklisp")
 (define (asd) @tt{.asd})
 
-(define-cite ~cite cite-noun generate-bib)
+(define-cite ~cite cite-noun generate-bib) ;; #:style number-style)
 
 (define-syntax-rule (define-bib name stuff ...)
   (define name (make-bib stuff ...)))
+
+(define (shell . x) (tt (apply literal x)))

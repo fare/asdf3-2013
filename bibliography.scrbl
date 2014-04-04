@@ -36,11 +36,36 @@
   ;; School of Computer Science. Carnegie Mellon University.
   #:url "ftp://ftp.cs.rochester.edu/pub/archives/lisp-standards/defsystem/pd-code/mkant/defsystem.ps.gz")
 
+(define-bib Critique-DIN-Kernel-Lisp
+  #:author "Henry Baker"
+  #:title "Critique of DIN Kernel Lisp Definition Version 1.2"
+  #:url "http://www.pipeline.com/~hbaker1/CritLisp.html"
+  #:date "1992")
+
+(define-bib Cult-of-Dead-mail
+  #:title "Cult of Dead"
+  #:author "Jim Benson"
+  #:date "2002"
+  #:url "http://wiki.squeak.org/squeak/2950")
+
 (define-bib ASDF-Manual
   #:title "ASDF Manual"
   #:author "Daniel Barlow" ;; and contributors?
   #:date "2004" ;; 2001—2014
   #:url "http://common-lisp.net/project/asdf/")
+
+(define-bib faslpath-page
+  #:title "faslpath"
+  #:author "Peter von Etter"
+  #:date "2009"
+  #:url "https://code.google.com/p/faslpath/")
+
+(define-bib XCVB-2009
+  #:author "François-René Rideau and Spencer Brody"
+  #:title "XCVB: an eXtensible Component Verifier and Builder for Common Lisp"
+  #:url "http://common-lisp.net/projects/xcvb/"
+  ;; International Lisp Conference
+  #:date "2009")
 
 (define-bib Software-Irresponsibility
   #:author "François-René Rideau"
@@ -60,20 +85,14 @@
   #:date "2011"
   #:url "http://quicklisp.org/") ;; also see blog.quicklisp.org and xach.livejournal.com archives
 
-(define-bib XCVB-2009
-  #:author "François-René Rideau and Spencer Brody"
-  #:title "XCVB: an eXtensible Component Verifier and Builder for Common Lisp"
-  #:url "http://common-lisp.net/projects/xcvb/"
-  ;; International Lisp Conference
-  #:date "2009")
-
 ;; ASDF 2.26: http://fare.livejournal.com/170504.html
 
-(define-bib Critique-DIN-Kernel-Lisp
-  #:author "Henry Baker"
-  #:title "Critique of DIN Kernel Lisp Definition Version 1.2"
-  #:url "http://www.pipeline.com/~hbaker1/CritLisp.html"
-  #:date "1992")
+;; <nyef> Looks like quick-build was first implemented on 2012-04-02, so just over two years ago, but there was about a year of bugfixing to get its current form.
+;; <nyef> Well, bugfixing and feature enhancement.
+(define-bib Quick-build
+  #:title "Quick-build (private communication)"
+  #:author "Alastair Bridgewater"
+  #:date "2012")
 
 (define-bib ASDF3-2014
   #:title "ASDF3, or Why Lisp is Now an Acceptable Scripting Language (extended version)"
@@ -81,8 +100,3 @@
   #:date "2014"
   #:url "http://fare.tunes.org/files/asdf3/asdf3-2014.html")
 
-(define-bib Cult-of-Dead
-  #:title "Cult of Dead"
-  #:author "Jim Benson"
-  #:url "http://wiki.squeak.org/squeak/2950"
-  #:date "2002")

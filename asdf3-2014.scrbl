@@ -3706,12 +3706,13 @@ a higher major version number still signifies compatibility.
 Robert Goldman assumed maintainership in July 2013,
 a few months after the release of @(ASDF) 3.0.1,
 and has since released 3.0.2 and 3.0.3.
-I remained the main developer until release 3.1.1, in March 2014,
+I remained the main developer until release 3.1.1, in April 2014,
 after a new series of significant improvement.
 
 All known bugs have been fixed except for wishlist items,
-while the regression test suite has swollen;
 but there will always be portability issues to fix.
+Also, while the regression test suite has swollen,
+many functions remain untested, and many of them probably include bugs.
 A big TODO file lists suggested improvements
 but it's uncertain whether a new active developer will ever implement them.
 

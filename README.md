@@ -6,13 +6,13 @@ This is an article I submitted to the European Lisp Symposium in 2014
 
 HTML and PDF versions of the extended version of the article (26 pages)
 can be found here:
-	http://fare.tunes.org/files/asdf3/asdf3-2014.html
-	http://fare.tunes.org/files/asdf3/asdf3-2014.pdf
+	* http://fare.tunes.org/files/asdf3/asdf3-2014.html
+	* http://fare.tunes.org/files/asdf3/asdf3-2014.pdf
 
 HTML and PDF versions of the short version of the article (8 pages),
 as submitted to ELS 2014, can be found here:
-	http://fare.tunes.org/files/asdf3/asdf3-els2014.html
-	http://fare.tunes.org/files/asdf3/asdf3-els2014.pdf
+	* http://fare.tunes.org/files/asdf3/asdf3-els2014.html
+	* http://fare.tunes.org/files/asdf3/asdf3-els2014.pdf
 
 They can be compiled using PLT Racket's Scribble, from asdf3-2014.scrbl.
 

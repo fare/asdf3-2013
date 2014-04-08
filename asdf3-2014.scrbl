@@ -137,7 +137,8 @@ we compare it to common practice in the C world.
 @;
 In @secref{asdf3},
 we describe the improvements introduced in @(ASDF3)
-and @(ASDF3.1) to solve the problem of software delivery.
+and @(ASDF3.1) to solve the problem of software delivery
+(this section requires some familiarity with CL).
 @;
 In @secref{evolving}, we discuss the challenges
 of evolving a piece of community software,
@@ -535,7 +536,7 @@ and could conceivably be used in the future to build more than just CL programs.
 }
 
 @moneyquote{The proof of a good design is in the ease of extending it}.
-And in Lisp, extension doesn't require privileged access to the code base.
+And in CL, extension doesn't require privileged access to the code base.
 We thus tested our design by adapting the most elaborate existing @(ASDF) extensions
 to use it.
 The result was indeed cleaner, eliminating the previous need
@@ -752,7 +753,7 @@ unless you specified @cl{:ignore-error-status t}.
 
 Such a utility is essential for @(ASDF) extensions
 to portably execute arbitrary programs.
-With it, CL can replace any shell script.
+With it, CL can replace any Unix command.
 It was a challenge to write:
 Each implementation provided a different underlying mechanism
 with wildly different feature sets and countless corner cases.
@@ -810,7 +811,7 @@ and provides a richer interface, handling pipelines, @tt{zsh} style redirections
 splicing of strings and/or lists into the arguments, and
 implicit conversion of pathnames into native-namestrings,
 of symbols into downcased strings,
-of keywords into downcased strings with a @shell|{"--"}| prefix.
+of keywords into downcased strings with a @dashdash{} prefix.
 Its short-named functions @cl{run}, @cl{run/nil}, @cl{run/s}, @cl{run/ss},
 respectively run the external command with outputs to the Lisp standard and error output,
 with no output, with output to a string, or with output to a stripped string.
@@ -953,18 +954,18 @@ or to provide ready-to-debug images for otherwise non-interactive applications.
 
 Running Lisp code to portably create executable commands from Lisp is great,
 but there is a bootstrapping problem:
-when all you can assume is the shell command line,
+when all you can assume is the Unix shell,
 how are you going to portably invoke the Lisp code
 that creates the initial executable to begin with?
 
 We solved this problem some years ago with @(cl-launch).
 This bilingual program, both a portable shell script and a portable CL program,
-provides a nice shell command interface to
+provides a nice colloquial shell command interface to
 building shell commands from Lisp code,
 and supports delivery as either portable shell scripts or
 self-contained precompiled executable files.
 The very same file is accepted by both language processors;
-no error-prone extraction of temporary files is required.
+no race-condition-prone extraction of temporary files is required.
 
 Its latest incarnation, @(cl-launch 4) (March 2014),
 was updated to take full advantage of @(ASDF3);
@@ -977,8 +978,8 @@ cl -sp lisp-stripper \
    -i "(print-loc-count \"asdf.lisp\")"
 }|
 
-It can also be used as a script "interpreter",
-except with a Lisp compiler underneath, where desired:
+It can also be used as a script "interpreter" where desired,
+except with a Lisp compiler underneath:
 @verbatim|{
 #!/usr/bin/cl -sp lisp-stripper -E main
 (defun main (argv)
@@ -987,11 +988,11 @@ except with a Lisp compiler underneath, where desired:
       (print-loc-count *standard-input*)))
 }|
 
-In the examples above, option @shell|{-sp}|, shorthand for @shell|{--system-package}|,
+In the examples above, option @shell|{-sp}|, shorthand for @dashdash{system-package},
 simultaneously loads a system using @(ASDF) during the build phase,
 and appropriately selects the current package;
-@shell|{-i}|, shorthand for @shell|{--init}| evaluates a form after the software is built;
-@shell|{-E}|, shorthand for @shell|{--entry}| configures a function that is called
+@shell{-i}, shorthand for @dashdash{init} evaluates a form after the software is built;
+@shell{-E}, shorthand for @dashdash{entry} configures a function that is called
 when the program starts, with the list of command-line arguments as its argument.@note{
   Several systems are available to help you define an evaluator
   for your command-line argument DSL:
@@ -1004,7 +1005,7 @@ after removing comments, blank lines, docstrings, and multiple lines in strings.
 with sensible defaults.
 You can easily override all defaults with a proper command-line option,
 a configuration file, or some installation-time configuration.
-See @shell|{cl-launch --more-help}| for complete information.
+See @shell{cl-launch @dashdash{more-help}} for complete information.
 Note that @(cl-launch) is on a bid to homestead the executable path
 @shell{/usr/bin/cl} on Linux distributions;
 it may slightly more portably be invoked as @shell{cl-launch}.
@@ -1042,9 +1043,9 @@ For security reasons, the cache is not shared between users.
 that supports a one-file, one-package, one-system style of programming.
 This style was pioneered by @(faslpath) @~cite[faslpath-page]
 and more recently @(quick-build) @~cite[Quick-build].
-@(asdf/package-system) is actually compatible with the latter,
-though not with the former, for @(ASDF3.1) and @(quick-build)
-use a slash @cl{"/"} as a hierarchy separator,
+@(asdf/package-system) is actually compatible with the latter
+but not the former, for @(ASDF3.1) and @(quick-build)
+use a slash @cl{"/"} as a hierarchy separator
 where @(faslpath) used a dot @cl{"."}.
 
 The principle of this lightweight system definition style is that
@@ -1061,8 +1062,8 @@ refers to the file @tt{interface/all.lisp}@extended-only{@note{
   When converting a package name to system name or filename,
   we downcase the package names to follow modern convention.
 }}
-under the package-system hierarchy registered by system @cl{lil},
-defined as follows in @cl{lil.asd}:
+under the hierarchy registered by system @cl{lil},
+defined as follows in @cl{lil.asd} as using class @cl{package-system}:
 @clcode{
 (defsystem "lil" ...
   :description "LIL: Lisp Interface Library"
@@ -1098,7 +1099,7 @@ And all the dependencies are trivially computed from that.
 
 This style provides many maintainability benefits:
 by imposing upon programmers a discipline of smaller namespaces,
-with explicit dependencies, and forward dependencies especially so,
+with explicit dependencies, and especially explicit forward dependencies,
 the style encourages good factoring of the code into coherent units;
 by contrast, the traditional style of "everything in one package"
 has low overhead, but doesn't scale very well.
@@ -1112,16 +1113,22 @@ from which it inherits the many features, and the portability and robustness.
 
 @subsection[#:tag "backwarder_compatibility"]{Restoring Backward Compatibility}
 
-@(ASDF3) had to break compatibility with @(ASDF1) and @(ASDF2):
-any operation that inherited from the @(operation) class hierarchy used
-to be propagated @emph{sideway} and @emph{downward} along the component DAG
-(see @appref["traverse"]{Appendix F}).
-In most cases, this was an unwanted behavior, and indeed,
-@(ASDF3) was predicated upon the introduction of a new operation @(prepare-op)
-that instead propagates @emph{upward} along the component DAG.
-Most existing extensions to @(ASDF) thus included
-various workarounds and approximations to deal with the issue.
-But there were a handful of extensions that did expect this behavior,
+@(ASDF3) had to break compatibility with @(ASDF1) and 2:
+all operations used to be propagated @emph{sideway} and @emph{downward}
+along the component DAG (see @appref["traverse"]{Appendix F}).
+In most cases this was undesired; indeed,
+@(ASDF3) is predicated upon a new operation @(prepare-op)
+that instead propagates @emph{upward}.@note{
+  Sideway means the action of operation @cl{o} on component @cl{c} @(depends-on)
+  the action of @cl{o} (or another operation)
+  on each of the declared dependencies of @cl{c}.
+  Downward means that it @(depends-on) the action of @cl{o}
+  on each of @cl{c}'s children;
+  upward, on @cl{c}'s parent (enclosing module or system).
+}
+Most existing @(ASDF) extensions thus
+included workarounds and approximations to deal with the issue.
+But a handful of extensions did expect this behavior,
 and now they were broken.
 
 Before the release of @(ASDF3), authors of all known @(ASDF) extensions
@@ -3784,14 +3791,14 @@ after having messed with dependencies,
 which often requires reconfiguring the software to use a special writable user copy
 instead of the read-only system-provided copy.
 The price usually paid in awkwardness of the development process in C
-is vastly larger than the price paid to cope with this bug in Lisp.
+is vastly larger than the price paid to cope with this bug in CL.
 Users of languages like Python or Java, where installation and modification
 of libraries is more streamlined by various tools, do not have this problem.
 But then their programs don't have any kind of macros,
-so they lose, a lot, in expressiveness, as compared to Lisp,
+so they lose, a lot, in expressiveness, as compared to CL,
 if admittedly not to C.
 
-Second, most Lisp programmers write software interactively in the small,
+Second, most CL programmers write software interactively in the small,
 where the build system isn't a big factor.
 This is both related to the expressive power of the language,
 that can do more with less, and to the size of the community, which is smaller.
@@ -3877,7 +3884,7 @@ and because of all the extensions that it bundles.
 But the core is still a thousand lines of code or so,
 and these extensions, built on top of this core,
 illustrate its expressive power,
-as well as provide essential services to Lisp programmers.
+as well as provide essential services to CL programmers.
 
 In the end, we find that @moneyquote{software designs are discovered},
 not created @latin{ex nihilo}.

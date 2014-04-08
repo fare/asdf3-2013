@@ -121,4 +121,5 @@
 (define-syntax-rule (define-bib name stuff ...)
   (define name (make-bib stuff ...)))
 
-(define (shell . x) (tt (apply literal x)))
+(define (shell . x) (cl x))
+(define (dashdash . x) (list (tt "-") (tt "-") (apply shell x)))

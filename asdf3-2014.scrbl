@@ -229,7 +229,7 @@ because this former file defines the CL packages@note{
   symbols are read in the current @cl{*package*},
   but the package may be overridden with colon-separated prefix, as in
   @cl{other-package:some-symbol}.
-  However, this namespace is not global across images:
+  However, this namespace isn't global across images:
   packages can import symbols from other packages,
   but a symbol keeps the name in all packages and knows its "home" package.
   Different CL processes running different code bases
@@ -311,7 +311,7 @@ the @emph{loading} of (the compilation output of) @tt{package}, etc.
 
 Importantly, though, this graph is distinct
 from the preceding graph of components:
-the graph of actions is not a mere refinement of the graph of components
+the graph of actions isn't a mere refinement of the graph of components
 but a transformation of it that also incorporates
 crucial information about the structure of operations.
 
@@ -466,12 +466,12 @@ to other build systems for CL, C, Java, or other systems:
 
 @itemlist[
   @item{
-    @(ASDF) is not a general-purpose build system.
+    @(ASDF) isn't a general-purpose build system.
     Its relative simplicity is directly related to it being custom made
     to build CL software only.
     Seen one way, it's a sign of how little you can get away with
     if you have a good basic architecture;
-    a similarly simple solution is not available to most other programming languages,
+    a similarly simple solution isn't available to most other programming languages,
     that require much more complex tools to achieve a similar purpose.
     Seen another way, it's also the CL community failing to embrace
     the outside world and provide solutions with enough generality
@@ -656,7 +656,7 @@ Preserving the hot upgradability of @(ASDF) was always a strong requirement
 In the presence of this package refactoring,
 this meant the development of a variant of CL's @(defpackage)
 that plays nice with hot upgrade: @(define-package).
-Whereas the former is not guaranteed to work and may signal an error
+Whereas the former isn't guaranteed to work and may signal an error
 when a package is redefined in incompatible ways,
 the latter will update an old package to match the new desired definition
 while recycling existing symbols from that and other packages.
@@ -1035,7 +1035,7 @@ while the compiler processes the files;
 but subsequent invocations will be faster as the compiled code is directly loaded.
 This is in sharp contrast with other "scripting" languages,
 that have to slowly interpret or recompile everytime.
-For security reasons, the cache is not shared between users.
+For security reasons, the cache isn't shared between users.
 
 @subsection[#:tag "asdf-package-system"]{@(asdf/package-system)}
 
@@ -1085,7 +1085,8 @@ The @tt{lil.asd} file may thus contain forms such as:
 }
 Then, a file @tt{interface/order.lisp} under the @tt{lil} hierarchy,
 that defines abstract interfaces for order comparisons,
-starts with the following form:
+starts with the following form,
+dependencies being trivially computed from the @cl{:use} and @cl{:mix} clauses:
 @clcode{
 (uiop:define-package :lil/interface/order
   (:use :closer-common-lisp
@@ -1095,18 +1096,17 @@ starts with the following form:
   (:mix :fare-utils :uiop :alexandria)
   (:export ...))
 }
-And all the dependencies are trivially computed from that.
 
 This style provides many maintainability benefits:
 by imposing upon programmers a discipline of smaller namespaces,
-with explicit dependencies, and especially explicit forward dependencies,
+with explicit dependencies and especially explicit forward dependencies,
 the style encourages good factoring of the code into coherent units;
 by contrast, the traditional style of "everything in one package"
-has low overhead, but doesn't scale very well.
+has low overhead but doesn't scale very well.
 @(ASDF) itself was re-written in this package-system style as part of @(ASDF 2.27),
-the initial @(ASDF3) pre-release, for very positive results.
+the initial @(ASDF3) pre-release, with very positive results.
 
-@(asdf/package-system) is not lightweight like @(quick-build),
+@(asdf/package-system) isn't lightweight like @(quick-build),
 that is two orders of magnitude smaller than @(ASDF3).
 But it does interoperate perfectly with the rest of @(ASDF),
 from which it inherits the many features, and the portability and robustness.
@@ -1149,7 +1149,7 @@ unless they explicitly inherit from the new mixin @(non-propagating-operation).
 @(ASDF3.1) signals a @(warning) at runtime when an operation class is instantiated
 that doesn't inherit from any of the above mixins,
 which will hopefully tip off authors of a proprietary extension that it's time to upgrade.
-To tell @(ASDF3.1) that their operation class is not backward,
+To tell @(ASDF3.1) that their operation class isn't backward,
 extension authors may have to define their non-propagating operations as follows:
 @verbatim|{
 (defclass my-op (#+asdf3.1 non-propagating-operation operation) ())
@@ -1191,7 +1191,7 @@ had to keep working with new versions.
 But what more precisely is backward compatibility?
 
 In an overly strict definition that precludes any change in behavior whatsoever,
-even the most uncontroversial bug fix is not backward-compatible:
+even the most uncontroversial bug fix isn't backward-compatible:
 any change, for the better as it may be, is incompatible,
 since by definition, some behavior has changed!
 
@@ -1304,7 +1304,7 @@ If in @(ASDF3) you @cl{(uiop:enable-deferred-warnings)},
 these warnings are displayed and checked every time a system is compiled or loaded.
 These checks help catch more bugs, but enabling them prevents the successful
 loading of a lot of systems in @(Quicklisp) that have such bugs,
-even though the functionality for which these systems are required is not affected by these bugs.
+even though the functionality for which these systems are required isn't affected by these bugs.
 Until there exists some configuration system that allows developers
 to run all these checks on new code without having them break old code,
 the feature will have to remain disabled by default.
@@ -1369,11 +1369,11 @@ or worse, that the syntax support depends on;
 this can cause catastrophic circular dependencies,
 and require a fresh start after having cleared the output file cache.
 Systems like @cl{named-readtables} or @cl{cl-syntax} help with syntax control,
-but proper hygiene is not currently enforced by either CL or @(ASDF),
+but proper hygiene isn't currently enforced by either CL or @(ASDF),
 and remains up to the user, especially at the REPL.
 
 Build support is therefore strongly required for safe syntax modification;
-but this build support is not there yet in @(ASDF3).
+but this build support isn't there yet in @(ASDF3).
 For backward-compatibility reasons,
 @(ASDF) will not enforce strict controls on the syntax, at least not by default.
 But it is easy to enforce hygiene by binding read-only copies of the standard syntax tables
@@ -1919,7 +1919,7 @@ after some kind of hot software upgrade, etc.
 As for the code in the system itself —
 it might still require testing on all supported implementations
 in case it doesn't strictly adhere to a portable subset of CL
-(which is not automatically enforceable so far),
+(which isn't automatically enforceable so far),
 since the semantics of CL are not fully specified
 but leave a lot of leeway to implementers, unlike e.g. ML or Java.
 
@@ -2151,8 +2151,8 @@ CL is notably missing a portable way to escape a namestring to avoid wildcards.
 Finally, so that @(asd) files may portably designate pathnames
 of recursive subdirectories and files under a build hierarchy,
 we implemented our own parsing infrastructure.
-Thus, even if the current pathname host of @(*dpd*) is not a Unix host,
-indeed even if the operating system is not Unix but Windows, MacOS 9 or Genera,
+Thus, even if the current pathname host of @(*dpd*) isn't a Unix host,
+indeed even if the operating system isn't Unix but Windows, MacOS 9 or Genera,
 the same @(asd) file keeps working unmodified, and correctly refers
 to the proper filenames under the current source directory.
 In @(UIOP), the main parsing function is @(parse-unix-namestring).
@@ -2226,14 +2226,14 @@ Since @(ASDF2), you can.
 
 CL has an idiom @cl{(merge-pathnames pathname defaults)}
 that ostensibly serves to merge a relative pathname with an absolute pathname.
-However, using it properly is not trivial at all.
+However, using it properly isn't trivial at all.
 
 First, CL makes no guarantee that @(nil) is a valid pathname @emph{host} component.
 Indeed, since the pathname syntax may itself vary depending on hosts,
 there might be no such thing as a pathname with "no host";
 same thing with the @emph{device} component.
 Now, @(merge-pathnames) takes the host from the first argument,
-if not @(nil) (and @(nil) is not allowed on many implementation);
+if not @(nil) (and @(nil) isn't allowed on many implementation);
 if the intent was supposed to designate a pathname relative to the second argument,
 which might be on a host unknown at the time the first argument was made or parsed,
 this will be totally the wrong thing: care must be taken
@@ -2271,7 +2271,7 @@ as a neutral pathname, but even though either or both might work
 on many implementations most of the time,
 the former fails catastrophically
 if parsed in a context when the @(*dpd*) is a logical pathname or otherwise non-standard,
-and the latter is not guaranteed to be valid, since
+and the latter isn't guaranteed to be valid, since
 some implementations may reject @(nil) as a host or device component,
 or may merge them implicitly from the defaults.
 @(UIOP) tries hard to provide function @cl{nil-pathname} and variable @cl{*nil-pathname*},
@@ -2374,7 +2374,7 @@ especially since it's the only implementation doing this (that I know of).
 
 Finally, because the specification involves matching patterns in a sequence
 until a first match is found, which is inefficient,
-and because the feature is not popular for all the above reasons,
+and because the feature isn't popular for all the above reasons,
 implementations are unlikely to be fast at translating logical pathnames,
 and especially not for large lists of translations;
 even if optimized translation tables were made,
@@ -2737,7 +2737,7 @@ The encoding option of a system or module is inherited by its components,
 if not overridden.
 The accepted syntax of the option is a keyword, abstracting over
 the implementation-dependent @cl{:external-format},
-which is not specified by the CL standard.@note{
+which isn't specified by the CL standard.@note{
   And indeed, though all other implementations that support Unicode
   accept the keyword @cl{:utf-8} as an external format,
   GNU CLISP, always the outlier,
@@ -2780,7 +2780,7 @@ instead of @cl{lambda} in your code.@note{
 }
 Originally based on code by Brian Mastenbrook,
 @cl{lambda-reader} was modified to fall back gracefully to working mojibake
-where Unicode is not supported, and
+where Unicode isn't supported, and
 to offer the syntax modification via the @(de_facto) standard
 @cl{named-readtables} extension.
 Users still have to enable the modified syntax
@@ -3050,7 +3050,7 @@ Some (parts of) namespaces are in the commons and not up for grabs.
 Some features were not actively rejected, but haven't found their users yet.
 
 @(ASDF3) introduced @(build-op) as a putative default build operation
-that is not specialized for compiling CL software.
+that isn't specialized for compiling CL software.
 But it hasn't found its users yet.
 The associated function @cl{asdf:build-system}
 was renamed @cl{asdf:make} in @(ASDF3.1) in an effort to make it more usable.
@@ -3653,11 +3653,11 @@ it thus counts as @(needed-in-image-p).
 What the new @(traverse-action) action had to do (2.26.46),
 was to associate to each visited node a status depending on whether or not
 the action was needed in the current image.
-When visiting an action in a context where the goal is not (known to be) needed in image,
+When visiting an action in a context where the goal isn't (known to be) needed in image,
 or where the action is intrinsically not @(needed-in-image-p)
 because its value resides in filesystem side-effects,
 then all the action's dependencies would themselves be visited
-in a mode where the goal is not (known to be) needed in image.
+in a mode where the goal isn't (known to be) needed in image.
 In that mode, the action is consulted for its timestamp,
 but won't be included in the plan as long as it's up-to-date.
 However, if the action is found to be out of date,
@@ -3747,7 +3747,7 @@ What is worse, the @emph{live} knowledge about this bug and its fix
 never seems to have made it out to the general Lisp programming public,
 and so most of those who are using those tools are probably doing it wrong,
 even when the tools allow them to do things right.
-@bold{The problem is not solved unless the bug is fixed by default}.
+@bold{The problem isn't solved unless the bug is fixed by default}.
 
 This is all very embarrassing indeed:
 in the world of C programming,

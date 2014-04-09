@@ -26,4 +26,4 @@ In 2013, I only produced the following slides, for an ASDF tutorial at ELS 2013:
 
 The bits of the article I started in 2013 have been moved to obsolete/
 except for what turned into an essay on Live Programming vs Cult of Dead programming,
-in live-programming.scrbl
+in ltu_culture_war.scrbl

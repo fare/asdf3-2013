@@ -133,16 +133,22 @@ benefitting from its efficient implementations, hundreds of software libraries, 
 In this article, we discuss how the innovations in @(ASDF3)
 enable new kinds of software development in CL.
 In @secref{what_it_is}, we explain what @(ASDF) is about;
-we compare it to common practice in the C world.
+we compare it to common practice in the C world@;
+@extended-only{; this section does not require previous knowledge of CL}.
 @;
 In @secref{asdf3},
 we describe the improvements introduced in @(ASDF3)
-and @(ASDF3.1) to solve the problem of software delivery
-(this section requires some familiarity with CL).
+and @(ASDF3.1) to solve the problem of software delivery;
+this section requires some familiarity with CL@extended-only{
+  though some of its findings are independent from CL;
+  for a historical perspective you may want to start with appendices A to F below
+  before reading this section}.
 @;
 In @secref{evolving}, we discuss the challenges
 of evolving a piece of community software,
-concluding with lessons learned from our experience.
+concluding with lessons learned from our experience@extended-only{;
+ these lessons are of general interest to software programmers
+ though the specifics are related to CL}.
 
 @short-only{
 This is the short version of this article.
@@ -155,6 +161,9 @@ This is the extended version of this article.
 In addition to extra footnotes and examples,
 it includes several appendices with historical information
 about the evolution of @(ASDF) before @(ASDF3).
+There again, the specifics will only interest CL programmers,
+but general lessons can be found that are of general interest
+to all software practitioners.
 Roughly in chronological order, we have
 the initial successful experiment in @secref{asdf1};
 how it became robust and usable in @secref{asdf2};
@@ -425,7 +434,7 @@ that CL does away with thanks to better architecture.
   @item{
     Lisp provides full introspection at runtime and compile-time alike,
     as well as a protocol to declare @bydef{features}
-    and conditionally read include or omit code or data based on them.
+    and conditionally include or omit code or data based on them.
     Therefore you don't need dark magic at compile-time
     to detect available features.
     In C, people resort to
@@ -765,7 +774,7 @@ Moreover, Windows support differed significantly from Unix.
 initially copied over from @(mk-defsystem),
 but it was more of an attractive nuisance than a solution, despite many bug fixes:
 it was implicitly calling @cl{format}; capturing output was particularly contrived;
-and what shell would be used varied between implementation, even more so on Windows.@;
+and what shell would be used varied between implementations, even more so on Windows.@;
 @extended-only{@note{
   Actually, our first reflex was to declare the broken @cl{run-shell-command} deprecated,
   and move @(run-program) to its own separate system.
@@ -971,15 +980,14 @@ Its latest incarnation, @(cl-launch 4) (March 2014),
 was updated to take full advantage of @(ASDF3);
 its build specification interface was made more general,
 and its Unix integration was improved.
-
-You thus may invoke Lisp code from the shell command-line:
+You may thus invoke Lisp code from a Unix shell:
 @verbatim|{
 cl -sp lisp-stripper \
    -i "(print-loc-count \"asdf.lisp\")"
 }|
 
-It can also be used as a script "interpreter" where desired,
-except with a Lisp compiler underneath:
+You can also use @(cl-launch) as a script "interpreter",
+except that it invokes a Lisp compiler underneath:
 @verbatim|{
 #!/usr/bin/cl -sp lisp-stripper -E main
 (defun main (argv)
@@ -991,9 +999,9 @@ except with a Lisp compiler underneath:
 In the examples above, option @shell|{-sp}|, shorthand for @dashdash{system-package},
 simultaneously loads a system using @(ASDF) during the build phase,
 and appropriately selects the current package;
-@shell{-i}, shorthand for @dashdash{init} evaluates a form after the software is built;
+@shell{-i}, shorthand for @dashdash{init} evaluates a form at the start of the execution phase;
 @shell{-E}, shorthand for @dashdash{entry} configures a function that is called
-when the program starts, with the list of command-line arguments as its argument.@note{
+after init forms are evaluated, with the list of command-line arguments as its argument.@note{
   Several systems are available to help you define an evaluator
   for your command-line argument DSL:
   @cl{command-line-arguments}, @cl{clon}, @cl{lisp-gflags}.
@@ -1172,14 +1180,19 @@ in an @(ad_hoc) way at runtime.
 Throughout the many features added and tenfold increase in size from @(ASDF1) to @(ASDF3),
 @(ASDF) remained true to its minimalism — but the mission,
 relative to which the code remains minimal, was extended, several times:
-In the beginning, @(ASDF) was the simplest extensible variant of @(defsystem) that builds CL software.
-With @(ASDF2), it had to be upgradable, portable, modularly configurable, robust, performant, usable.
+In the beginning, @(ASDF) was the simplest
+extensible variant of @(defsystem) that builds CL software
+(see @appref["asdf1"]{Appendix A}).
+With @(ASDF2), it had to be upgradable, portable, modularly configurable, robust, performant, usable
+(see @appref["asdf2"]{Appendix B}).
 Then it had to be more declarative, more reliable, more predictable,
-and capable of supporting language extensions.
+and capable of supporting language extensions
+(see @appref["asdf2.26"]{Appendix D}).
 Now, @(ASDF3) has to support a coherent model for representing dependencies,
 an alternative one-package-per-file style for declaring them,
 software delivery as either scripts or binaries,
 a documented portability layer including image life-cycle and external program invocation, etc.
+(see @secref{asdf3}).
 
 @subsection[#:tag "backward_compat"]{Backward Compatibility is Social, not Technical}
 

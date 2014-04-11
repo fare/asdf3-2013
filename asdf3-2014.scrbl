@@ -2295,10 +2295,10 @@ Most pathname-handling functions in @(UIOP) tend to accept @(nil) as valid input
 @(nil) is a neutral element for @(merge-pathnames*).
 Other functions that receive @(nil) where pathname information is required
 tend to return @(nil) instead of signaling an error.
-For instance, the variant @cl{subpathname*} of @(subpathname)
-which returns @(nil) when its first argument is @(nil),
-rather than return the its second argument parsed as a relative pathname.
-In doubt, you should read the documentation or the source.
+For instance, @(subpathname) if its first argument is @(nil)
+returns the second argument parsed but unmerged,
+whereas its variant @cl{subpathname*} in this case returns @(nil).
+When in doubt, you should read the documentation and/or the source code.
 
 As an aside, one issue that @cl{*central-registry*} had during the days of @(ASDF1)
 was that computed entries (as evaluated by @(eval)) had to always return a pathname object,
@@ -2328,6 +2328,7 @@ with code such as follows:
        "/tmp/**/*.tmp.*")
     ("**;*.*.*"
        "/home/john/data/**/*.*.*")))}
+
 The first two lines map Lisp source files and system definitions
 under the absolute directory source to a subdirectory in John's home;
 The third line maps fasl files to a cache;
@@ -2345,20 +2346,20 @@ to @tt{C:\Users\jane\Source\foo\bar.lsp}.
 Problem is, this interface is only suitable for power users:
 it requires special setup before anything is compiled that uses them,
 typically either by the programmer or by a system administrator,
-in an implementation-dependent initialization file.
+in an implementation-dependent initialization file
+(and the @cl{#p"..."} syntax is implementation-dependent, too).
 Moreover, once a string is registered as a logical pathname host,
-it may shadow any other potential use of that string
-as representing an actual host, according to whatever host scheme
-the underlying implementation may provide.
+it may shadow any other potential use that string might have
+in representing an actual host according to some implementation-dependent scheme.
 Such a setup is therefore not modular, and not robust:
 as an author, to be sure you're not interfering with any other piece of software,
 you'd need to avoid all the useful hostnames on all Lisp installations on the planet;
 more likely, as a system administrator, you'd need to audit and edit
 each and every piece of Lisp software
 to rename any logical pathname host that would clash with a useful machine name.
-All of this made sense in the 1970s, but already no more in the late 1990s,
+All of this made sense in the 1970s, but already no more in the mid 1990s,
 and not at all in the 2010s.
-It makes "logical pathnames" totally inappropriate for distributing programs
+"Logical pathnames" are totally inappropriate for distributing programs
 as source code "scripts" to end users.
 Even programmers who are not beginners will have trouble with "logical pathnames".
 
@@ -2377,8 +2378,8 @@ This makes the printing of standard logical pathnames look quite unusual
 and the distraction generated is a minor nuisance.
 
 Most implementations actually accept a preserved mix of lowercase and uppercase letters
-without mapping them all to uppercase;
-on the one hand, that makes these logical pathnames more useful to users;
+without mapping them all to uppercase.
+On the one hand, that makes these logical pathnames more useful to users;
 on the other hand, this doesn't conform to the standard.
 One implementation, SBCL, strictly implements the standard,
 in the hope of helping programmers not accidentally write non-conformant programs,
@@ -2394,8 +2395,9 @@ even if optimized translation tables were made,
 there is no incremental interface to modifying such tables.
 Logical pathnames thus intrinsically do not scale.
 
-Until we added more complete tests, we found that logical pathname support tended to bitrot quickly;
-adding the tests revealed a lot of discrepancies and bugs in implementations,
+Until we added more complete tests,
+we found that logical pathname support tended to bitrot quickly.
+Adding tests revealed a lot of discrepancies and bugs in implementations,
 that entailed a lot of painful work.
 For instance, subtle changes in how we search for @(asd) files may have caused
 logical pathnames being translated to physical pathnames earlier than users might expect.
@@ -2411,10 +2413,15 @@ may fail in mysterious ways (including @(ASDF) itself at some point during our d
 Many implementations also had notable bugs in some corner cases,
 that we discovered as we added more tests that @(ASDF) worked well with logical-pathnames;
 this suggests that logical pathnames are not a widely used feature.
-Indeed, we estimate that only a handful or two of old style programmers worldwide
+Indeed, we estimate that only a handful or two of old school programmers worldwide
 may be using this feature still.
 Yet, despite our better sense, we sunk vast amounts of time
-into making @(ASDF) support them,
+into making @(ASDF) support them@note{
+  We always believe it's a small bug that will be fixed in the next half-hour.
+  After hours of analysis and false tracks,
+  we finally understand the issue for good, and just do it...
+  until we find the next issue, and so on.
+}
 for the sake of this sacred backward compatibility
 and the pride of hushing the criticism
 by this handful of ungrateful old school programmers who still use them.

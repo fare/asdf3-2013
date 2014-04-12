@@ -1,6 +1,7 @@
 #lang at-exp racket ;;-*- Scheme -*-
 (require slideshow
 	 slideshow/code
+	 slideshow/code-pict
 	 scheme/gui/base
 	 (except-in "utils.rkt" system module force file eval error))
 
@@ -56,54 +57,87 @@
 (define (tslide _title . body)
   (keyword-apply slide '(#:title) (list (title _title)) body))
 
+#|
+(tslide "TEST SLIDE"
+  (comment "\
+This is a test. Do not include in final version.
+"))
+|#
+
 (tslide "Another System Definition Facility, version 3"
   @bt{Why CL is now an acceptable Scripting Language}
   ~
   @t{François-René Rideau <tunes@"@"google.com>}
   (comment "\
 Hi, I'm François-René Rideau, and I'm here to tell you about ASDF 3, \
-THE build system for Common Lisp. \
-The paper is titled \"ASDF3: Why CL is now an acceptable Scripting Language\".
-"))
+the de facto standard build system for Common Lisp.
 
-(tslide "An Acceptable Scripting Language (1)"
-  (para #:align 'left (tt"#!/usr/bin/cl -sp lisp-stripper -E main"))
-  (para #:align 'left (tt"(defun main (argv)"))
-  (para #:align 'left (tt"  (if argv"))
-  (para #:align 'left (tt"      (map () 'print-loc-count argv)"))
-  (para #:align 'left (tt"      (print-loc-count *standard-input*)))"))
-  (comment "Indeed, in the paper, I'm boasting that thanks to ASDF 3, \
-you can now write scripts like this. \
+My paper is titled \"ASDF3: Why CL is now an acceptable Scripting Language\".
+
+Indeed, one of my the too many take-home points of my paper \
+is that CL is now available to compete as a scripting language \
+against Unix shells, Perl, Python, Ruby, etc.
+
+I'll explain why the last missing piece for that was ASDF 3, \
+and how you can hack your own Lisp into providing the same service."))
+
+(tslide "An Acceptable Scripting Language"
+  (comment "\
+First, let's see how you now can use CL as a scripting language"))
+
+(tslide "Writing a Unix-style script in CL"
+  (code
+   |#!/usr/bin/cl| -sp lisp-stripper -E main
+   (defun main (argv)
+     (if argv
+         (map () |'print-loc-count| argv)
+         (print-loc-count *standard-input*))))
+  (comment "\
+Here is a simple script.
+
 Here, the script \"interpreter\" is the ASDF companion program cl-launch \
-that invokes your favorite Common Lisp compiler. \
+that invokes your favorite Common Lisp compiler.
+
 As you can see, I am homesteading the path /usr/bin/cl. \
 The -sp option loads a system and changes the current *package* in one go. \
 The -E option specifies a main function to which to pass command-line arguments \
-when running the program. \
-This script counts lines of code using a library called lisp-stripper that strips \
-blank lines, comments, docstrings, and extra lines in string constants."))
+when running the program.
 
-(tslide "An Acceptable Scripting Language (2)"
-  (para #:align 'left (tt"form=\"`#5(1 ,@'(2 3))\""))
-  (para #:align 'left (tt"for l in allegro ccl clisp sbcl ecl \\"))
-  (para #:align 'left (tt"         lispworks abcl cmucl gcl scl xcl ; do"))
-  (para #:align 'left (tt" cl -l $l \\"))
-  (para #:align 'left (tt"   \"(format t \\\"$l ~S~%\\\" $form)\" \\"))
-  (para #:align 'left (tt"   2>&1 | grep \"^$l \" # LW, GCL are verbose"))
-  (para #:align 'left (tt"done"))
-  (comment "You can also invoke Common Lisp code directly from a shell script. \
+This script counts lines of CL code using a library called lisp-stripper \
+that strips blank lines, comments, docstrings, and extra lines in string constants."))
+
+(tslide "Invoking Lisp code from the shell"
+  (code
+   |#!/bin/sh|
+   |form='`#5(1 ,@`(2 3))'|
+   |for l in allegro ccl clisp sbcl ecl |\\
+   |      lispworks abcl cmucl gcl scl xcl ; do|
+   |  cl -l $l |\\
+   |     "(format t \"$l ~S~%\" $form)" |\\
+   |  2>&1 |\|| grep "^$l " # LW, GCL are verbose|
+   |done|)
+  (comment "\
+You can also invoke Common Lisp code directly from a shell script.
+
 This simple script compares how the many implementations evaluate a same form, \
 printing on each line the name of the implementation followed by the value. \
+
 In this case, the form involves the unspecified interaction \
 between known-length vector and unquote-splicing. \
 The standard says that with the the hash-number-paren notation, \
 whereby the reader will repeat the last form to fill a vector of specified size; \
 it also says that comma-at will be spliced at read-time; \
-but what happens when you do both?"))
+but what happens when you do both?
 
-(tslide "An Acceptable Scripting Language (3)"
+That's an interesting question, but of course, \
+since CL is a scripting language far superior to the Unix shell \
+you could use CL instead of /bin/sh to write the same script.
+"))
+
+(tslide "Invoking external commands from CL"
   (code
-   (loop with form = "`#5(1 ,@'(2 3))"
+   |#!/usr/bin/cl -sp inferior-shell|
+   (loop with form = "`#5(1 ,@`(2 3))"
       for l in '(allegro ccl clisp sbcl ecl
                  lispworks abcl cmucl gcl scl xcl)
       do
@@ -112,16 +146,18 @@ but what happens when you do both?"))
                          ,form ")"))
               (grep ("^" ,l " "))))))
   (comment "\
-Well, of course, since CL is a scripting language far superior to /bin/sh \
-you could use CL instead of /bin/sh to write the same script. \
-This script is doing exactly the same thing as the previous one, \
-except it is written in CL. \
-It uses the system inferior-shell, that supports pipes, redirections, \
-and user-friendly synthesis of Unix commands and their arguments."))
+The following script is doing exactly the same thing as the previous one, \
+except it is written in CL.
 
-(tslide "An Acceptable Scripting Language (4)"
+It uses the system inferior-shell, that supports pipes, redirections, \
+and user-friendly synthesis of Unix commands and their arguments.
+
+But the point is not just to do as well as a Unix shell, but to do better."))
+
+(tslide "Better abstractions for Scripting"
   (code
-   (loop with form = "`#5(1 ,@'(2 3))"
+   ||
+   (loop with form = "`#5(1 ,@`(2 3))"
       for l in '(allegro ccl clisp sbcl ecl
                  lispworks abcl cmucl gcl scl xcl)
       collect
@@ -130,61 +166,127 @@ and user-friendly synthesis of Unix commands and their arguments."))
                          ,form ")"))
               (grep ("^" ,l " "))) :output :forms)))
   (comment "\
-Of course, since you're using CL, you'll instead write a script \
-that returns structured data, not strings. \
-Ewwww, strings, how uncivilized!"))
+And here, since you're using CL, \
+you can write an expression that returns structured data, not strings. \
+Ewww, strings are so uncivilized!
 
-(tslide "An Acceptable Scripting Language (5)"
-  (para #:align 'left (tt "((ALLEGRO #(1 2 3 2 3 2 3 2 3))"))
-  (para #:align 'left (tt " (CCL #(1 2 3 2 3 2 3 2 3))"))
-  (para #:align 'left (tt " (CLISP #(1 2 3 2 3 2 3 2 3))"))
-  (para #:align 'left (tt " (SBCL #(1 2 3 2 3 2 3 2 3))"))
-  (para #:align 'left (tt " (ECL #(1 2 3 3 3))"))
-  (para #:align 'left (tt " (LISPWORKS #(1 2 3 3 3))"))
-  (para #:align 'left (tt " (ABCL #(1 2 3))"))
-  (para #:align 'left (tt " (CMUCL #(1 2 3))"))
-  (para #:align 'left (tt " (GCL #(1 2 3))"))
-  (para #:align 'left (tt " (SCL #(1 2 3))"))
-  (para #:align 'left (tt " (XCL #(1 2 3))))"))
+Structured data is a much better paradigm \
+to build composable software abstractions. \
+And with its ability to WRITE and READ back arbitrary symbolic expressions, \
+CL still has an edge over many other languages. \
+But of course, you can still exchange XML or JSON if you like."))
+
+(tslide "Standard-based portability"
+  (code
+   ((ALLEGRO |#(1 2 3 2 3 2 3 2 3)|)
+    (CCL |#(1 2 3 2 3 2 3 2 3))|)
+    (CLISP |#(1 2 3 2 3 2 3 2 3))|)
+    (SBCL |#(1 2 3 2 3 2 3 2 3))|)
+    (ECL |#(1 2 3 2 3))|)
+    (LISPWORKS |#(1 2 3 2 3))|)
+    (ABCL |#(1 2 3))|)
+    (CMUCL |#(1 2 3))|)
+    (GCL |#(1 2 3))|)
+    (SCL |#(1 2 3))|)
+    (XCL |#(1 2 3))|)))
   (comment "\
 Incidentally, here is the break down of how various implementations \
-evaluate the contentious form. \
+evaluate the contentious form.
+
 For the record, my fare-quasiquote implementation agrees with ECL and LispWorks: \
-if the user specified a vector of size n, the implementation should return a vector of size n. \
-Allegro, Clozure CL, GNU CLISP and SBCL first read a comma-at form in a vector of size n,
-then expand it; sure you can imagine how it can make sense, but this is confusing. \
+if the user specified a vector of size n, the implementation should return a vector of size n.
+
+Allegro, Clozure CL, GNU CLISP and SBCL first read a comma-at form in a vector of size n, \
+then expand it; sure you can imagine how it can make sense, but this is confusing.
+
 As for ABCL, CMUCL, GCL, SCL and XCL, they just ignore any specified size in a quasiquote context; \
 I admit I find that tasteless; but of course, when the result is unspecified, \
 they are allowed to send dragons flying through your nose, \
-so consider yourself lucky to be given such a nice result."))
+so consider yourself lucky to be given such a nice result.
+
+So, cl-launch, ASDF, and other libraries can abstract over \
+ a lot of discrepancies between CL implementations, \
+but there will still remain discrepancies in many underspecified parts of the standard, \
+Even then cl-launch can help you run test and experiments on all implementations."))
+
+(tslide "What prevented scripting?"
+  (comment "\
+So why was scripting in CL not possible before?
+
+What does your programming language need to possess, \
+before it can be used to write scripts?"))
 
 (tslide "What prevented scripting?"
   (para #:align 'left (t "finding source code"))
   (para #:align 'left (t "locating output files"))
+  ~
   (para #:align 'left (t "command line invocation"))
   (para #:align 'left (t "argv access"))
+  ~
   (para #:align 'left (t "run-program"))
-  (comment "So why was scripting in CL not possible before? \
+  (comment "So why was scripting in CL not possible before?
+
 Well, it was stricto sensu possibe, but completely not portable. \
 Every user would have to modify every script to match his particular situation. \
-There were several aspects requiring modification, that involved various amounts of pain, \
-some of which were universally inflicted to every common lisp user, \
-some of which were only relevant to those those who might want to write scripts."))
+There were several aspects requiring modification, that involved various amounts of pain.
+
+Some of these aspects were universally inflicted to every common lisp user: \
+finding source code and choosing output file location were basic unfulfilled needs \
+before ASDF, and still painful with ASDF1. \
+Without this, scripts couldn't reliably use any library or scale to large programs. \
+This was not just for scripts: \
+Even applications with no ambition of being distributed for execution without modification \
+was difficult to configure right. \
+Also, by saving the compiled output files next to the source code, \
+ASDF1 and its predecessors made it impossible to share a same program \
+between multiple users (at least not without security issues), \
+or between multiple compilers, or multiple machines, etc. \
+This might have been a mere inconvenience for writing and testing complete heavy-weight applications, \
+and various kluges existed to allow to move output files aside, \
+but this how a show-stopper for writing scripts.
+
+Then there were more obvious but still quite annoying issues for writing scripts.
+
+Invoking CL code from other a Unix shell or other program, \
+and accessing arguments passed to your code, \
+were non-trivial tasks, that varied wildly with your implementation.
+
+Finally, calling an external program and extrating results was extremely difficult, \
+and there again varied wildly with your implementation.
+
+All these factors together conspired to make CL wholly unsuitable to write scripts. \
+Write once, run anywhere was an unreachable dream, \
+despite the large compatibility of all implementations with each other \
+thanks to the CL standard."))
 
 (tslide "What made scripting possible?"
-  (para #:align 'left (t "finding source code: asdf2 (source-registry)"))
-  (para #:align 'left (t "locating output files: asdf2 (output-translations)"))
-  (para #:align 'left (t "command line invocation: cl-launch"))
-  (para #:align 'left (t "argv access: cl-launch, asdf3 (uiop)"))
-  (para #:align 'left (t "run-program: asdf3 (uiop), inferior-shell"))
-  (comment "These issues have now been addressed. \
+  (para #:align 'left (t "finding source code → asdf2 (source-registry)"))
+  (para #:align 'left (t "locating output files → asdf2 (output-translations)"))
+  ~
+  (para #:align 'left (t "command line invocation → cl-launch"))
+  (para #:align 'left (t "argv access → cl-launch, asdf3 (uiop)"))
+  ~
+  (para #:align 'left (t "run-program → asdf3 (uiop), inferior-shell"))
+  (comment "\
+These issues have now been addressed.
+
 The most pressing issues with CL, not specific to scripting, were solved by ASDF 2. \
-Invoking CL programs was made possible by cl-launch, \
-and the Lisp support code was moved into ASDF3's portabiity layer UIOP. \n
-CL invoking external programs while capturing output nicely \
-was initially made possible by XCVB and its xcvb-driver, \
-and moved into UIOP and further developed there. \
-A more usable layer is available in the system inferior-shell."))
+With its source-registry, locating source became modular, \
+and you didn't need per-program, per-library or even per-user configuration \
+of where to find code. \
+With the output-translations layer, you could the share source code tree \
+between multiple users, multiple implementations, multiple machines, \
+and there would be no clash or additional security issues.
+
+Invoking CL programs in a uniform way was made possible by cl-launch. \
+cl-launch was actually written before ASDF2, but it was made simpler and more powerful \
+with ASDF2's output-translations and with ASDF3's portability layer UIOP.
+
+As for invoking external programs from CL and capturing their output nicely, \
+this was initially made possible by XCVB and its xcvb-driver, \
+and moved into ASDF3's portability layer UIOP and further developed there. \
+A more usable layer is available in the system inferior-shell,
+that I demonstrated just before."))
 
 (tslide "Finding source code (before)"
   @para[#:align 'left]{Q: where is system @tt{foo} ?}
@@ -256,13 +358,22 @@ ASDF3 introduces a universal pre-configured location, ~/common-lisp/
 in which to put your code"))
 
 (tslide "Finding source code (results)"
+  @para[#:align 'left]{@it{Who knows specifies, who doesn't needn't}}
+  (comment "\
+Important principle of design.")
+  @para[#:align 'left]{It @it{just works} by default}
+  (comment "\
+Important principle of design.")
+  @para[#:align 'left]{Modular configuration}
+  (comment "\
+You can always override what other people have broken or what you want to improve.")
   @para[#:align 'left]{Better than in C!}
   (comment "\
 If you develop a programming language and its build system, you may want a similar mechanism. \
 The result compares very favorably with LD_LIBRARY_PATH, pkg-config, etc.")
-  @para[#:align 'left]{@bt{Who knows specifies, who doesn't needn't}}
+  @para[#:align 'left]{Reusable DSL for pathname designators}
   (comment "\
-Important principle of design."))
+Can be used by other configuration DSLs."))
 
 #|
   (comment "\
@@ -280,6 +391,13 @@ Even to invoke a script
 And to spawn external programs, you would need to invoke very different \
 variants of run-program on every implementation, and \
 capturing the output would be a huge pain."))
+
+program-op
+image-op
+
+image-dump-hook
+image-restart-hook
+
 |#
 
 #|

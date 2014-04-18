@@ -52,3 +52,6 @@ long-slides: lil-slides-long.rkt utils.rkt
 
 els-slides.pdf: els-slides.org
 	emacs -batch --visit=$< --funcall org-export-as-pdf
+
+%.show: %.rkt utils.rkt
+	slideshow --right-half-screen --time --clock --comment $<

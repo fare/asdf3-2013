@@ -935,18 +935,18 @@ and without pathological performance behavior.
 
 One of the bundle operations contributed by the ECL team was @(program-op),
 that creates a standalone executable.
-As this was now part of @(ASDF3), it was only natural to bring
-other implementations that supported it up to par:
+As this was now part of @(ASDF3), it was only natural
+to bring other @(ASDF)-supported implementations up to par:
 CLISP, Clozure CL, CMUCL, LispWorks, SBCL, SCL.
 Thus @(UIOP) features a @cl{dump-image} function to dump the current heap image,
 except for ECL and its successors that follow a linking model and use a @cl{create-image} function.
-These functions were based on code from @cl{xcvb-driver}, that had taken them from @(cl-launch).
+These functions were based on code from @cl{xcvb-driver}, which had taken them from @(cl-launch).
 
 @(ASDF3) also introduces a @(defsystem) option to specify an entry point as e.g.
 @cl{:entry-point "my-package:entry-point"}.
 The specified function (designated as a string to be read after the package is created)
 is called without arguments after the program image is initialized;
-after doing it own initializations,
+after doing its own initializations,
 it can explicitly consult @cl{*command-line-arguments*}@note{
   In CL, most variables are lexically visible and statically bound,
   but @emph{special} variables are globally visible and dynamically bound.
@@ -960,7 +960,8 @@ showed the importance of hooks so that various software components may modularly
 finalization functions to be called before dumping the image,
 and initialization functions to be called before calling the entry point.
 Therefore, we added support for image life-cycle to @(UIOP).
-We also added basic support for running programs non-interactively as well as interactively:
+We also added basic support for running programs non-interactively as well as interactively@;
+@extended-only{ based on a variable @cl{*lisp-interaction*}}:
 non-interactive programs exit with a backtrace
 and an error message repeated above and below the backtrace,
 instead of inflicting a debugger on end-users;
@@ -989,12 +990,13 @@ provides a nice colloquial shell command interface to
 building shell commands from Lisp code,
 and supports delivery as either portable shell scripts or
 self-contained precompiled executable files.
+@;rpgoldman suggests the following requires too much context and should be removed:
 The very same file is accepted by both language processors;
 no race-condition-prone extraction of temporary files is required.
 
 Its latest incarnation, @(cl-launch 4) (March 2014),
-was updated to take full advantage of @(ASDF3);
-its build specification interface was made more general,
+was updated to take full advantage of @(ASDF3).
+Its build specification interface was made more general,
 and its Unix integration was improved.
 You may thus invoke Lisp code from a Unix shell:
 @verbatim|{
@@ -1131,7 +1133,7 @@ has low overhead but doesn't scale very well.
 the initial @(ASDF3) pre-release, with very positive results.
 
 @(asdf/package-system) isn't lightweight like @(quick-build),
-that is two orders of magnitude smaller than @(ASDF3).
+which is two orders of magnitude smaller than @(ASDF3).
 But it does interoperate perfectly with the rest of @(ASDF),
 from which it inherits the many features, and the portability and robustness.
 
@@ -1172,8 +1174,8 @@ on all classes that do not explicitly inherit from any of the propagating mixins
 unless they explicitly inherit from the new mixin @(non-propagating-operation).
 @(ASDF3.1) signals a @(warning) at runtime when an operation class is instantiated
 that doesn't inherit from any of the above mixins,
-which will hopefully tip off authors of a proprietary extension that it's time to upgrade.
-To tell @(ASDF3.1) that their operation class isn't backward,
+which will hopefully tip off authors of a proprietary extension that it's time to fix their code.
+To tell @(ASDF3.1) that their operation class is up-to-date,
 extension authors may have to define their non-propagating operations as follows:
 @verbatim|{
 (defclass my-op (#+asdf3.1 non-propagating-operation operation) ())
@@ -1230,13 +1232,13 @@ a "conservative extension":
 a @bydef{conservative extension} may fix erroneous situations,
 and give new meaning to situations that were previously undefined,
 but may not change the meaning of previously defined situations.
-Yet, this definition is doubly non satisfactory.
+Yet, this definition is doubly unsatisfactory.
 On the one hand, it precludes any amendment to previous bad decisions;
 hence, the jest @moneyquote{if it's not backwards, it's not compatible}.
 On the other hand, even if it only creates new situations
 that work correctly where they were previously in error,
 some existing analysis tool might assume these situations could never arise,
-and be stumbled that they now do.
+and be confused when they now do.
 
 Indeed this happened when @(ASDF3) tried to better support @emph{secondary systems}.
 @(ASDF) looks up systems by name: if you try to load system @cl{foo},
@@ -1328,7 +1330,7 @@ whereby @(ASDF) can check warnings that are deferred by SBCL or other compilers
 until the end of the current @bydef{compilation-unit}.
 These warnings notably include forward references to functions and variables.
 In the previous versions of @(ASDF), these warnings were output at the end
-of the session at the first time a file was built, not checked, and not displayed afterward.
+of the build the first time a file was built, but not checked, and not displayed afterward.
 If in @(ASDF3) you @cl{(uiop:enable-deferred-warnings)},
 these warnings are displayed and checked every time a system is compiled or loaded.
 These checks help catch more bugs, but enabling them prevents the successful
@@ -1341,7 +1343,8 @@ the feature will have to remain disabled by default.
 @subsection{Underspecification Creates Portability Landmines}
 
 The CL standard leaves many things underspecified about pathnames
-in an effort to define a useful subset common to many existing implementations.
+in an effort to define a useful subset common to many
+then-existing implementations and filesystems.
 However, the result is that portable programs can forever only access
 but a small subset of the complete required functionality.
 This result arguably makes the standard far less useful than expected
@@ -1354,7 +1357,7 @@ or to @moneyquote{delegate specification to other standards}, existing or future
 There could have been one pathname protocol per operating system,
 delegated to the underlying OS via a standard FFI.
 Libraries could then have sorted out portability over N operating systems.
-Instead, by standardizing but a common fragment and letting each of M implementations
+Instead, by standardizing only a common fragment and letting each of M implementations
 do whatever it can on each operating system,
 libraries now have to take into account N*M combinations
 of operating systems and implementations.
@@ -1390,8 +1393,8 @@ it's always a bug to either rely on the syntax tables
 having non-default values from previous systems,
 or to inflict non-default values upon next systems.
 What is worse, changing syntax is only useful if it also happens
-at the interactive REPL;
-yet these interactive syntax changes can affect files built from the REPL,
+at the interactive REPL and in appropriate editor buffers.
+Yet these interactive syntax changes can affect files built interactively,
 including, upon modification,
 components that do not depend on the syntax support,
 or worse, that the syntax support depends on;
@@ -1408,9 +1411,9 @@ For backward-compatibility reasons,
 But it is easy to enforce hygiene by binding read-only copies of the standard syntax tables
 around each action.
 A more backward-compatible behavior is to let systems modify a shared readtable,
-and leave the user responsible of ensuring that all modifications to this readtable
+and leave the user responsible for ensuring that all modifications to this readtable
 used in a given image are mutually compatible;
-still @(ASDF) can still bind the current @cl{*readtable*} to that shared readtable
+@(ASDF) can still bind the current @cl{*readtable*} to that shared readtable
 around every compilation, to at least ensure that
 selection of an incompatible readtable at the REPL does not pollute the build.
 A patch to this effect is pending acceptance by the new maintainer.

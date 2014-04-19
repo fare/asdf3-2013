@@ -30,7 +30,7 @@
   #:url "ftp://publications.ai.mit.edu/ai-publications/pdf/AITR-874.pdf")
 
 (define-bib MK-DEFSYSTEM
-  #:author "Mark Kantrovitz"
+  #:author "Mark Kantrowitz"
   #:title "Defsystem: A Portable Make Facility for Common Lisp"
   #:date "1990" ;; January 1990.
   ;; School of Computer Science. Carnegie Mellon University.

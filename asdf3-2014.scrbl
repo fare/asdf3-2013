@@ -1,4 +1,4 @@
-#lang scribble/sigplan @nocopyright @;@preprint
+#lang scribble/sigplan @nocopyright @preprint
 @;-*- Scheme -*-
 
 @(require scribble/base

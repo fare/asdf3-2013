@@ -1,4 +1,4 @@
-#lang scribble/sigplan @nocopyright @preprint
+#lang scribble/sigplan @nocopyright @;@preprint
 @;-*- Scheme -*-
 
 @(require scribble/base
@@ -989,10 +989,15 @@ This bilingual program, both a portable shell script and a portable CL program,
 provides a nice colloquial shell command interface to
 building shell commands from Lisp code,
 and supports delivery as either portable shell scripts or
-self-contained precompiled executable files.
-@;rpgoldman suggests the following requires too much context and should be removed:
-The very same file is accepted by both language processors;
-no race-condition-prone extraction of temporary files is required.
+self-contained precompiled executable files.@;
+@extended-only{@note{
+  @(cl-launch) and the scripts it produces a bilingual:
+  the very same file is accepted by both language processors.
+  A bilingual script can be contrasted with a self-extracting program,
+  that where pieces written in multiple languages have to be extracted first
+  before they may be used, and this extraction, in addition to incurring a setup cost,
+  is often prone to race conditions.
+}}
 
 Its latest incarnation, @(cl-launch 4) (March 2014),
 was updated to take full advantage of @(ASDF3).
@@ -1005,7 +1010,11 @@ cl -sp lisp-stripper \
 }|
 
 You can also use @(cl-launch) as a script "interpreter",
-except that it invokes a Lisp compiler underneath:
+except that it invokes a Lisp compiler underneath:@extended-only{@note{
+  The Unix expert may note that despite most kernels coalescing all arguments on the first line
+  (stripped to 128 characters or so) into a single argument,
+  @(cl-launch) detects such situations and properly restores and interprets the command-line.
+}}
 @verbatim|{
 #!/usr/bin/cl -sp lisp-stripper -E main
 (defun main (argv)
@@ -1063,19 +1072,19 @@ This is in sharp contrast with other "scripting" languages,
 that have to slowly interpret or recompile everytime.
 For security reasons, the cache isn't shared between users.
 
-@subsection[#:tag "asdf-package-system"]{@(asdf/package-system)}
+@subsection[#:tag "asdf-package-system"]{@(package-inferred-system)}
 
-@(ASDF3.1) introduces a new @(asdf/package-system) extension
+@(ASDF3.1) introduces a new extension @(package-inferred-system)
 that supports a one-file, one-package, one-system style of programming.
 This style was pioneered by @(faslpath) @~cite[faslpath-page]
 and more recently @(quick-build) @~cite[Quick-build].
-@(asdf/package-system) is actually compatible with the latter
+This extension is actually compatible with the latter
 but not the former, for @(ASDF3.1) and @(quick-build)
 use a slash @cl{"/"} as a hierarchy separator
 where @(faslpath) used a dot @cl{"."}.
 
-The principle of this lightweight system definition style is that
-every file starts with a @(defpackage) or @(define-package) form;
+This style consists in every file starting
+with a @(defpackage) or @(define-package) form;
 from its @cl{:use} and @cl{:import-from} and similar clauses,
 the build system can identify a list of packages it depends on,
 then map the package names to the names of systems and/or other files,
@@ -1089,11 +1098,11 @@ refers to the file @tt{interface/all.lisp}@extended-only{@note{
   we downcase the package names to follow modern convention.
 }}
 under the hierarchy registered by system @cl{lil},
-defined as follows in @cl{lil.asd} as using class @cl{package-system}:
+defined as follows in @cl{lil.asd} as using class @(package-inferred-system):
 @clcode{
 (defsystem "lil" ...
   :description "LIL: Lisp Interface Library"
-  :class :package-system
+  :class :package-inferred-system
   :defsystem-depends-on ("asdf-package-system")
   :depends-on ("lil/interface/all"
                "lil/pure/all" ...)
@@ -1103,7 +1112,7 @@ The @cl{:defsystem-depends-on ("asdf-package-system")}
 is an external extension that provides backward compatibility with @(ASDF 3.0),
 and is part of @(Quicklisp).
 Because not all package names can be directly mapped back to a system name,
-you can register new mappings for @(asdf/package-system).
+you can register new mappings for @(package-inferred-system).
 The @tt{lil.asd} file may thus contain forms such as:
 @clcode{
 (register-system-packages :closer-mop
@@ -1129,13 +1138,14 @@ with explicit dependencies and especially explicit forward dependencies,
 the style encourages good factoring of the code into coherent units;
 by contrast, the traditional style of "everything in one package"
 has low overhead but doesn't scale very well.
-@(ASDF) itself was re-written in this package-system style as part of @(ASDF 2.27),
+@(ASDF) itself was rewritten in this style as part of @(ASDF 2.27),
 the initial @(ASDF3) pre-release, with very positive results.
 
-@(asdf/package-system) isn't lightweight like @(quick-build),
-which is two orders of magnitude smaller than @(ASDF3).
+Since it depends on @(ASDF3),
+@(package-inferred-system) isn't as lightweight as @(quick-build),
+which is almost two orders of magnitude smaller than @(ASDF3).
 But it does interoperate perfectly with the rest of @(ASDF),
-from which it inherits the many features, and the portability and robustness.
+from which it inherits the many features, the portability, and the robustness.
 
 @subsection[#:tag "backwarder_compatibility"]{Restoring Backward Compatibility}
 
@@ -2000,11 +2010,11 @@ With @(ASDF2), that would be the more obvious
   by Gary King, the last maintainer of @(ASDF1), in June 2009;
   but users couldn't casually @emph{rely} on it being there
   until @(ASDF2) in 2010 made it possible to rely on it being ubiquitous.
+  Starting with @(ASDF3.1), @cl{(asdf:make :foo)} is also available,
+  meaning "do whatever makes sense for this component";
+  it defaults to @(load-system), but authors of systems not meant to be loaded
+  can customize it to mean different things.
 }.
-@;XXX — is this going in????
-@; Starting with @(ASDF3.1), we recommend
-@; @cl{(asdf:build :foo)}, that also works
-@; for new kind of systems not meant to be loaded.
 
 @(ASDF2) provided a portable way to specify pathnames
 by adopting Unix pathname syntax as an abstraction,
@@ -3046,7 +3056,7 @@ their symbol became unreachable and the definitions impossible to debug.
 In the end, to solve the namespace issues of CL would have required
 a complete intrusive change of the package system,
 and that was not a task for @(ASDF).
-If anything, @(faslpath), @(quick-build) and @(asdf/package-system)
+If anything, @(faslpath), @(quick-build) and @(asdf/package-inferred-system)
 seem to have a better approach at enforcing namespace discipline.
 
 These failures were all partial solutions,

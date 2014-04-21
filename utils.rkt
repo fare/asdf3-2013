@@ -79,7 +79,7 @@
 
 (defpretty cl
   ASDF-Install UIOP POIU XCVB DEFSYSTEM defsystem mk-defsystem
-  quick-build faslpath asdf/package-system
+  quick-build faslpath asdf/package-inferred-system
 
   run-program inferior-shell run run/nil run/string run/ss
 
@@ -99,7 +99,7 @@
   program-op image-op build-op
   upward-operation downward-operation sideway-operation selfward-operation non-propagating-operation
 
-  component system module file cl-source-file component-children
+  component system module file cl-source-file component-children package-inferred-system
 
   operate load-system
 

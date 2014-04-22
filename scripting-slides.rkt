@@ -5,14 +5,6 @@
 	 scheme/gui/base
 	 (except-in "utils.rkt" system module force file eval error))
 
-;; TODO: have multiple presentations?
-;; (1) using CL as a scripting language, also, deploying executables and image life-cycle hooks.
-;; (2) the story of bug that begat ASDF3, exploring subtleties in the ASDF dependency model,
-;;   and a surprising conclusion. [My article's Appendix F]
-;; (3) laundry list of new features in ASDF3.1 since ASDF2.
-;; (4) LAMBDA, the Ultimate Culture War — Live Programming vs Cult-of-Dead programs.
-;; (5) other (please specify).
-
 (define ~ @t{ })
 (define *blue* (make-object color% "blue"))
 (define *red* (make-object color% "red"))
@@ -25,60 +17,85 @@
 
 (define (title x) (text x (cons 'bold 'default) 38))
 
-(define slides
-  (make-keyword-procedure
-   (lambda (kws kvs repeats . lines)
-     (for ([i repeats])
-       (let ((m (λ (xs) (map (λ (x) (x i)) xs))))
-	 (keyword-apply
-	  slide kws (m kvs) (m lines)))))))
-
-(define (always x) (lambda (i) x))
-(define (repeat-fun test n iftesttrue [iftestfalse ~] [ifnorepeat ~])
-  (lambda (i)
-    (cond
-     ((not i) ifnorepeat)
-     ((test i n) iftesttrue)
-     (#t iftestfalse))))
-(define (if= n x [y ~] [z ~]) (repeat-fun = n x y z))
-(define (if<= n x [y ~] [z ~]) (lambda (i) (if (<= i n) x y)))
-(define (if>= n x [y ~] [z ~]) (lambda (i) (if (>= i n) x y)))
-
-(define (?highlight n m object [shaded grey] [highlit red] [normal identity])
-  (if n
-      (if (eqv? n m)
-	  (highlit object)
-	  (shaded object))
-      (normal object)))
-
-(define (tASDF3 . x)
-  (title (apply string-append "ASDF 3: " x)))
-
 (define (tslide _title . body)
   (keyword-apply slide '(#:title) (list (title _title)) body))
 
-(tslide "Another System Definition Facility version 3.1"
+(tslide "ASDF 3"
   @bt{Why Lisp is Now an Acceptable Scripting Language}
   ~
   @t{François-René Rideau <tunes@"@"google.com>}
   (comment "\
-Hi, I'm François-René Rideau, and I'm here to tell you about ASDF 3, \
-the de facto standard build system for Common Lisp.
+Hi, I'm François-René Rideau.
 
-My paper at the European Lisp Symposium 2014 is titled \
-\"ASDF3: Why CL is now an acceptable Scripting Language\". \
+I have paper at the European Lisp Symposium 2014, titled \
+\"ASDF 3: Why Lisp is now an acceptable Scripting Language\". \
 
-Indeed, one of my the too many take-home points of my paper \
-is that CL is now available to compete as a scripting language \
-against Unix shells, Perl, Python, Ruby, etc.
+And so today I will tell you about one of the cool things \
+I discussed in my paper: \
+using Common Lisp as scripting language, \
+competing against Unix shells, Perl, Python, Ruby, etc.
 
 I'll explain why the last missing piece for that was ASDF 3, \
 and how you can hack your own Lisp into providing the same service.
 "))
 
+(tslide "ASDF 3"
+  @para[#:align 'left]{Another System Definition Facility}
+  ~
+  @para[#:align 'left]{build system}
+  ~
+  @para[#:align 'left]{de facto standard}
+  ~
+  @para[#:align 'left]{DEFSYSTEM tradition}
+  ~
+  @para[#:align 'left]{in-image}
+  ~
+  @para[#:align 'left]{version 3}
+  (comment "\
+First, a little background about ASDF.
+
+It stands for Another System Definition Facility. \
+Also for consecutive letters on a QWERTY keyboard.
+
+It's a build system: \
+in goes source code, out comes a working program.
+
+It's a de facto standard: \
+everyone uses it, where many competitors have failed (including my own XCVB).
+
+It's the culmination of a tradition of DEFSYSTEM facilities started in the 1970s.
+
+It builds the program in the current Lisp image.
+
+And this is the third version, i.e. second complete rewrite.")
+
+(tslide "Brief History of ASDF"
+  @para[#:align 'left]{Prehistory: load scripts}
+  ~
+  @para[#:align 'left]{1970s DEFSYSTEM}
+  ~
+  @para[#:align 'left]{1990 MK-DEFSYSTEM}
+  ~
+  @para[#:align 'left]{2002 ASDF (Dan Barlow ≠ me)}
+  ~
+  @para[#:align 'left]{2010 ASDF 2 (me me!)}
+  ~
+  @para[#:align 'left]{2013 ASDF 3 (me me me!)}
+  (comment "\
+To put it in historical context, \
+there have been many milestones in the quest
+to making the build of Lisp software suck LESS.
+
+Importantly, Dan Barlow invented ASDF in 2002. \
+His code is now known as ASDF 1.
+
+I took it over and published ASDF 2 in 2010, \
+and ASDF 3 is my complete rewrite from 2013."))
+
+
 (tslide "An Acceptable Scripting Language"
   (comment "\
-First, let's see how you now can use CL as a scripting language"))
+Now, let's see how you now can use CL as a scripting language"))
 
 (tslide "Writing a Unix-style script in Lisp"
   (code
@@ -94,8 +111,8 @@ First, let's see how you now can use CL as a scripting language"))
   (comment "\
 Here is a simple script.
 
-Here, the script \"interpreter\" is the ASDF companion program cl-launch \
-that invokes your favorite Common Lisp compiler.
+Here, the script \"interpreter\" is the ASDF companion program cl-launch. \
+It invokes your favorite Common Lisp compiler to run the script.
 
 As you can see, I am homesteading the path /usr/bin/cl. \
 The -sp option loads a system and changes the current *package* in one go. \
@@ -111,12 +128,12 @@ that strips blank lines, comments, docstrings, and extra lines in string constan
    ||
    |form='`#5(1 ,@`(2 3))'|
    ||
-   |for l in allegro ccl clisp sbcl ecl |\\
+   |for impl in allegro ccl clisp sbcl ecl |\\
    |      lispworks abcl cmucl gcl scl xcl ; |\\
    |do |
-   |_  cl -l $l |\\
-   |      "(format t \"$l ~S~%\" $form)" |\\
-   |  2>&1 |\|| grep "^$l " # LW, GCL are verbose|
+   |_  cl -l $impl |\\
+   |      "(format t \"$impl ~S~%\" $form)" |\\
+   |  2>&1 |\|| grep "^$impl " # LW, GCL are verbose|
    |done|)
   (comment "\
 You can also invoke Common Lisp code directly from a shell script.
@@ -142,13 +159,13 @@ you could use CL instead of /bin/sh to write the same script.
    ||
    (loop with form = "`#5(1 ,@`(2 3))"
       ||
-      for l in '(allegro ccl clisp sbcl ecl
+      for impl in '(allegro ccl clisp sbcl ecl
                  lispworks abcl cmucl gcl scl xcl)
       do
-      (run `(pipe (cl -l ,l (>& 2 1)
-                      ("(format t \"" ,l " ~S~%\" "
+      (run `(pipe (cl -l ,impl (>& 2 1)
+                      ("(format t \"" ,impl " ~S~%\" "
                          ,form ")"))
-              (grep ("^" ,l " "))))))
+              (grep ("^" ,impl " "))))))
   (comment "\
 The following script is doing exactly the same thing as the previous one, \
 except it is written in CL.
@@ -289,12 +306,12 @@ between multiple users, multiple implementations, multiple machines, \
 and there would be no clash or additional security issues.
 
 Invoking CL programs in a uniform way was made possible by cl-launch. \
-cl-launch was actually written before ASDF2, but it was made simpler and more powerful \
-with ASDF2's output-translations and with ASDF3's portability layer UIOP.
+cl-launch was actually written before ASDF 2, but it was made simpler and more powerful \
+with ASDF 2's output-translations and with ASDF 3's portability layer UIOP.
 
 As for invoking external programs from CL and capturing their output nicely, \
 this was initially made possible by XCVB and its xcvb-driver, \
-and moved into ASDF3's portability layer UIOP and further developed there. \
+and moved into ASDF 3's portability layer UIOP and further developed there. \
 A more usable layer is available in the system inferior-shell,
 that I demonstrated just before."))
 
@@ -302,8 +319,8 @@ that I demonstrated just before."))
   @para[#:align 'left]{Q: Where is system @tt{foo} ?}
   @para[#:align 'left]{The hard way: modify every client}
   @para[#:align 'left]{logical-pathname: system and client must agree}
-  @para[#:align 'left]{ASDF: user maintains a link farm to .asd files}
-  @para[#:align 'left]{but how to configure? @tt{~/.sbclrc}, etc.}
+  @para[#:align 'left]{ASDF 1: user maintains a link farm to .asd files}
+  @para[#:align 'left]{But how to configure? @tt{~/.sbclrc}, etc.}
   (comment "\
 First to locate the source code of the various systems, \
 each user had to specially configure his Lisp implementation \
@@ -372,18 +389,18 @@ to a string that identifies the implementation, including its version, \
 its salient configuration features, \
 the operating system and hardware architecture, etc.
 
-Unlike the ASDF1 central-registry, the ASDF2 source-registry can recurse into subtrees; \
+Unlike the ASDF1 central-registry, the ASDF 2 source-registry can recurse into subtrees; \
 no more having to manually scan directories and manually update link farms when the libraries \
 are removed, added or modified.
 
-The ASDF2 source-registry have a nice way to get configuration from various sources \
+The ASDF 2 source-registry have a nice way to get configuration from various sources \
 and merge them so that the program can override the environment that can override \
 user configuration files that can override system configuration files that can override defaults.
 
-The ASDF2 source-registry provides sensible defaults that will work with your implentation, \
+The ASDF 2 source-registry provides sensible defaults that will work with your implentation, \
 with systems provided by your Linux distribution (e.g. Debian), etc.
 
-ASDF3 introduces a universal pre-configured location, ~/common-lisp/
+ASDF 3 introduces a universal pre-configured location, ~/common-lisp/
 in which to put your code"))
 
 (tslide "Finding source code (lessons)"
@@ -466,7 +483,7 @@ Not to force every user to be a system administrator, \
 ASDF had to include the functionality and a nice modular configuration mechanism for it. \
 That's what I did with ASDF 2 and its output-translations facility.
 
-By default, ASDF2 is configured so that all output is redirected in a per-user, per-ABI cache, \
+By default, ASDF 2 is configured so that all output is redirected in a per-user, per-ABI cache, \
 so that there is no interference between users who cannot trust each other, \
 or between incompatible implementations or variants of a same implementation. \
 But this is completely under user control; \
@@ -514,7 +531,7 @@ to each of the same problems."))
 (tslide "Easier delivery with bundle operations"
   @para[#:align 'left]{Deliver an executable: @tt{cl-launch}}
   ~
-  @para[#:align 'left]{Deliver a library: @tt{compile-bundle-op}}
+  @para[#:align 'left]{Deliver a library: @tt{asdf:compile-bundle-op}}
   ~
   @para[#:align 'left]{Deliver code as only one or two files!}
   (comment "\
@@ -599,7 +616,7 @@ one short line max as in #!/usr/bin/cl is OK;
 ten lines to include plenty of header files, class definitions,
 or a main(argc, argv) function prototype, is NOT OK.
 Having to write your own portability layer is NOT OK.
-cl-launch and ASDF3 solved that for CL.
+cl-launch and ASDF 3 solved that for CL.
 
 This also means little or no boilerplate between the user and running the program.
 Having to install the program and its dependencies is OK,
@@ -607,13 +624,13 @@ though it should be mostly automated.
 Requiring a special setup and/or system administration skills is NOT OK.
 Having to configure variables specific to the task at hand is OK.
 The need to modify the script itself so it runs at all on your machine is NOT OK.
-cl-launch and ASDF2 mainly solved the configuration issue,
+cl-launch and ASDF 2 mainly solved the configuration issue,
 but many small improvements have been made since.
 
 Finally, this means easy interoperation with other software on the system.
 Since the shell command line is the standard way for multiple programs to interoperate,
 it should be supported, both ways.
-cl-launch and ASDF3 solve that.
+cl-launch and ASDF 3 solve that.
 And since C libraries is the standard way to provide new services
 — respectively JVM libraries, .NET libraries, etc., depending on your platform —
 the scripting language should provide an easy to interface to that, both ways.
@@ -625,11 +642,11 @@ CFFI provides that for CL.
 Why do we need scripting languages, or a build system, to begin with?
 ")
   'next
-  @para[#:align 'left]{ASDF3 does nothing that cannot be done without it}
+  @para[#:align 'left]{ASDF 3 does nothing that cannot be done without it}
   (comment "\
-In the end, detractors will deride, ASDF3 does nothing that cannot be done without it.
-Any program you write that uses ASDF3 or cl-launch could be written without either.
-At the very worst, it would include relevant snippets of ASDF3 or cl-launch to do the same thing,
+In the end, detractors will deride, ASDF 3 does nothing that cannot be done without it.
+Any program you write that uses ASDF 3 or cl-launch could be written without either.
+At the very worst, it would include relevant snippets of ASDF 3 or cl-launch to do the same thing,
 just lighter weight for not having to support cases irrelevant to the program at hand.")
   'next
   @para[#:align 'left]{Neither does any piece of software}
@@ -654,19 +671,19 @@ It achieves that by making it easy to divide software into many components that 
 that each may somehow fit into some programmer's brain,
 while reducing friction in combining these components into a complete program."))
 
-(tslide "Beyond ASDF3"
+(tslide "Beyond ASDF 3"
   (comment "\
 So what is the next step for ASDF?
 ")
   'next
   @para[#:align 'left]{less overhead:}
-  @para[#:align 'left]{ASDF 3.1: @tt{one-package-per-file}}
+  @para[#:align 'left]{ASDF 3.1: @tt{asdf:package-inferred-system}}
   ~
   @para[#:align 'left]{more modularity:}
   @para[#:align 'left]{ASDF 3.1: @tt{*readtable*} protection}
   ~
   @para[#:align 'left]{more access:}
-  @para[#:align 'left]{Integrate with other languages?}
+  @para[#:align 'left]{Integration with other languages?}
   (comment "\
 ASDF 3.1 has two innovations that further improve the language.
 

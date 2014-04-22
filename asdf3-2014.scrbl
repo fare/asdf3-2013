@@ -991,12 +991,11 @@ building shell commands from Lisp code,
 and supports delivery as either portable shell scripts or
 self-contained precompiled executable files.@;
 @extended-only{@note{
-  @(cl-launch) and the scripts it produces a bilingual:
+  @(cl-launch) and the scripts it produces are bilingual:
   the very same file is accepted by both language processors.
-  A bilingual script can be contrasted with a self-extracting program,
-  that where pieces written in multiple languages have to be extracted first
-  before they may be used, and this extraction, in addition to incurring a setup cost,
-  is often prone to race conditions.
+  This is in contrast to self-extracting programs,
+  where pieces written in multiple languages have to be extracted first
+  before they may be used, which incurs a setup cost and is prone to race conditions.
 }}
 
 Its latest incarnation, @(cl-launch 4) (March 2014),

@@ -23,7 +23,11 @@
 (tslide "ASDF 3"
   @bt{Why Lisp is Now an Acceptable Scripting Language}
   ~
+  ~
   @t{François-René Rideau <tunes@"@"google.com>}
+  ~
+  ~
+  @t{European Lisp Symposium, 2014-05-05}
   (comment "\
 Hi, I'm François-René Rideau.
 
@@ -41,15 +45,10 @@ and how you can hack your own Lisp into providing the same service.
 
 (tslide "ASDF 3"
   @para[#:align 'left]{Another System Definition Facility}
-  ~
   @para[#:align 'left]{build system}
-  ~
   @para[#:align 'left]{de facto standard}
-  ~
   @para[#:align 'left]{DEFSYSTEM tradition}
-  ~
   @para[#:align 'left]{in-image}
-  ~
   @para[#:align 'left]{version 3}
   (comment "\
 First, a little background about ASDF.
@@ -67,19 +66,14 @@ It's the culmination of a tradition of DEFSYSTEM facilities started in the 1970s
 
 It builds the program in the current Lisp image.
 
-And this is the third version, i.e. second complete rewrite.")
+And this is the third version, i.e. second complete rewrite."))
 
 (tslide "Brief History of ASDF"
   @para[#:align 'left]{Prehistory: load scripts}
-  ~
   @para[#:align 'left]{1970s DEFSYSTEM}
-  ~
   @para[#:align 'left]{1990 MK-DEFSYSTEM}
-  ~
   @para[#:align 'left]{2002 ASDF (Dan Barlow ≠ me)}
-  ~
   @para[#:align 'left]{2010 ASDF 2 (me me!)}
-  ~
   @para[#:align 'left]{2013 ASDF 3 (me me me!)}
   (comment "\
 To put it in historical context, \
@@ -129,7 +123,7 @@ that strips blank lines, comments, docstrings, and extra lines in string constan
    |form='`#5(1 ,@`(2 3))'|
    ||
    |for impl in allegro ccl clisp sbcl ecl |\\
-   |      lispworks abcl cmucl gcl scl xcl ; |\\
+   |            lispworks abcl cmucl gcl scl xcl ; |\\
    |do |
    |_  cl -l $impl |\\
    |      "(format t \"$impl ~S~%\" $form)" |\\
@@ -160,7 +154,7 @@ you could use CL instead of /bin/sh to write the same script.
    (loop with form = "`#5(1 ,@`(2 3))"
       ||
       for impl in '(allegro ccl clisp sbcl ecl
-                 lispworks abcl cmucl gcl scl xcl)
+                    lispworks abcl cmucl gcl scl xcl)
       do
       (run `(pipe (cl -l ,impl (>& 2 1)
                       ("(format t \"" ,impl " ~S~%\" "
@@ -181,13 +175,13 @@ But the point is not just to do as well as a Unix shell, but to do better."))
    ||
    (loop with form = "`#5(1 ,@`(2 3))"
       ||
-      for l in '(allegro ccl clisp sbcl ecl
-                 lispworks abcl cmucl gcl scl xcl)
+      for impl in '(allegro ccl clisp sbcl ecl
+                    lispworks abcl cmucl gcl scl xcl)
       collect
-      (run `(pipe (cl -l ,l (>& 2 1)
-                      ("(format t \"" ,l " ~S~%\" "
+      (run `(pipe (cl -l ,impl (>& 2 1)
+                      ("(format t \"" ,impl " ~S~%\" "
                          ,form ")"))
-              (grep ("^" ,l " "))) :output :forms)))
+              (grep ("^" ,impl " "))) :output :forms)))
   (comment "\
 And here, since you're using CL, \
 you can write an expression that returns structured data, not strings. \
@@ -242,14 +236,14 @@ So why was scripting in CL not possible before?
 What does your programming language need to possess, \
 before it can be used to write scripts?")
   'next
-  (para #:align 'left (t "finding source code"))
-  (para #:align 'left (t "locating output files"))
+  @para[#:align 'left]{finding source code}
+  @para[#:align 'left]{locating output files}
   ~
-  (para #:align 'left (t "command line invocation"))
-  (para #:align 'left (t "argv access"))
+  @para[#:align 'left]{command line invocation}
+  @para[#:align 'left]{argv access}
   ~
-  (para #:align 'left (t "run-program"))
-  (para #:align 'left (t "pipes, expansion"))
+  @para[#:align 'left]{run-program}
+  @para[#:align 'left]{pipes, expansion}
   (comment "So why was scripting in CL not possible before?
 
 Well, it was stricto sensu possibe, but completely not portable. \
@@ -286,14 +280,14 @@ despite the large compatibility of all implementations with each other \
 thanks to the CL standard."))
 
 (tslide "What made scripting possible?"
-  (para #:align 'left (t "finding source code → asdf2 (source-registry)"))
-  (para #:align 'left (t "locating output files → asdf2 (output-translations)"))
+  @para[#:align 'left]{finding source code → asdf2 (source-registry)}
+  @para[#:align 'left]{locating output files → asdf2 (output-translations)}
   ~
-  (para #:align 'left (t "command line invocation → cl-launch"))
-  (para #:align 'left (t "argv access → cl-launch"))
+  @para[#:align 'left]{command line invocation → cl-launch}
+  @para[#:align 'left]{argv access → cl-launch}
   ~
-  (para #:align 'left (t "run-program → asdf3 (uiop)"))
-  (para #:align 'left (t "pipes, expansion → inferior-shell"))
+  @para[#:align 'left]{run-program → asdf3 (uiop)}
+  @para[#:align 'left]{pipes, expansion → inferior-shell}
   (comment "\
 These issues have now been addressed.
 
@@ -449,9 +443,90 @@ In conclusion, \
 if you develop a programming language and its build system, \
 you may want a similar mechanism to ASDF 2's."))
 
+(tslide "Locating output files (before)"
+  @para[#:align 'left]{Output in source code directory}
+  @para[#:align 'left]{(Technically as bad as for C)}
+  ~
+  @para[#:align 'left]{no standard paths, no common ABI}
+  @para[#:align 'left]{(Socially worse than for C)}
+  'next
+  @para[#:align 'left]{Libraries as source (like Perl…)}
+  @para[#:align 'left]{Cannot share source code}
+  (comment "\
+Issues with output file locations mirrored the issues with source file locations.
+
+TL;DR: skip
+
+Back in the day, compilation output files were stored in the same directory as the source files. \
+Technically, this made Lisp compilation just as bad as C compilation: \
+something that was managed explicitly by developers, not done implicitly for users.
+
+Except that socially, things were worse than for C compilation: \
+On the one hand, there were no standard installation paths, \
+such as /usr/lib for C programs, where to share previously compiled libraries;
+on the other hand there was no common target ABI, even on a same operating system and architecture, \
+to share compiled libraries between different compilers, \
+or even different versions of the same compiler; \
+indeed, constantly improving the ABI \
+is where a lot of the competition between compilers happens.
+
+As a result libraries can only shared as source code, not as standalone compiled output files; \
+yet the same source code directory cannot generally be shared between different compilers \
+or versions of a same compiler, \
+because their output files may clash with each other. \
+That can be no sharing between multiple users, \
+between multiple implementations or versions thereof, \
+between machines."))
+
+(tslide "ASDF 1: output redirection, but..."
+  @para[#:align 'left]{@tt{defmethod output-files :around (o c)}}
+  @para[#:align 'left]{c-l-c (2002), A-B-L (2005)}
+  'next
+  @para[#:align 'left]{Not modular}
+  @para[#:align 'left]{Where to configure? @tt{~/.sbclrc}}
+  (comment "\
+To share source code available on a system-wide basis between multiple users, \
+or to use the same source code it with different implementations, \
+you needed to somehow segregate compilation output files per user, per implementation.
+
+That was not generally possible before ASDF; \
+Using logical-pathnames was possible in theory, \
+but required a lot of knowledge of both the implementation and the software being compiled, \
+in addition to being cumbersome.
+
+With ASDF, people could define :around methods for the function output-files \
+and thus systematically divert all output files; extensions existed to help do just that. \
+But there again special setup was required to load and configure such extensions. \
+Another \"solution\" would have been to never compile anything, \
+or equivalenty to always compile everything from scratch to new private files; \
+but that would be quite slow and would not have scaled to large files and big libraries. \
+Yet that was exactly what had to be used for these extensions themselves, \
+to avoid bootstrap issues.
+
+The problem ultimately the same as with finding source code, and so was the solution: \
+Not to force every user to be a system administrator, \
+ASDF had to include the functionality and a nice modular configuration mechanism for it. \
+That's what I did with ASDF 2 and its output-translations facility.
+
+By default, ASDF 2 is configured so that all output is redirected in a per-user, per-ABI cache, \
+so that there is no interference between users who cannot trust each other, \
+or between incompatible implementations or variants of a same implementation. \
+But this is completely under user control; \
+the user can wholly disable the facility, or can reconfigure it in different ways, \
+with the same modular infrastructure as for the source-registry.
+
+The result is that scripts can rely on there being a persistent cache of compiled output files. \
+In comparison with Java, one way to see it is that Common Lisp has a JIT, \
+except persistent and coarse-grained, at the file level rather than function level. \
+Also, the Common Lisp bytecode is not stack-based but structure-based; \
+bytecode 40 (ascii code for open paren) starts new code structure,
+bytecode 41 (ascii code for open paren) finishes the current code structure, etc."))
+
 (tslide "Locating output files"
   @para[#:align 'left]{ASDF 2: @tt{output-translations}}
   @para[#:align 'left]{Configuration similar to @tt{source-registry}}
+  ~
+  @para[#:align 'left]{Before: as bad as C, but without conventions}
   ~
   @para[#:align 'left]{Default: persistent cache, per user, per ABI}
   @para[#:align 'left]{Cache not shared, for security}

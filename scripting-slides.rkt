@@ -236,6 +236,19 @@ So why was scripting in CL not possible before?
 What does your programming language need to possess, \
 before it can be used to write scripts?")
   'next
+  @para[#:align 'left]{(No) Write Once, Run Most-anywhere}
+  (comment "So why was scripting in CL not possible before?
+
+Well, it was stricto sensu possibe, but completely not portable. \
+Every user would have to modify every script to match his particular situation. \
+There were several aspects requiring modification, that involved various amounts of pain.
+
+In short, Write once, run most-anywhere was an unreachable dream, \
+despite the large compatibility of all implementations with each other \
+thanks to the CL standard.
+"))
+
+(tslide "What prevented scripting?"
   @para[#:align 'left]{finding source code}
   @para[#:align 'left]{locating output files}
   ~
@@ -244,12 +257,7 @@ before it can be used to write scripts?")
   ~
   @para[#:align 'left]{run-program}
   @para[#:align 'left]{pipes, expansion}
-  (comment "So why was scripting in CL not possible before?
-
-Well, it was stricto sensu possibe, but completely not portable. \
-Every user would have to modify every script to match his particular situation. \
-There were several aspects requiring modification, that involved various amounts of pain.
-
+  (comment "
 Some of these aspects were universally inflicted to every common lisp user: \
 finding source code and choosing output file location were basic unfulfilled needs \
 before ASDF, and still painful with ASDF1. \
@@ -272,12 +280,7 @@ and accessing arguments passed to your code, \
 were non-trivial tasks, that varied wildly with your implementation.
 
 Finally, calling an external program and extrating results was extremely difficult, \
-and there again varied wildly with your implementation.
-
-All these factors together conspired to make CL wholly unsuitable to write scripts. \
-Write once, run anywhere was an unreachable dream, \
-despite the large compatibility of all implementations with each other \
-thanks to the CL standard."))
+and there again varied wildly with your implementation."))
 
 (tslide "What made scripting possible?"
   @para[#:align 'left]{finding source code → asdf2 (source-registry)}
@@ -602,6 +605,8 @@ that problems are better solved \
 if programmers each provide a complete \"100%\" solution to a handful problems, \
 than if the same programmers each provide a different partial \"80%\" solution \
 to each of the same problems."))
+
+(tslide "Related Improvements")
 
 (tslide "Easier delivery with bundle operations"
   @para[#:align 'left]{Deliver an executable: @tt{cl-launch}}

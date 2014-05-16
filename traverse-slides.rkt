@@ -113,7 +113,7 @@ The inhabitants are not afraid anymore, though some of them remain grumpy.
 
   (That's me fixing bugs with the help of many other programmers.)
 
-The protagonist builds fortifications, and finds he has to extends the city limits \
+The protagonist builds fortifications, and finds he has to extend the city limits \
 to make it easier to defend, adding new buildings along the way.
 
   (That would be improving the ASDF design to be more robust, and adding features.)
@@ -149,7 +149,8 @@ but it still roams in the streets at night.
   gets dependency changes to trigger rebuild across modules, \
   but dependency changes still fail to trigger rebuild across systems)
 
-Our sheriff, finally vanquished all other monsters, and having no other foe left in town, \
+Our sheriff, having finally vanquished all other monsters, \
+  and having no other foe left in town, \
   sets off to catch this last monster.
 
 And so, he has to enter hitherto unexplored caverns deep below the village, \

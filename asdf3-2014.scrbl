@@ -738,7 +738,7 @@ yet since @(ASDF) still needed to be delivered as a single file @tt{asdf.lisp},
 @(UIOP) was @emph{transcluded} inside that file, now built using the
 @cl{monolithic-concatenate-source-op} operation.
 At Google, the build system actually uses @(UIOP) for portability without the rest of @(ASDF);
-this led to @(UIOP) improvements that will be released with @(ASDF "3.1.1").
+this led to @(UIOP) improvements that will be released with @(ASDF "3.1.2").
 
 Most of the utilities deal with providing sane pathname abstractions
 (see @appref["pathnames"]{Appendix C}),
@@ -807,8 +807,8 @@ and what shell would be used varied between implementations, even more so on Win
 @(ASDF3)'s @(run-program) is full-featured,
 based on code originally from @(XCVB)'s @cl{xcvb-driver} @~cite[XCVB-2009].
 It abstracts away all these discrepancies to provide control over
-the program's standard output, using temporary files underneath if needed.
-Since @(ASDF "3.0.3"), it can also control the standard input and error output.
+the program's standard-output, using temporary files underneath if needed.
+Since @(ASDF "3.0.3"), it can also control the standard-input and error-output.
 It accepts either a list of a program and arguments, or a shell command string.
 Thus your previous program could have been:
 @clcode{
@@ -838,7 +838,7 @@ implicit conversion of pathnames into native-namestrings,
 of symbols into downcased strings,
 of keywords into downcased strings with a @dashdash{} prefix.
 Its short-named functions @cl{run}, @cl{run/nil}, @cl{run/s}, @cl{run/ss},
-respectively run the external command with outputs to the Lisp standard and error output,
+respectively run the external command with outputs to the Lisp standard- and error- output,
 with no output, with output to a string, or with output to a stripped string.
 Thus you could get the same result as previously with:
 @clcode{
@@ -2067,7 +2067,11 @@ within the constraint that it builds on top of what the implementation provides.
 While the result is robust enough to deal with the kind of files used while developing software,
 that makes @(UIOP) not suitable for dealing with all the corner cases that may arise
 when processing files for end-users, especially not in adversarial situations.
-For a complete and well-designed reimplementation of pathnames, see IOLib instead.
+For a complete and well-designed reimplementation of pathnames,
+that accesses the operating system primitives and libraries via CFFI,
+exposes them and abstracts over, in a way portable across implementations
+(and, to the extent that it's meaningful, across operating systems),
+see IOLib instead.
 Because of its constraint of being self-contained and minimal, however,
 @(ASDF) cannot afford to use IOLib (or any library).
 
@@ -3090,7 +3094,7 @@ which could not be the case until this transclusion made it possible.
 In a different failure mode, a brief attempt to give @cl{asdf-driver} the nickname @cl{d}
 was quickly met with reprobation, as many programmers feel that that short a name
 should be available for a programmer's own local nicknames while developing.
-Trying to homestead the @cl{:dbg} keyword for a debugging macro met the same opposition.
+Trying to homestead the @cl{:DBG} keyword for a debugging macro met the same opposition.
 Some (parts of) namespaces are in the commons and not up for grabs.
 
 @subsection{Not Successful Yet}
@@ -3369,7 +3373,11 @@ which resulted in the explosion of @(ASDF2).
 
 In the last release by Dan Barlow, @(ASDF 1.85) in May 2004,
 the @(traverse) algorithm was a 77-line function with few comments,
-a terse piece of magic at the heart of the original 1101-line build system.
+a terse piece of magic at the heart of the original 1101-line build system.@note{
+  A git checkout of the code has a @(make) target @tt{extract}
+  that will extract notable versions of the code,
+  so you can easily look at them and compare them.
+}
 Shortly before I inherited the code, in @(ASDF 1.369) in October 2009,
 it had grown to 120 lines, with no new comment but with some commented out debugging statements.
 By the time of @(ASDF 2.26) in October 2012,
@@ -3410,12 +3418,12 @@ marking those that are visited, and detecting circularities.
 Each action consists of an operation on a component;
 for a simple CL system with regular Lisp files,
 these actions are @(compile-op) for compiling the code in the component,
-and @(load-op) for loading this compiled code;
+and @(load-op) for loading the compiled code;
 a component is a @(system), a recursive @(module), or a @(file)
 (actually a @(cl-source-file)).
 
 When visiting the action of an operation on a component,
-it propagates the operations along the component hierarchy,
+@(traverse) propagates the operations along the component hierarchy,
 first sideway amongst siblings, then specially downwards toward children:
 if A @(depends-on) B (in the component DAG),
 then any operation on A @(depends-on) same operation on B
@@ -3498,9 +3506,9 @@ and so there was no way to request compilation of B
 without triggering compilation of A.
 For the bug to be visible within a system,
 it took an external build interruption such as a machine crash or power loss,
-or angry programmer killing the process;
-in case of such obvious event, programmers would know to rebuild from clean
-if experiencing some seeming filesystem corruption.
+or an angry programmer killing the process because it is hosed;
+in case of such obvious event, programmers would somehow learn
+to rebuild from clean if experiencing some seeming filesystem corruption.
 On the other hand, across systems, the problem arose quite naturally:
 working on a system B, compiling it and debugging it,
 then working on a client system A, was not only possible but the @emph{usual} workflow.
@@ -3523,8 +3531,8 @@ after they updated their checkout.
 
 @(ASDF) should have been propagating timestamps,
 not just force flags for whether recompilation was needed in the current session!
-So we painfully modified the existing algorithm
-to support timestamps rather than a flag.
+So we painfully rewrote the existing algorithm
+to support timestamps rather than a flag (2.26.9, 2.26.10).
 
 As for @(do-first) dependencies such as loading a file,
 we would stamp a @(load-op) not with the time at which the file was loaded,
@@ -3537,6 +3545,9 @@ This wasn't enough, though. To wholly get rid of @(do-first),
 we had to distinguish between actions that were done in the current image,
 versus actions that weren't done in the current image,
 but that might still be up-to-date, because their effects were all in the filesystem.
+(This distinction since @(ASDF1) had been present in the function @(operation-done-p)
+that checked for timestamps without propagation when there were both input and output files,
+and had to come up with an answer when there weren't.)
 Therefore, when examining an action, we must separate the propagated timestamp
 from a non-propagated flag telling whether the action needs to be done in the current image or not.
 The generic function @(compute-action-stamp) looks at the dependencies of an action,
@@ -3569,7 +3580,9 @@ A negative infinity marker (implemented as boolean @(nil)) also serves to mark a
 
 Then, we started to adapt @(POIU) to use timestamps.
 @(POIU) is an @(ASDF) extension, originally written by Andreas Fuchs,
-that maintains a complete action graph to compile in parallel (see @secref{Action_Graph}).
+but or which we had inherited the maintenance,
+and that computes a complete action graph of the build
+to compile in parallel (see @secref{Action_Graph}).
 However, our attempt to run the modified @(POIU) would fail,
 and we'd be left wondering why, until we realized
 that was because we had previously deleted what looked like an unjustified kluge:
@@ -3649,7 +3662,7 @@ which at that point had been broken down in neat small functions,
 none more than fifteen lines long.
 If anything, some complexity had been moved to the function @(compute-action-stamp)
 that computes timestamps and deals with corner cases of missing inputs or missing outputs,
-which was 48 heavily commented lines of code (67 as of 3.1.1),
+which was 48 heavily commented lines of code (67 as of 3.1.2),
 just slightly more than the misdesigned function @(operation-done-p)
 it was superseding.
 
@@ -3664,15 +3677,16 @@ Former @(do-first) dependencies of an action used to not partake in the forcing,
 but were nevertheless to be done before the action.
 Reminder: in practice, they were the loading of dependencies before compiling a file.
 With the new, saner, action graph, they were now regular dependencies;
-the only difference was that they don't contribute anything to the action stamp (and thus forcing)
+the only difference was that they don't contribute anything
+to the action stamp (and thus to forcing)
 that wasn't already contributed by the action creating the file they loaded.
-Still, they must be done, in order, in the current image.
+Still, they had to be done, in order, in the current image.
 
 Now, this last constraint was utterly defeating the purpose of some bundle operations,
 where the whole point of using a bundle fasl was to not have to load the individual fasls
 (see @secref{bundle_operations}).
-In the old @(ASDF1) model, the @(load-fasl-op) @(depends-on) @(fasl-op)@note{
-  Since renamed to @(load-bundle-op) and @(compile-bundle-op) respectively.
+In the old @(ASDF1) model, the @(load-bundle-op) @(depends-on) @(compile-bundle-op)@note{
+  They were then respectively named @(load-fasl-op) and @(fasl-op), but have since be renamed.
 }
 which @(depends-on) a lot of individual @(compile-op),
 which only @(do-first) the @(load-op) of their dependencies.
@@ -3761,8 +3775,8 @@ a higher major version number still signifies compatibility.
 Robert Goldman assumed maintainership in July 2013,
 a few months after the release of @(ASDF) 3.0.1,
 and has since released 3.0.2 and 3.0.3.
-I remained the main developer until release 3.1.1, in April 2014,
-after a new series of significant improvement.
+I remained the main developer until release 3.1.2, in May 2014,
+that culminates a new series of significant improvement.
 
 All known bugs have been fixed except for wishlist items,
 but there will always be portability issues to fix.
@@ -3790,7 +3804,7 @@ Meanwhile the variant from LispWorks also requires the programmer to follow
 a non-trivial and under-documented discipline in defining build @cl{:rules},
 so you need to declare your dependencies in two related rules
 @cl{:caused-by} and @cl{:requires} that are akin to the
-original @(depends-on) vs @(do-first) in @(ASDF1).
+original @(depends-on) vs @(do-first) in @(ASDF1) (but probably predate it).
 What is worse, the @emph{live} knowledge about this bug and its fix
 never seems to have made it out to the general Lisp programming public,
 and so most of those who are using those tools are probably doing it wrong,
@@ -3812,7 +3826,7 @@ Why didn't the few who noticed @emph{something} care enough
 to bother fixing it, and fixing it good?
 
 We can offer multiple explanations to this fact.
-First, to put the bug back in perspective,
+As a first explanation, to put the bug back in perspective,
 an analogy in the C world would be that
 sometimes when a @tt{.h} file is modified in a different library
 (and in some more elaborate cases, in the same library,
@@ -3823,7 +3837,7 @@ many simple projects fail to properly maintain dependency information
 between @tt{.c} and @tt{.h} files, and even those that do
 don't usually account for header files in other libraries,
 unless they bother to use some automated dependency analysis tools.
-Still, the situation is somewhat worse in the CL world,
+Still, the situation is somewhat worse in the CL world:
 first because every file serves the purpose of both @tt{.c} and @tt{.h}
 so these dependencies are ubiquitous;
 second because because CL software is much more amenable to modification,
@@ -3846,7 +3860,8 @@ But then their programs don't have any kind of macros,
 so they lose, a lot, in expressiveness, as compared to CL,
 if admittedly not to C.
 
-Second, most CL programmers write software interactively in the small,
+As a second explanation,
+most CL programmers write software interactively in the small,
 where the build system isn't a big factor.
 This is both related to the expressive power of the language,
 that can do more with less, and to the size of the community, which is smaller.
@@ -3865,7 +3880,8 @@ In the mean time, and because of all the issues discussed above,
 the policy had long been to build from clean before running the tests
 that would qualify a change for checkin into the code repository.
 
-Third, and relatedly, Lisp has historically encouraged an interactive style of development,
+As third, and related, explanation,
+Lisp has historically encouraged an interactive style of development,
 where programs compile very fast, while the programmer is available at the console.
 In the event of a build failure, the programmer is there to diagnose the issue, fix it,
 and interactively abort or continue the build,
@@ -3876,7 +3892,7 @@ They don't necessarily suspect that the bug is the build system,
 rather than in their code or in the environment, especially since the bug usually shows
 only in conjunction with such other bug in their code or in the environment.
 
-Fourth, indeed for the @(defsystem) bug to show
+As a fourth explanation, indeed for the @(defsystem) bug to show
 without the conjunction of an obvious other bug,
 it takes quite the non-colloquial use of "stateful" or "impure" macros,
 that take input from the environment

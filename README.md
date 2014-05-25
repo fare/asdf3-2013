@@ -34,7 +34,7 @@ In 2013, I only produced the following slides (using org-mode),
 for an ASDF "tutorial" at ELS 2013:
 [els-slides.org](https://github.com/fare/asdf3-2013/blob/master/els-slides.org)
 
-In 2014, I am presenting at ELS 2014 the slides in
+In 2014, I [presented at ELS 2014](http://medias.ircam.fr/x8fb915) the slides in
 [scripting-slides.rkt](https://github.com/fare/asdf3-2013/blob/master/scripting-slides.rkt),
 on the topic of using CL as a scripting language,
 including deploying executables and image life-cycle hooks.

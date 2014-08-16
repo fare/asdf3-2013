@@ -818,7 +818,7 @@ Can you access the rest of the system? Be accessed from it?
   @para[#:align 'left]{Lessons in Software Design including Pitfalls}
   @para[#:align 'left]{A great bug chase story}
   ~
-  @para[#:align 'center]{@tt{http://github.com/fare/asdf3-2014}}
+  @para[#:align 'center]{@tt{http://github.com/fare/asdf3-2013}}
   (comment "\
 The extended version of the article I published for ELS 2014
 also contains many other themes, which explains why it's 26 pages long.
@@ -832,7 +832,7 @@ Many among you might enjoy reading all or part of it.
   @para[#:align 'left]{@tt{http://cliki.net/inferior-shell}}
   @para[#:align 'left]{@tt{http://www.quicklisp.org/beta/}}
   ~
-  @para[#:align 'left]{@tt{http://github.com/fare/asdf3-2014}}
+  @para[#:align 'left]{@tt{http://github.com/fare/asdf3-2013}}
   ~
   @para[#:align 'center]{Any Questions?}
   (comment "\

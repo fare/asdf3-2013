@@ -443,14 +443,14 @@ However, these could conceivably be implemented as @(ASDF) extensions.
   @para[#:align 'left]{The Problem with Pathnames}
   @para[#:align 'left]{Lessons in Software Design including Pitfalls}
   ~
-  @para[#:align 'left]{@tt{http://github.com/fare/asdf3-2014}}
+  @para[#:align 'left]{@tt{http://github.com/fare/asdf3-2013}}
   (comment "\
 "))
 
 (tslide "Use it!"
   @para[#:align 'left]{@tt{http://common-lisp.net/project/asdf/}}
   ~
-  @para[#:align 'left]{@tt{http://github.com/fare/asdf3-2014}}
+  @para[#:align 'left]{@tt{http://github.com/fare/asdf3-2013}}
   ~
   @para[#:align 'center]{Any Questions?}
   (comment "\

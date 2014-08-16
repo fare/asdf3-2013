@@ -100,3 +100,10 @@
   #:date "2014"
   #:url "http://fare.tunes.org/files/asdf3/asdf3-2014.html")
 
+(define-bib Lisp-Acceptable-Scripting-Language
+  #:title "Why Lisp is Now an Acceptable Scripting Language"
+  #:author "François-René Rideau"
+  #:date "2014"
+  ;; European Lisp Symposium, 2014-05-05
+  #:url "http://github.com/fare/asdf3-2013/")
+

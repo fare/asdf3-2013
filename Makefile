@@ -5,7 +5,7 @@ src = asdf3-2014.scrbl ltu_culture_war.scrbl utils.rkt bibliography.scrbl
 
 export PLTCOLLECTS:=$(shell pwd):${PLTCOLLECTS}
 
-all: asdf asdf3-2014.PDF # html # slideshow # PDF
+all: ilc # asdf asdf3-2014.PDF # html # slideshow # PDF
 html: ${ae}.html
 pdf: ${ae}.pdf
 PDF: pdf ${ae}.PDF
@@ -52,6 +52,9 @@ long-slides: lil-slides-long.rkt utils.rkt
 
 els-slides.pdf: els-slides.org
 	emacs -batch --visit=$< --funcall org-export-as-pdf
+
+ilc: ilc2014-slides.rkt utils.rkt
+	racket $<
 
 %.show: %.rkt utils.rkt
 	slideshow --right-half-screen --time --clock --comment $<

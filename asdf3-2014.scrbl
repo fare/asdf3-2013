@@ -731,7 +731,7 @@ yet would somehow be remindful of @(ASDF), it was eventually renamed @(UIOP):
 the Utilities for Implementation- and OS- Portability@note{
   U, I, O and P are also the four letters that follow QWERTY
   on an anglo-saxon keyboard.
-}
+}.
 It was made available separately from @(ASDF)
 as a portability library to be used on its own;
 yet since @(ASDF) still needed to be delivered as a single file @tt{asdf.lisp},
@@ -1612,7 +1612,7 @@ Configuration was thus a matter of configuring @(ASDF)'s
 in which to look for system definition files,
 and maintaining "link farms" in those directories
 — and both aspects could be automated.
-(See below for how @(ASDF2) improved on that.)
+(See @secref{Configurability} for how @(ASDF2) improved on that.)
 
 Also, following earlier suggestions by Kent Pitman@~cite[Pitman-Large-Systems],
 Dan Barlow used object-oriented style to make his @(defsystem) extensible
@@ -1625,7 +1625,7 @@ Using the now standardized @(CLOS) (CLOS),
 Dan Barlow defined his @(defsystem) in terms of @bydef{generic functions}
 specialized on two arguments, @(operation) and @(component),
 using multiple dispatch, an essential OO feature unhappily not available
-in lesser programming languages, i.e. sadly almost of them —
+in lesser programming languages, i.e. sadly almost all of them —
 they make do by using the "visitor pattern".
 Extending @(ASDF) is a matter of simply defining new subclasses
 of @(operation) and/or @(component)
@@ -2098,7 +2098,7 @@ In CL, a @(pathname) is an object with the following components:
   @item{
     A @emph{directory} component, which
     can be @(nil) (or on some implementations @cl{:unspecific}),
-    or a list of either @cl{:absolute}) or @cl{:relative}
+    or a list of either @cl{:absolute} or @cl{:relative}
     followed by "words" that can be strings that each name a subdirectory,
     or @cl{:wild} (wildcard matching any subdirectory)
     or @cl{:wild-inferiors}
@@ -2167,10 +2167,11 @@ These functions are completely implementation-dependent, and indeed,
 two implementations on the same operating system may do things differently.
 Moreover, parsing is relative to the host of a default pathname
 (itself defaulting to @(*dpd*)), and even on Unix,
-this host can be a "logical pathname", in which case the syntax is completely different.
+this host can be a "logical pathname",
+in which case the syntax is completely different from the usual syntax.
 
 Behavior that vary notably include:
-escaping of wildcard characters (if done at all),
+escaping of wildcard characters (if done at all) or other characters (dots, colons, backslash, etc.)
 handling of filenames that start with a dot @tt{"."},
 catching of forbidden characters (such as a slash @tt{"/"} in a @emph{name} component,
 of a dot @tt{"."} in a type component),
@@ -2185,12 +2186,13 @@ it's possible that not all byte sequences that the OS may use to represent filen
 may have a corresponding namestring on the CL side,
 while not all well-formed CL namestrings have a corresponding OS namestring.
 For instance, Linux accepts any sequence of null-terminated bytes as a namestring,
-whereas Apple's MacOS tends to only accept sequence of Unicode characters in Normalization Form D.
+whereas Apple's MacOS tends to only accept sequence of Unicode characters in UTF-8 Normalization Form D
+and what Windows wants varies with the API used.
 And so @(UIOP) provides @(parse-native-namestring) and @(native-namestring)
 to map between pathname objects and strings more directly usable by the underlying OS.
 On good implementations, these notably do a better job than the vanilla CL functions
 at handling wildcard characters.
-Unhappily, they on other implementations they don't do anything.
+Unhappily, on other implementations they don't do anything.
 CL is notably missing a portable way to escape a namestring to avoid wildcards.
 
 Finally, so that @(asd) files may portably designate pathnames
@@ -2477,7 +2479,8 @@ trying to specify relative pathnames in @(ASDF1) was very hard to do
 in a portable way.
 Some would attempt to include a slash @cl{"/"}
 in places that @(ASDF) passed as a name component to @(make-pathname),
-notably the name of an @(ASDF) @(component) (confusingly, a completely different concept).
+notably the name of an @(ASDF) @(component)
+(confusingly, a completely different concept despite the same name).
 This would work on some lax implementations on Unix
 but would fail outright on stricter implementations and/or outside Unix
 (remarkably, SBCL counts as lax in this case).
@@ -2496,7 +2499,7 @@ was always portably treated by ASDF as meaning a file named @tt{"foo.lisp"}
 in the current system's or module's directory.
 But nothing else was both portable and easy.
 
-If you wanted your file to a dot in its name, that was particularly tricky.
+If you wanted your file to have a dot in its name, that was particularly tricky.
 In Dan Barlow's original @(ASDF), that used a simple @(make-pathname),
 you could just specify the name with the dot as in
 @cl{(:file "foo.bar")}, which would yield file @cl{#p"foo.bar.lisp"},
@@ -2535,13 +2538,13 @@ and was not generally expected to work on a non-Unix operating system.
 You could try to provide an explicit pathname option to your component definition as in
 @cl{(:file "foo/bar" :pathname #p"foo/bar.lisp")},
 but in addition to being painfully redundant,
-it would still not be portable to non-Unix operating systems.
+it would still not be portable to non-Unix operating systems (or to a "logical pathname" setup).
 A portable solution involved using @(merge-pathnames) inside a reader-evaluation idiom
 @cl{#.(merge-pathnames ...)}, which in addition to being particularly verbose and ugly,
 was actually quite tricky to get right (see @secref{merge-pathnames}).
 As for trying to go back a level in the filesystem hierarchy,
 it was even harder:
-@tt{#p"../"} was as least as unportable as the pathname literal syntax in general,
+@tt{#p"../"} was at least as unportable as the pathname literal syntax in general,
 and to use @(merge-pathnames) you'd need to not use @cl{".."} as a directory component word,
 but instead use @cl{:back}, except on implementations that only supported @cl{:up}, or worse.
 
@@ -2550,20 +2553,30 @@ none of @cl{""}, @cl{"."}, @cl{"./"}, @cl{#p""}, @cl{#p"."}, @cl{#p"./"}
 led to portable outcome, and they could all mean
 something completely different and usually wrong in "logical pathname" context.
 Thus, if you were in a module @cl{"this-module"} and wanted to define a submodule @cl{"that-submodule"}
-that doesn't define a subdirectory but shares that of @cl{"this-module"},
+that doesn't define a subdirectory but shares that of @cl{"this-module"}
 with @(ASDF2) you can portably specify @cl{:pathname ""}, but back in the days of @(ASDF1),
 if you wanted to be completely portable, you had to specify the following,
 though you could define a variable rather than repeat the computation:
 @verbatim|{
 :pathname
+#.(make-pathname
+    :name nil :type nil :version nil
+    :defaults *load-truename*)
+}|
+If you wanted to make it into a different directory,
+with @(ASDF2) or later you could use @cl{"../foo/bar"}
+but with @(ASDF1) the portable way to do it was:
+@verbatim|{
+:pathname
 #.(merge-pathnames
    (make-pathname
      :name nil :type nil :version nil
-     :directory '(:relative "this-module")
+     :directory '(:relative :back "foo" "bar")
      :defaults *load-truename*)
    *load-truename*)
 }|
-
+Except that @cl{:back} isn't completely portable to all implementations,
+and you might have to use the subtly different @cl{:up} instead (if supported).
 
 Starting with @(ASDF2), things became much simpler:
 Users specify names that are uniformly parsed according to
@@ -3206,8 +3219,8 @@ that a system could specify a dependency on another system @cl{foo}
 by having @cl{(:system "foo")} in its list of children components,
 rather than @cl{"foo"} in its @(depends-on) option.
 One system relied on it, which had been ported from @(mk-defsystem)
-where this a valid documentes way to do things.
-In @(ASDF1) and 2, it seems to this happened to work by accident rather than design,
+where this a valid documented way of doing things.
+In @(ASDF1) and 2, it seems this happened to work by accident rather than design,
 and this accident had been eliminated in the @(ASDF3) refactorings.
 
 At the cost of a few users having to cleanup their code a bit,
@@ -3293,12 +3306,13 @@ by a specific extension from the same author.
 When we released @(ASDF3), we declared the feature as deprecated:
 we defined a few new slots in class @(system) to hold
 useful common metadata found previously in such properties:
-homepage, mailto, bug-tracker, long-name, source-control.
+@cl{homepage}, @cl{mailto}, @cl{bug-tracker}, @cl{long-name}, @cl{source-control}.
 Otherwise, we recommended that system authors should specify
 the @cl{:defsystem-depends-on} and @cl{:class} options,
 so that their systems could use regular object-oriented programming
 to define extended classes with well-defined semantics.
-What if a association-list is exactly what a programmer wants?
+What if a list of key-value pairs (aka alist or association-list)
+is exactly what a programmer wants?
 He should define and use a subclass of @(system) to hold this alist,
 and then be confident that his keys won't clash with anyone else's.
 Unhappily, for the sake of backward-compatibility,

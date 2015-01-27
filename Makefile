@@ -50,11 +50,15 @@ slides: asdf-slides.rkt utils.rkt
 long-slides: lil-slides-long.rkt utils.rkt
 	racket $<
 
-els-slides.pdf: els-slides.org
-	emacs -batch --visit=$< --funcall org-export-as-pdf
+els-slides.pdf:: els-slides.org
+	emacs -batch --funcall package-initialize --load ox-latex --load ox-beamer \
+		--visit=$< --funcall org-beamer-export-to-pdf
 
 ilc: ilc2014-slides.rkt utils.rkt
 	racket $<
 
 %.show: %.rkt utils.rkt
 	slideshow --right-half-screen --time --clock --comment $<
+
+%-slides.pdf:: %-slides.rkt
+	slideshow --pdf -o $@ $<

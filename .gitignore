@@ -1,7 +1,7 @@
 *.css
 *.js
 *.html
-els-slides.pdf
-els-slides.tex
 *.pdf
+*.dvi
 *~
+els-slides.tex

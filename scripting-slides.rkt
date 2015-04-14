@@ -691,31 +691,31 @@ This begs the question: what is an acceptable scripting language?")
   @para[#:align 'left]{Spawn or be spawned by other programs}
   @para[#:align 'left]{call or be called by functions in other languages}
   (comment "\
-To me, the general criterion to a scripting language is low-overhead programming.
-This means little or no boilerplate
-between the programmer and a runnable program:
-one short line max as in #!/usr/bin/cl is OK;
-ten lines to include plenty of header files, class definitions,
-or a main(argc, argv) function prototype, is NOT OK.
-Having to write your own portability layer is NOT OK.
+To me, the general criterion to a scripting language is low-overhead programming. \
+This means little or no boilerplate \
+between the programmer and a runnable program: \
+one short line max as in #!/usr/bin/cl is OK; \
+ten lines to include plenty of header files, class definitions, \
+or a main(argc, argv) function prototype, is NOT OK. \
+Having to write your own portability layer is NOT OK. \
 cl-launch and ASDF 3 solved that for CL.
 
-This also means little or no boilerplate between the user and running the program.
-Having to install the program and its dependencies is OK,
-though it should be mostly automated.
-Requiring a special setup and/or system administration skills is NOT OK.
-Having to configure variables specific to the task at hand is OK.
-The need to modify the script itself so it runs at all on your machine is NOT OK.
-cl-launch and ASDF 2 mainly solved the configuration issue,
+This also means little or no boilerplate between the user and running the program. \
+Having to install the program and its dependencies is OK, \
+though it should be mostly automated. \
+Requiring a special setup and/or system administration skills is NOT OK. \
+Having to configure variables specific to the task at hand is OK. \
+The need to modify the script itself so it runs at all on your machine is NOT OK. \
+cl-launch and ASDF 2 mainly solved the configuration issue, \
 but many small improvements have been made since.
 
-Finally, this means easy interoperation with other software on the system.
-Since the shell command line is the standard way for multiple programs to interoperate,
-it should be supported, both ways.
-cl-launch and ASDF 3 solve that.
-And since C libraries is the standard way to provide new services
-— respectively JVM libraries, .NET libraries, etc., depending on your platform —
-the scripting language should provide an easy to interface to that, both ways.
+Finally, this means easy interoperation with other software on the system. \
+Since the shell command line is the standard way for multiple programs to interoperate, \
+it should be supported, both ways. \
+cl-launch and ASDF 3 solve that. \
+And since C libraries is the standard way to provide new services \
+— respectively JVM libraries, .NET libraries, etc., depending on your platform — \
+the scripting language should provide an easy to interface to that, both ways. \
 CFFI provides that for CL.
 "))
 
@@ -726,31 +726,31 @@ Why do we need scripting languages, or a build system, to begin with?
   'next
   @para[#:align 'left]{ASDF 3 does nothing that cannot be done without it}
   (comment "\
-In the end, detractors will deride, ASDF 3 does nothing that cannot be done without it.
-Any program you write that uses ASDF 3 or cl-launch could be written without either.
-At the very worst, it would include relevant snippets of ASDF 3 or cl-launch to do the same thing,
+In the end, detractors will deride, ASDF 3 does nothing that cannot be done without it. \
+Any program you write that uses ASDF 3 or cl-launch could be written without either. \
+At the very worst, it would include relevant snippets of ASDF 3 or cl-launch to do the same thing, \
 just lighter weight for not having to support cases irrelevant to the program at hand.")
   'next
   @para[#:align 'left]{Neither does any piece of software}
   (comment "\
-But the same can be said of any and all software, beside the end applications:
-no computable function can ever extend the set of things that can theoretically be computed.
-No library can do anything that couldn't be done by duplicating relevant parts of its code
+But the same can be said of any and all software, beside the end applications: \
+no computable function can ever extend the set of things that can theoretically be computed. \
+No library can do anything that couldn't be done by duplicating relevant parts of its code \
 in all client code. etc.")
   'next
   @para[#:align 'left]{Division of labor}
   (comment "\
-The point of any and every library is division of labor:
-human creativity is a scarce resource, and
-by cooperating with each other, we can achieve more than we could separately,
-avoiding to each have to redundantly solve the same problems,
+The point of any and every library is division of labor: \
+human creativity is a scarce resource, and \
+by cooperating with each other, we can achieve more than we could separately, \
+avoiding to each have to redundantly solve the same problems, \
 when we could each be solving new problems that we can specialize on.")
   'next
   @para[#:align 'left]{@it{Enabling} the division of labor}
   (comment "\
-The point of a build system is to enable the division of labor between other programmers.
-It achieves that by making it easy to divide software into many components that complement each other,
-that each may somehow fit into some programmer's brain,
+The point of a build system is to enable the division of labor between other programmers. \
+It achieves that by making it easy to divide software into many components that complement each other, \
+that each may somehow fit into some programmer's brain, \
 while reducing friction in combining these components into a complete program."))
 
 (tslide "Beyond ASDF 3"
@@ -767,7 +767,7 @@ So what is the next step for ASDF?
   @para[#:align 'left]{more access:}
   @para[#:align 'left]{Integration with other languages?}
   (comment "\
-ASDF 3.1 has two innovations that further improve the language.
+ASDF 3.1 includes innovations that further improve the language.
 
 First, it sports an alternative lower-overhead way to declare dependencies, \
 using the one-package-per-file style previously promoted by faslpath and quick-build. \
@@ -778,7 +778,8 @@ The implementation about a hundred lines of code only, \
 and for less than two hundred lines, you could have the equivalent of ASDF, \
 except without all the bells and whistles, in one 1/50th to 1/100th of the size.
 
-Second, ASDF 3.2 will increase modularity by protecting the syntax of modules being compiled \
+Second (which was actually deferred until ASDF 3.2), it will \
+increase modularity by protecting the syntax of modules being compiled \
 as determined by the *readtable* used while compiling, from the syntax of the toplevel, \
 as determined by the *readtable* at the REPL. \
 Common Lisp has too many special or global parameters, \
@@ -805,8 +806,8 @@ consider these axes for improvement.
 
 Can you reduce the overhead to writing useful programs?
 
-Can you remove shared state?
-Minimize configuration?
+Can you remove shared state? \
+Minimize configuration? \
 If any configuration is needed, can you let the user or programs override the defaults?
 
 Can you access the rest of the system? Be accessed from it?
@@ -822,10 +823,10 @@ Can you access the rest of the system? Be accessed from it?
   ~
   @para[#:align 'center]{@tt{http://github.com/fare/asdf3-2013}}
   (comment "\
-The extended version of the article I published for ELS 2014
+The extended version of the article I published for ELS 2014 \
 also contains many other themes, which explains why it's 26 pages long.
 
-Many among you might enjoy reading all or part of it.
+Many among you might enjoy reading part or all of it.
 "))
 
 (tslide "Share and Enjoy!"
@@ -839,4 +840,4 @@ Many among you might enjoy reading all or part of it.
   @para[#:align 'center]{Any Questions?}
   (comment "\
 All the software I've described is published as free software. \
-You can find them at the following addresses."))
+You can find it at the following addresses."))

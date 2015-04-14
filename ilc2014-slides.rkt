@@ -68,6 +68,17 @@ Today, I will demonstrate how to use Lisp as a Scripting Language.
 }
 (comment "And I haven't even talked about macros or proper GC..."))
 
+(tslide "Ways scripting languages used to beat CL"
+@P{"Scripting" (whatever that means)}
+~
+@P{Popularity (seems to follow from "scripting")}
+~
+@P{Plenty of libraries (follows from "popularity")}
+~
+@P{Familiarity (follows from "popularity")}
+(comment "So the key feature seems to be scripting. But what is it?"))
+
+
 (tslide "What is Scripting?"
  @P{Low-overhead, frictionless programming}
  ~
@@ -77,12 +88,12 @@ Today, I will demonstrate how to use Lisp as a Scripting Language.
  ~
  @P{Division of Labor}
  (comment "\
-Each shall be able to contribute his increment of code
-without having to first write boilerplate or frameworks
+Each shall be able to contribute his increment of code \
+without having to first write boilerplate or frameworks \
 or reinvent the wheel.
 "))
 
-(tslide "NOW Acceptable"
+(tslide "CL is NOW acceptable at scripting"
  @B{Software Modularity}
  @t{mk-defsystem (1991); ASDF 1 (2002), 2 (2010), 3 (2013), 3.1 (2014)}
 
@@ -93,32 +104,43 @@ or reinvent the wheel.
  @t{cl-launch 1 (2005), 2 (2006), 3 (2012), 4 (2014)}
 
  @B{Run Unix code from CL}
- @t{xcvb-driver (2009); inferior-shell 1 (2012), 2 (2014)}
+ @t{xcvb-driver (2009), uiop (2013); inferior-shell 1 (2012), 2 (2014)}
  (comment "\
 I have written before Why Common Lisp is Now an Acceptable Scripting Language.
 
-It used not to be. Several pieces were missing
-that only became barely acceptable recently;
+It used not to be. Several pieces were missing \
+that only became barely acceptable recently; \
 some only became actually good this very year.
 
-First, you need a usable mechanism to combine software modules.
-In CL, it's called defsystem, and it's only done
-in a fully portable and satisfactory manner since this year;
+First, you need a usable mechanism to combine software modules. \
+In CL, it's called defsystem, and it's only done \
+in a fully portable and satisfactory manner since this year; \
 ASDF 3 was basically there, but ASDF 3.1 completes it and fixes many issues.
 
-Then, you need an effective place from which to get modules and their dependencies,
-and to which to publish them.
-In CL, there used to be asdf-install, but its weak coordination model
-couldn't scale to a large number of evolving, mutually-dependent libraries.
+Then, you need an effective place from which to get modules and their dependencies, \
+and to which to publish them. \
+In CL, there used to be asdf-install, but its weak coordination model \
+couldn't scale to a large number of evolving, mutually-dependent libraries. \
 Quicklisp now does it without requiring the amount of administration.
 
+You need to be able to run CL programs from any other language, \
+and cl-launch has made it portably possible for developers for many years, \
+and the latest version is usable by end-users thanks to ASDF3.
+
+You need CL programs to be able to run programs in other languages; \
+and xcvb-driver has made it portably possible recently, \
+and thanks to UIOP, part of ASDF3, it's now improved and available everywhere; \
+inferior-shell has been offering a nicer interface on top of that
+for splicing strings in arguments and building pipes and redirections. \
+There are precious few reasons to write a shell script when you could write \
+a CL script instead.
 "))
 
 (tslide "Low overhead"
  @P{One-line script invocation.}
  (code |#!/usr/bin/cl|)
  ~
- @P{Write Once, Run Most-anywhere}
+ @P{Write Once, Run Most-anywhere (WORM)}
  @P{Any OS, Implementation combination}
  ~
  @P{No sysadmining required}
@@ -386,36 +408,36 @@ This begs the question: what is an acceptable scripting language?")
   'next
   @P{Low-overhead programming}
   @P{No boilerplate}
-  @P{Write once, run everywhere @it{unmodified}}
+  @P{Write Once, Run Most-anywhere @it{unmodified}}
   @P{No setup needed}
   @P{Spawn or be spawned by other programs}
   @P{call or be called by functions in other languages}
   (comment "\
-To me, the general criterion to a scripting language is low-overhead programming.
-This means little or no boilerplate
-between the programmer and a runnable program:
-one short line max as in #!/usr/bin/cl is OK;
-ten lines to include plenty of header files, class definitions,
-or a main(argc, argv) function prototype, is NOT OK.
-Having to write your own portability layer is NOT OK.
+To me, the general criterion to a scripting language is low-overhead programming. \
+This means little or no boilerplate \
+between the programmer and a runnable program: \
+one short line max as in #!/usr/bin/cl is OK; \
+ten lines to include plenty of header files, class definitions, \
+or a main(argc, argv) function prototype, is NOT OK. \
+Having to write your own portability layer is NOT OK. \
 cl-launch and ASDF 3 solved that for CL.
 
-This also means little or no boilerplate between the user and running the program.
-Having to install the program and its dependencies is OK,
-though it should be mostly automated.
-Requiring a special setup and/or system administration skills is NOT OK.
-Having to configure variables specific to the task at hand is OK.
-The need to modify the script itself so it runs at all on your machine is NOT OK.
-cl-launch and ASDF 2 mainly solved the configuration issue,
+This also means little or no boilerplate between the user and running the program. \
+Having to install the program and its dependencies is OK, \
+though it should be mostly automated. \
+Requiring a special setup and/or system administration skills is NOT OK. \
+Having to configure variables specific to the task at hand is OK. \
+The need to modify the script itself so it runs at all on your machine is NOT OK. \
+cl-launch and ASDF 2 mainly solved the configuration issue, \
 but many small improvements have been made since.
 
-Finally, this means easy interoperation with other software on the system.
-Since the shell command line is the standard way for multiple programs to interoperate,
-it should be supported, both ways.
-cl-launch and ASDF 3 solve that.
-And since C libraries is the standard way to provide new services
-— respectively JVM libraries, .NET libraries, etc., depending on your platform —
-the scripting language should provide an easy to interface to that, both ways.
+Finally, this means easy interoperation with other software on the system. \
+Since the shell command line is the standard way for multiple programs to interoperate, \
+it should be supported, both ways. \
+cl-launch and ASDF 3 solve that. \
+And since C libraries is the standard way to provide new services \
+— respectively JVM libraries, .NET libraries, etc., depending on your platform — \
+the scripting language should provide an easy to interface to that, both ways. \
 CFFI provides that for CL.
 "))
 
@@ -426,31 +448,31 @@ Why do we need scripting languages, or a build system, to begin with?
   'next
   @P{ASDF 3 does nothing that cannot be done without it}
   (comment "\
-In the end, detractors will deride, ASDF 3 does nothing that cannot be done without it.
-Any program you write that uses ASDF 3 or cl-launch could be written without either.
-At the very worst, it would include relevant snippets of ASDF 3 or cl-launch to do the same thing,
+In the end, detractors will deride, ASDF 3 does nothing that cannot be done without it. \
+Any program you write that uses ASDF 3 or cl-launch could be written without either. \
+At the very worst, it would include relevant snippets of ASDF 3 or cl-launch to do the same thing, \
 just lighter weight for not having to support cases irrelevant to the program at hand.")
   'next
   @P{Neither does any piece of software}
   (comment "\
-But the same can be said of any and all software, beside the end applications:
-no computable function can ever extend the set of things that can theoretically be computed.
-No library can do anything that couldn't be done by duplicating relevant parts of its code
+But the same can be said of any and all software, beside the end applications: \
+no computable function can ever extend the set of things that can theoretically be computed. \
+No library can do anything that couldn't be done by duplicating relevant parts of its code \
 in all client code. etc.")
   'next
   @P{Division of labor}
   (comment "\
-The point of any and every library is division of labor:
-human creativity is a scarce resource, and
-by cooperating with each other, we can achieve more than we could separately,
-avoiding to each have to redundantly solve the same problems,
+The point of any and every library is division of labor: \
+human creativity is a scarce resource, and \
+by cooperating with each other, we can achieve more than we could separately, \
+avoiding to each have to redundantly solve the same problems, \
 when we could each be solving new problems that we can specialize on.")
   'next
   @P{@it{Enabling} the division of labor}
   (comment "\
-The point of a build system is to enable the division of labor between other programmers.
-It achieves that by making it easy to divide software into many components that complement each other,
-that each may somehow fit into some programmer's brain,
+The point of a build system is to enable the division of labor between other programmers. \
+It achieves that by making it easy to divide software into many components that complement each other, \
+that each may somehow fit into some programmer's brain, \
 while reducing friction in combining these components into a complete program."))
 
 (tslide "Beyond ASDF 3"
@@ -483,7 +505,9 @@ as determined by the *readtable* used while compiling, from the syntax of the to
 as determined by the *readtable* at the REPL. \
 Common Lisp has too many special or global parameters, \
 and by better isolating the parameters used during the build, \
-we can make the build more modular.
+we can make the build more modular. \
+*Update*: these changes never made it to ASDF 3.1, and the new maintainer is in no hurry \
+to merge the branch where it's happening.
 
 Third, in ASDF 2 the dependency model was so specialized it could only be used to compile Lisp code; \
 with ASDF 3, it is fully general and can be used to compile anything in any language, \
@@ -540,5 +564,3 @@ Many among you might enjoy reading all or part of it.
   (comment "\
 All the software I've described is published as free software. \
 You can find them at the following addresses."))
-
-

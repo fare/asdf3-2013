@@ -138,7 +138,9 @@ printing on each line the name of the implementation followed by the value. \
 In this case, the form involves the unspecified interaction \
 between known-length vector and unquote-splicing. \
 The standard says that with the the hash-number-paren notation, \
-whereby the reader will repeat the last form to fill a vector of specified size; \
+whereby the reader will create a vector of fixed size \
+ (allowing for preallocation of \"sizable\" vectors on old machines),
+the last form will be repeated enough times to fill a vector of specified size; \
 it also says that comma-at will be spliced at read-time; \
 but what happens when you do both?
 
@@ -226,8 +228,8 @@ so consider yourself lucky to be given such a nice result.
 
 So, cl-launch, ASDF, and other libraries can abstract over \
  a lot of discrepancies between CL implementations, \
-but there will still remain discrepancies in many underspecified parts of the standard, \
-Even then cl-launch can help you run test and experiments on all implementations."))
+but there will still remain discrepancies in many underspecified parts of the standard. \
+What cl-launch can then do is help you run test and experiments on all implementations."))
 
 (tslide "What prevented scripting?"
   (comment "\
@@ -239,11 +241,11 @@ before it can be used to write scripts?")
   @para[#:align 'left]{(No) Write Once, Run Most-anywhere}
   (comment "So why was scripting in CL not possible before?
 
-Well, it was stricto sensu possibe, but completely not portable. \
+Well, it was stricto sensu possible, but completely not portable. \
 Every user would have to modify every script to match his particular situation. \
 There were several aspects requiring modification, that involved various amounts of pain.
 
-In short, Write once, run most-anywhere was an unreachable dream, \
+In short, Write once, Run Most-anywhere was an unreachable dream, \
 despite the large compatibility of all implementations with each other \
 thanks to the CL standard.
 "))
@@ -258,13 +260,13 @@ thanks to the CL standard.
   @para[#:align 'left]{run-program}
   @para[#:align 'left]{pipes, expansion}
   (comment "
-Some of these aspects were universally inflicted to every common lisp user: \
+Some of these aspects were universally inflicted to every Common Lisp user: \
 finding source code and choosing output file location were basic unfulfilled needs \
 before ASDF, and still painful with ASDF1. \
 Without this, scripts couldn't reliably use any library or scale to large programs. \
 This was not just for scripts: \
 Even applications with no ambition of being distributed for execution without modification \
-was difficult to configure right. \
+were difficult to configure right. \
 Also, by saving the compiled output files next to the source code, \
 ASDF1 and its predecessors made it impossible to share a same program \
 between multiple users (at least not without security issues), \
@@ -279,7 +281,7 @@ Invoking CL code from other a Unix shell or other program, \
 and accessing arguments passed to your code, \
 were non-trivial tasks, that varied wildly with your implementation.
 
-Finally, calling an external program and extrating results was extremely difficult, \
+Finally, calling an external program and extracting its results was extremely difficult, \
 and there again varied wildly with your implementation."))
 
 (tslide "What made scripting possible?"
@@ -304,12 +306,12 @@ and there would be no clash or additional security issues.
 
 Invoking CL programs in a uniform way was made possible by cl-launch. \
 cl-launch was actually written before ASDF 2, but it was made simpler and more powerful \
-with ASDF 2's output-translations and with ASDF 3's portability layer UIOP.
+with ASDF 2's output-translations and subsequently ASDF 3's portability layer UIOP.
 
 As for invoking external programs from CL and capturing their output nicely, \
 this was initially made possible by XCVB and its xcvb-driver, \
-and moved into ASDF 3's portability layer UIOP and further developed there. \
-A more usable layer is available in the system inferior-shell,
+and that code was imported into ASDF 3's portability layer UIOP and further developed there. \
+A layer providing additional usability is available in the system inferior-shell,
 that I demonstrated just before."))
 
 (tslide "Finding source code (before)"
@@ -337,7 +339,7 @@ but at least now it had to be solved only once per user. \
 Adding and removing libraries required editing a configuration file \
 and was somewhat painful, though.
 
-ASDF1 made it configuration much simpler. \
+ASDF1 made configuration much simpler. \
 With the clever use of *load-truename*, it could retrieve the location of a system \
 given a symbolic link to the .asd system definition file; \
 you could thus register a directory in its *central-registry* \
@@ -364,7 +366,7 @@ if the implementation allowed to disable user configuration, \
 scripts could use it but then lose the ability to find systems \
 without being edited for configuration.
 
-That was all a big mess"))
+That was all a big mess."))
 
 (tslide "Finding source code (after)"
   @para[#:align 'left]{ASDF 2: @tt{source-registry}}
@@ -376,9 +378,9 @@ That was all a big mess"))
   @para[#:align 'left]{ASDF 3.1: @tt{~/common-lisp/}}
   (comment "\
 ASDF 2 solved that by introducing the source-registry; \
-previous central-registry is still supported for backward compatibility.
+ASDF 1's previous central-registry is still supported for backward compatibility.
 
-It's implementation-independent; \
+The source-registry is implementation-independent; \
 it does not rely on an implementation-dependent configuration file that might not exist.
 
 It has a nice flexible DSL to specify paths, so you can refer to the home directory, \
@@ -390,14 +392,14 @@ Unlike the ASDF1 central-registry, the ASDF 2 source-registry can recurse into s
 no more having to manually scan directories and manually update link farms when the libraries \
 are removed, added or modified.
 
-The ASDF 2 source-registry have a nice way to get configuration from various sources \
+The ASDF 2 source-registry has a nice way to get configuration from various sources \
 and merge them so that the program can override the environment that can override \
 user configuration files that can override system configuration files that can override defaults.
 
 The ASDF 2 source-registry provides sensible defaults that will work with your implentation, \
 with systems provided by your Linux distribution (e.g. Debian), etc.
 
-ASDF 3 introduces a universal pre-configured location, ~/common-lisp/
+ASDF 3.1 introduces a universal pre-configured location, ~/common-lisp/
 in which to put your code"))
 
 (tslide "Finding source code (lessons)"
@@ -411,7 +413,7 @@ in which to put your code"))
   (comment "\
 The source-registry illustrates a few essential principles of design. \
 First, configuration should follow the constraint that \
-\"He who knows specifies the configuration, he who doesn't neededn't\". \
+\"He who knows specifies the configuration, he who doesn't needn't\". \
 That's very important, so that users are not required \
 to also become programmers or system administrators, \
 while authors are not required to be omniscient about where their systems will be installed.
@@ -760,7 +762,7 @@ So what is the next step for ASDF?
   @para[#:align 'left]{ASDF 3.1: @tt{asdf:package-inferred-system}}
   ~
   @para[#:align 'left]{more modularity:}
-  @para[#:align 'left]{ASDF 3.1: @tt{*readtable*} protection}
+  @para[#:align 'left]{ASDF 3.2: @tt{*readtable*} protection}
   ~
   @para[#:align 'left]{more access:}
   @para[#:align 'left]{Integration with other languages?}
@@ -776,7 +778,7 @@ The implementation about a hundred lines of code only, \
 and for less than two hundred lines, you could have the equivalent of ASDF, \
 except without all the bells and whistles, in one 1/50th to 1/100th of the size.
 
-Second, ASDF 3.1 increases modularity by protecting the syntax of modules being compiled \
+Second, ASDF 3.2 will increase modularity by protecting the syntax of modules being compiled \
 as determined by the *readtable* used while compiling, from the syntax of the toplevel, \
 as determined by the *readtable* at the REPL. \
 Common Lisp has too many special or global parameters, \

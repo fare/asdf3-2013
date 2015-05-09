@@ -2161,7 +2161,15 @@ Due to the many features regarding pathnames,
 not all strings validly parse to a pathname,
 and not all pathnames have a valid representation as a namestring.
 However, the two functions are reasonably expected to be inverse of each other
-when restricted to their respective output domains.
+when restricted to their respective output domains.@note{
+  Still, on many implementations, filesystem access functions
+  such as @cl{probe-file} or @cl{truename} will return a subtly modified pathname
+  that looks the same because it has the same namestring, but doesn't compare as @cl{equal}
+  because it has a different @cl{version} of @cl{:version :newest} rather than @cl{:version nil}.
+  This can cause a lot of confusion and pain.
+  You therefore should be careful to never compare pathnames or use them as keys in a hash-table
+  without having normalized them, at which point you may as well use the namestring as the key.
+}
 
 These functions are completely implementation-dependent, and indeed,
 two implementations on the same operating system may do things differently.
@@ -2483,7 +2491,7 @@ notably the name of an @(ASDF) @(component)
 (confusingly, a completely different concept despite the same name).
 This would work on some lax implementations on Unix
 but would fail outright on stricter implementations and/or outside Unix
-(remarkably, SBCL counts as lax in this case).
+(remarkably, SBCL, that is usually stricter than other implementations, counts as lax in this case).
 Some would try to use @cl{#.(merge-pathnames ...)} to construct pathnames at read-time,
 but few would understand the complexity of pathname merging well enough to do it just right,
 and the results would be highly non-portable, with corner cases galore.
@@ -3034,7 +3042,7 @@ and required either duplication of code with @cl{compile-file*} or ugly refactor
 without bringing any actual meaningful user extensibility.
 The real solution was to make @(ASDF)'s @cl{compile-file*} itself
 more clever and aware of the peculiarities of ECL.
-@emph{Know the different between the need for extensibility and the need for correctness};
+@emph{Know the difference between the need for extensibility and the need for correctness};
 if there's only one correct behavior, what you need isn't extensibility, it's correctness.
 
 @subsection{Partial Solutions}

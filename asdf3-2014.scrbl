@@ -174,9 +174,9 @@ and the bug that required rewriting it all over again in @secref{traverse}.
 
 All versions of this article are available at @url{http://fare.tunes.org/files/asdf3/}:
 @hyperlink["http://fare.tunes.org/files/asdf3/asdf3-2014.html"]{extended HTML},
-@hyperlink["http://fare.tunes.org/files/asdf3/asdf3-2014.html"]{extended PDF},
+@hyperlink["http://fare.tunes.org/files/asdf3/asdf3-2014.pdf"]{extended PDF},
 @hyperlink["http://fare.tunes.org/files/asdf3/asdf3-els2014.html"]{short HTML},
-@hyperlink["http://fare.tunes.org/files/asdf3/asdf3-els2014.html"]{short PDF}
+@hyperlink["http://fare.tunes.org/files/asdf3/asdf3-els2014.pdf"]{short PDF}
 (the latter was submitted to
 @hyperlink["http://www.european-lisp-symposium.org/"]{ELS 2014}).
 }
